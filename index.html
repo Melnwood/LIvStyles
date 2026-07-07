@@ -28,7 +28,7 @@
   a{color:var(--green)}
 
   /* ---------- Login ---------- */
-  #login{padding:56px 22px 48px}
+  #loginView{padding:56px 22px 48px}
   .card{
     max-width:390px; width:100%; margin:0 auto; background:var(--surface); border:1px solid var(--line);
     border-radius:var(--radius); box-shadow:var(--shadow); padding:34px 32px;
@@ -303,7 +303,7 @@
 <body>
 
 <!-- ================= LOGIN ================= -->
-<section id="login">
+<section id="loginView">
   <form class="card" id="loginForm" autocomplete="on">
     <div class="brandmark"><span class="dot"></span><h1>LivStyle</h1></div>
     <p class="sub">Personality assessment directory · Josiah Venture</p>
@@ -535,7 +535,7 @@ function startApp(data){
   applyFilter();
   $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
   document.getElementById("app").style.display = "block";
-  document.getElementById("login").style.display = "none";
+  document.getElementById("loginView").style.display = "none";
 }
 
 function applyFilter(){
