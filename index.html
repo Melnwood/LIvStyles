@@ -488,17 +488,25 @@ $("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = $("loginBtn"), msg = $("loginMsg");
   const login = $("login").value.trim(), password = $("password").value;
-  if (!login || !password) { msg.className = "msg err"; msg.textContent = "Enter your login and password."; return; }
+  const fail = (m) => { msg.className = "msg err"; msg.textContent = m; btn.disabled = false; btn.textContent = "Sign in"; };
+  if (!login || !password) { fail("Enter your login and password."); return; }
   btn.disabled = true; btn.textContent = "Signing in…"; msg.textContent = ""; msg.className = "msg";
+  let res;
   try {
-    const res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ login, password }) });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || "Sign-in failed.");
-    startApp(data);
-  } catch (err) {
-    msg.className = "msg err"; msg.textContent = err.message;
-    btn.disabled = false; btn.textContent = "Sign in";
+    res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ login, password }) });
+  } catch (netErr) {
+    return fail("Couldn't reach the server. If you opened the file directly, it has to be deployed to Netlify first.");
   }
+  if (res.status === 404) return fail("Login service not found (404). The Netlify function didn't deploy — index.html and the netlify/ folder must sit at the site root.");
+  let data = null, text = "";
+  try { text = await res.text(); data = JSON.parse(text); }
+  catch (parseErr) {
+    if (/<\/?html|page ?not ?found/i.test(text)) return fail("Login service not found — no function at /.netlify/functions/livstyle. Check the deploy structure.");
+    return fail("Unexpected response from the server (status " + res.status + "). Check the function logs in Netlify.");
+  }
+  if (res.status === 500) return fail(data.error || "Server error — most likely AIRTABLE_PAT isn't set. Add it in Netlify, then redeploy.");
+  if (!res.ok || !data.ok) return fail(data.error || "That login and password don't match, or the account is inactive.");
+  startApp(data);
 });
 
 function startApp(data){
