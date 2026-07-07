@@ -98,6 +98,26 @@
   .tfbar{display:inline-flex; align-items:center; gap:7px; margin-left:10px; font-size:12.5px; color:var(--green); background:var(--green-wash); border:1px solid #dbe6df; padding:5px 6px 5px 11px; border-radius:20px; white-space:nowrap}
   .tfbar button{background:none; border:none; color:var(--green); font-size:15px; line-height:1; cursor:pointer; padding:0 4px; border-radius:50%}
   .tfbar button:hover{background:#d6e5dd}
+
+  /* status control */
+  .statusseg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-left:10px}
+  .statusseg button{background:#fff; border:none; padding:6px 12px; font-size:12.5px; color:var(--muted); border-right:1px solid var(--line)}
+  .statusseg button:last-child{border-right:none}
+  .statusseg button:hover{background:#faf8f3}
+  .statusseg button.on{background:var(--green); color:#fff}
+  tr.inactive td{opacity:.5}
+  tr.inactive td:first-child::after{content:"inactive"; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:8px; opacity:1}
+  .dstatus{margin:10px 0 4px}
+  .statbtn{border:1px solid var(--line); background:#fff; border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:500; display:inline-flex; align-items:center; gap:8px}
+  .statbtn .dotp{width:8px; height:8px; border-radius:50%}
+  .statbtn.active .dotp{background:var(--green)}
+  .statbtn.inactive .dotp{background:#b0aca3}
+  .statbtn:hover{border-color:var(--green-soft)}
+  .statbtn small{color:var(--muted); font-weight:400}
+  .statbadge{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted)}
+  .statbadge .dotp{width:8px; height:8px; border-radius:50%}
+  .statbadge.active .dotp{background:var(--green)}
+  .statbadge.inactive .dotp{background:#b0aca3}
   .dist .row .name{display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .swatch{width:9px; height:9px; border-radius:2px; flex:none}
   .track{height:8px; background:var(--line-soft); border-radius:5px; overflow:hidden}
@@ -392,6 +412,11 @@
         <h2>People</h2>
         <div class="searchrow">
           <input id="search" placeholder="Search by name…" autocomplete="off" />
+          <div class="statusseg" id="statusSeg">
+            <button data-s="Active" class="on">Active</button>
+            <button data-s="Inactive">Inactive</button>
+            <button data-s="All">All</button>
+          </div>
           <span id="typeFilterBar" class="tfbar" style="display:none"></span>
         </div>
         <div class="tablewrap">
@@ -480,6 +505,7 @@ let VIEW = [];       // after country filter
 let sortKey = "Full Name", sortDir = 1;
 let activeId = null;
 let typeFilter = null;
+let statusFilter = "Active";
 let AUTH = null;
 let CAN_ADD = false;
 
@@ -571,6 +597,11 @@ function startApp(data){
   }
   sel.addEventListener("change", applyFilter);
   $("search").addEventListener("input", renderTable);
+  $("statusSeg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    statusFilter = b.dataset.s;
+    $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x===b));
+    renderTable();
+  }));
   document.querySelectorAll("th[data-k]").forEach(th => th.addEventListener("click", () => {
     const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
     renderTable();
@@ -621,9 +652,14 @@ function renderDist(){
   });
 }
 
+function statusOf(r){ return r.Status === "Inactive" ? "Inactive" : "Active"; }
+
 function renderTable(){
   const q = $("search").value.trim().toLowerCase();
-  let rows = VIEW.filter(r => (!q || (r["Full Name"]||"").toLowerCase().includes(q)) && (!typeFilter || r["Primary Personality"]===typeFilter));
+  let rows = VIEW.filter(r =>
+    (!q || (r["Full Name"]||"").toLowerCase().includes(q)) &&
+    (!typeFilter || r["Primary Personality"]===typeFilter) &&
+    (statusFilter==="All" || statusOf(r)===statusFilter));
   rows.sort((a,b) => {
     let x = a[sortKey], y = b[sortKey];
     if (sortKey === "Accuracy"){ x = x ?? -1; y = y ?? -1; return (x-y)*sortDir; }
@@ -636,7 +672,7 @@ function renderTable(){
   else bar.style.display="none";
   const tb = $("rows");
   tb.innerHTML = rows.map(r => `
-    <tr data-id="${r.id}" class="${r.id===activeId?'active':''}">
+    <tr data-id="${r.id}" class="${r.id===activeId?'active':''} ${statusOf(r)==='Inactive'?'inactive':''}">
       <td>${r["Full Name"]||"—"}</td>
       <td>${r.Country||"—"}</td>
       <td><span class="pri"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></td>
@@ -1518,6 +1554,7 @@ function openDrawer(id){
     <div class="dhead">
       <button class="close" id="dClose" aria-label="Close">×</button>
       <h3>${r["Full Name"]||"—"}</h3>
+      <div class="dstatus">${statusControl(r)}</div>
       <div class="meta">${r.Country||""}${r["Assessment Date"]?" · assessed "+r["Assessment Date"]:""}${r.Accuracy!=null?" · "+pct(r.Accuracy)+" accuracy":""}</div>
       <div class="twin">
         <div class="t">Primary<span class="v"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></div>
@@ -1535,6 +1572,32 @@ function openDrawer(id){
     </div>`;
   const d = $("drawer"); d.innerHTML = html; d.classList.add("open"); $("scrim").classList.add("open");
   $("dClose").addEventListener("click", closeDrawer);
+  const st = $("statToggle"); if (st) st.addEventListener("click", () => toggleStatus(id));
+}
+
+function statusControl(r){
+  const s = statusOf(r), lower = s.toLowerCase();
+  if (CAN_ADD) return `<button class="statbtn ${lower}" id="statToggle"><span class="dotp"></span>${s} <small>· tap to change</small></button>`;
+  return `<span class="statbadge ${lower}"><span class="dotp"></span>${s}</span>`;
+}
+
+async function toggleStatus(id){
+  const r = ALL.find(x => x.id === id) || VIEW.find(x => x.id === id);
+  if (!r) return;
+  const next = statusOf(r) === "Active" ? "Inactive" : "Active";
+  const btn = $("statToggle");
+  if (btn){ btn.disabled = true; btn.innerHTML = `<span class="dotp"></span>Saving…`; }
+  try {
+    const res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ action:"status", login:AUTH.login, password:AUTH.password, id, status:next }) });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || "Couldn't update.");
+    r.Status = next;
+    applyFilter();
+    openDrawer(id);
+  } catch (err) {
+    if (btn){ btn.disabled = false; btn.innerHTML = `<span class="dotp"></span>Retry — ${err.message}`; }
+  }
 }
 function closeDrawer(){ $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); activeId=null; renderTable(); }
 $("scrim").addEventListener("click", closeDrawer);

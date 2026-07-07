@@ -57,6 +57,21 @@ async function airtableCreate(table, fields) {
   return res.json();
 }
 
+async function airtableUpdate(table, id, fields) {
+  const url = `${API}/${BASE_ID}/${encodeURIComponent(table)}/${id}`;
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${PAT}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ fields, typecast: true }),
+  });
+  if (!res.ok) {
+    let detail = ""; try { detail = (await res.text()).slice(0, 400); } catch {}
+    const err = new Error(`Update failed (${res.status}). ${detail}`);
+    err.status = res.status; throw err;
+  }
+  return res.json();
+}
+
 function esc(v) { return String(v).replace(/'/g, "\\'"); }
 
 async function findLeader(login, password) {
@@ -117,6 +132,19 @@ exports.handler = async (event) => {
       return json(200, { ok: true, id: created.id, name: fields["Full Name"] });
     } catch (e) {
       return json(502, { error: "Couldn't save the record. " + e.message });
+    }
+  }
+
+  // ---- Set a person's status (active / inactive) ----
+  if (action === "status") {
+    if (leader.fields["Can Add"] !== true) return json(403, { error: "This account isn't allowed to change status." });
+    const id = body.id, status = body.status;
+    if (!id || (status !== "Active" && status !== "Inactive")) return json(400, { error: "Bad status request." });
+    try {
+      await airtableUpdate(ASSESSMENTS_TABLE, id, { Status: status });
+      return json(200, { ok: true, id, status });
+    } catch (e) {
+      return json(502, { error: "Couldn't update status. " + e.message });
     }
   }
 
