@@ -272,6 +272,15 @@
   .friction{border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; font-size:13.5px}
   .friction .fpair{font-weight:600; margin-bottom:4px}
   .watch{background:var(--ochre-wash); border:1px solid #ecdcc0; border-radius:10px; padding:12px 14px; font-size:13.5px; margin-top:8px}
+
+  /* conversation guide */
+  .cg-copy{background:none; border:1px solid var(--line); border-radius:6px; padding:3px 10px; font-size:11.5px; color:var(--green); margin-left:8px; cursor:pointer}
+  .cg-copy:hover{background:var(--green-wash); border-color:var(--green-soft)}
+  .cg-block{margin:14px 0 4px}
+  .cg-block h5{font-size:12.5px; font-weight:600; color:var(--green); margin:0 0 6px}
+  .cg-list{margin:0 0 10px; padding-left:22px}
+  .cg-list li{font-size:14px; line-height:1.55; margin-bottom:10px; padding-left:4px}
+  @media print{ .tabs,.scopebar,.drawer,.scrim{display:none!important} .cg-copy{display:none} }
   @media (max-width:720px){ .role-row{grid-template-columns:1fr; gap:2px} }
 
   /* role fit */
@@ -1339,7 +1348,80 @@ function renderTeam(){
     </div>
     ${frictionHtml?`<div class="rep-sec"><h3>Where friction is likely</h3><p class="rsub">Opposed styles on the team — name it early and use the bridge</p>${frictionHtml}</div>`:""}
     ${stressed.length?`<div class="rep-sec"><h3>Stress watch</h3><div class="watch">${stressed.map(r=>firstName(r)).join(", ")} show${stressed.length===1?'s':''} the balanced-needs pattern the manual links to elevated stress — worth a check-in before leaning on them harder.</div></div>`:""}
+    ${buildConversationGuide(rows, cmap, frictions, careMiss, stressed)}
     <p class="gnote" style="margin-top:18px">Style leans are derived from trait profiles via the four-corner model. Treat this as a map for conversation and assignment, not a fixed judgement of anyone.</p>`;
+  const cg = $("cgCopy"); if (cg) cg.addEventListener("click", () => copyGuide(rows, cmap, frictions, careMiss, stressed));
+}
+
+/* ---------- Team conversation guide ----------
+   Data seeds the questions; the team answers them together. Blends team
+   leadership with serving-one-another-as-a-body (Rom 12 / 1 Cor 12) framing. */
+const CG_PLACE = {
+  Power: n => `${n}, you naturally take charge and push for results. What will you own and lead here — and how will you draw others in rather than running ahead of them?`,
+  Promotion: n => `${n}, you bring energy and connect people. How will you use that to lift the team — and what do you need so your ideas get carried through, not just enjoyed?`,
+  Peace: n => `${n}, you keep the team steady and connected. Where do you most want to serve — and how will you make sure your own voice and convictions aren't lost keeping the peace?`,
+  Process: n => `${n}, you carry a gift for quality and doing things right. What will you hold to a high standard for the team — and how will you offer that so it builds people up rather than criticizes?`,
+  Balanced: n => `${n}, you flex across styles. Where do you sense you're most needed on this team right now, and where will you plant yourself?`,
+};
+
+function cgQuestions(rows, cmap, frictions, careMiss, stressed){
+  const corners = {Power:0,Promotion:0,Peace:0,Process:0,Balanced:0};
+  rows.forEach(r => corners[cmap[r.id]]++);
+  const team = [];
+  team.push(`Before roles: where does each of you sense God has gifted you to serve this team? Different parts, one body — name the part you think you are (Rom 12, 1 Cor 12).`);
+  if (corners.Power >= 2) team.push(`You have several natural leaders here. Who carries the final call on what — and how will you submit to one another so you're not competing for the wheel?`);
+  if (corners.Power === 0) team.push(`No one here is a natural take-charge driver. Who will step up to make the call when it's needed, and how will the rest of you get behind them?`);
+  if (corners.Process === 0) team.push(`No one here naturally owns detail, follow-through and quality. Who will pick that up as an act of service, even though it isn't their instinct?`);
+  if (corners.Promotion + corners.Peace === 0) team.push(`This team leans strongly task-first. Who will pay attention to how people are actually doing, not just what's getting done?`);
+  if (corners.Peace + corners.Process >= rows.length - 1 && rows.length >= 3) team.push(`You're careful and thorough, which can also be slow. How will you help each other decide and act, and not just keep deliberating?`);
+  if (corners.Power + corners.Promotion >= rows.length - 1 && rows.length >= 3) team.push(`You bring a lot of drive and energy. How will you slow down enough to include the quieter voices and finish what you start?`);
+  if (careMiss.includes("Refining")) team.push(`No one here naturally catches flaws before things go out. How will you build in a check so quality doesn't slip?`);
+  if (careMiss.includes("Engaging")) team.push(`You're strong on ideas but light on execution. Who will make sure things actually get finished and shipped?`);
+  // conflict posture
+  const dConf = r => ["Collaborating","Accommodating","Compromising","Avoiding","Competing"].map(s=>[s,F(r,s)??0]).sort((a,b)=>b[1]-a[1])[0][0];
+  const conf = rows.map(dConf);
+  const peaceKeepers = conf.filter(c => c==="Avoiding"||c==="Accommodating").length;
+  const competers = conf.filter(c => c==="Competing").length;
+  if (peaceKeepers >= Math.ceil(rows.length/2)) team.push(`This team tends to keep the peace. How will you make sure real disagreements surface and get spoken — in love — instead of going underground?`);
+  if (competers >= 2) team.push(`There are strong wills here. How will you fight fair and stay for one another when you disagree?`);
+  team.push(`What is this team actually for in this season — and how does each person's part serve that calling?`);
+  return { team, corners };
+}
+
+function buildConversationGuide(rows, cmap, frictions, careMiss, stressed){
+  const { team } = cgQuestions(rows, cmap, frictions, careMiss, stressed);
+  const place = rows.map(r => (CG_PLACE[cmap[r.id]] || CG_PLACE.Balanced)(firstName(r)));
+  const pairs = (frictions||[]).map(p =>
+    `${firstName(p.a)} and ${firstName(p.b)} — you're wired differently (${CORNER_TAG[p.ca]} vs ${CORNER_TAG[p.cb]}). How will you handle it when those pull against each other, and what will you each assume about the other's intent?`);
+  const closing = [
+    `What can this team count on me for?`,
+    `Where do I most need to grow — and will I let you speak into that?`,
+    `How do I want to be told when I'm dropping the ball or overstepping?`,
+    `How will we cover for one another when someone is weak, stretched, or having a hard season? (Bear one another's burdens.)`,
+  ];
+  const ol = arr => `<ol class="cg-list">${arr.map(q=>`<li>${q}</li>`).join("")}</ol>`;
+  return `
+    <div class="rep-sec cg">
+      <h3>Team conversation guide</h3>
+      <p class="rsub">Discussion questions for a kickoff or offsite — the assessment surfaces tendencies; the team answers these together as you take up your places. <button class="cg-copy" id="cgCopy">Copy guide</button></p>
+      <div class="cg-block"><h5>For the whole team</h5>${ol(team)}</div>
+      <div class="cg-block"><h5>Each person's place</h5>${ol(place)}</div>
+      ${pairs.length?`<div class="cg-block"><h5>How key pairs hold their places together</h5>${ol(pairs)}</div>`:""}
+      <div class="cg-block"><h5>Closing round — each person answers aloud</h5>${ol(closing)}</div>
+    </div>`;
+}
+
+function copyGuide(rows, cmap, frictions, careMiss, stressed){
+  const { team } = cgQuestions(rows, cmap, frictions, careMiss, stressed);
+  const place = rows.map(r => (CG_PLACE[cmap[r.id]] || CG_PLACE.Balanced)(firstName(r)));
+  const pairs = (frictions||[]).map(p => `${firstName(p.a)} and ${firstName(p.b)} — wired differently (${CORNER_TAG[p.ca]} vs ${CORNER_TAG[p.cb]}). How will you handle it when those pull against each other?`);
+  const closing = ["What can this team count on me for?","Where do I most need to grow — and will I let you speak into that?","How do I want to be told when I'm dropping the ball or overstepping?","How will we cover for one another when someone is weak or stretched?"];
+  const sec = (t, arr) => `${t}\n` + arr.map((q,i)=>`  ${i+1}. ${q}`).join("\n");
+  const text = ["TEAM CONVERSATION GUIDE\n", sec("For the whole team:", team), "", sec("Each person's place:", place),
+    pairs.length?"\n"+sec("How key pairs hold their places together:", pairs):"", "", sec("Closing round — each person answers aloud:", closing)].filter(Boolean).join("\n");
+  const btn = $("cgCopy");
+  navigator.clipboard.writeText(text).then(()=>{ if(btn){ const t=btn.textContent; btn.textContent="Copied ✓"; setTimeout(()=>btn.textContent=t,1600); } })
+    .catch(()=>{ if(btn) btn.textContent="Copy failed"; });
 }
 
 /* ================= ROLE FIT =================
