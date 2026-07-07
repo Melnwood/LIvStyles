@@ -554,6 +554,7 @@
 <script>
 const ENDPOINT = "/.netlify/functions/livstyle";
 let ALL = [];        // records visible to this leader
+let ALL_ALLACCESS = false;
 let VIEW = [];       // after country filter
 let sortKey = "Full Name", sortDir = 1;
 let activeId = null;
@@ -640,16 +641,10 @@ function startApp(data){
   ALL = data.records;
   $("whoName").textContent = data.name;
   $("whoRole").textContent = data.role || (data.allAccess ? "All access" : "");
-  // country selector
+  // country selector — only countries that currently have active people
+  ALL_ALLACCESS = data.allAccess === true;
   const sel = $("countrySel");
-  const countries = data.allowedCountries || [];
-  const opts = (data.allAccess || countries.length > 1) ? ["All countries", ...countries] : countries;
-  sel.innerHTML = opts.map(c => `<option>${c}</option>`).join("");
-  sel.style.display = opts.length > 1 ? "" : "none";
-  if (opts.length <= 1 && countries.length === 1){
-    document.querySelector(".scopebar .eyebrow").textContent = "Showing";
-    sel.insertAdjacentHTML("beforebegin", `<strong style="font-size:15px">${countries[0]}</strong>`);
-  }
+  rebuildCountrySelect();
   sel.addEventListener("change", applyFilter);
   $("search").addEventListener("input", renderTable);
   $("bulkToggle").addEventListener("click", toggleBulk);
@@ -680,8 +675,27 @@ function startApp(data){
   document.getElementById("loginView").style.display = "none";
 }
 
+function activeCountries(){
+  return [...new Set(ALL.filter(r => statusOf(r) === "Active").map(r => r.Country).filter(Boolean))].sort();
+}
+function rebuildCountrySelect(){
+  const sel = $("countrySel"); const cur = sel.value;
+  const countries = activeCountries();
+  const showAll = ALL_ALLACCESS || countries.length > 1;
+  const opts = showAll ? ["All countries", ...countries] : countries;
+  sel.innerHTML = opts.map(c => `<option>${c}</option>`).join("");
+  sel.style.display = opts.length > 1 ? "" : "none";
+  const oldStrong = document.querySelector(".scopebar strong"); if (oldStrong) oldStrong.remove();
+  if (!showAll && countries.length === 1){
+    document.querySelector(".scopebar .eyebrow").textContent = "Showing";
+    sel.insertAdjacentHTML("beforebegin", `<strong style="font-size:15px">${countries[0]}</strong>`);
+  }
+  sel.value = opts.includes(cur) ? cur : (opts[0] || "");
+}
+
 function applyFilter(){
   const sel = $("countrySel");
+  rebuildCountrySelect();
   const pick = sel.value || (sel.options[0] && sel.options[0].value);
   VIEW = (!pick || pick === "All countries") ? ALL.slice() : ALL.filter(r => r.Country === pick);
   typeFilter = null;
