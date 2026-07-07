@@ -72,6 +72,23 @@ async function airtableUpdate(table, id, fields) {
   return res.json();
 }
 
+async function airtableUpdateMany(table, ids, fields) {
+  const url = `${API}/${BASE_ID}/${encodeURIComponent(table)}`;
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50).map((id) => ({ id, fields }));
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${PAT}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ records: batch, typecast: true }),
+    });
+    if (!res.ok) {
+      let detail = ""; try { detail = (await res.text()).slice(0, 400); } catch {}
+      const err = new Error(`Bulk update failed (${res.status}). ${detail}`);
+      err.status = res.status; throw err;
+    }
+  }
+}
+
 function esc(v) { return String(v).replace(/'/g, "\\'"); }
 
 async function findLeader(login, password) {
@@ -135,14 +152,17 @@ exports.handler = async (event) => {
     }
   }
 
-  // ---- Set a person's status (active / inactive) ----
+  // ---- Set status (active / inactive), one or many ----
   if (action === "status") {
     if (leader.fields["Can Add"] !== true) return json(403, { error: "This account isn't allowed to change status." });
-    const id = body.id, status = body.status;
-    if (!id || (status !== "Active" && status !== "Inactive")) return json(400, { error: "Bad status request." });
+    const status = body.status;
+    if (status !== "Active" && status !== "Inactive") return json(400, { error: "Bad status request." });
+    const ids = Array.isArray(body.ids) ? body.ids : (body.id ? [body.id] : []);
+    if (!ids.length) return json(400, { error: "No records selected." });
     try {
-      await airtableUpdate(ASSESSMENTS_TABLE, id, { Status: status });
-      return json(200, { ok: true, id, status });
+      if (ids.length === 1) await airtableUpdate(ASSESSMENTS_TABLE, ids[0], { Status: status });
+      else await airtableUpdateMany(ASSESSMENTS_TABLE, ids, { Status: status });
+      return json(200, { ok: true, ids, status, count: ids.length });
     } catch (e) {
       return json(502, { error: "Couldn't update status. " + e.message });
     }

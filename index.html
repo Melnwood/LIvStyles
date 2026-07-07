@@ -106,6 +106,21 @@
   .statusseg button:hover{background:#faf8f3}
   .statusseg button.on{background:var(--green); color:#fff}
   tr.inactive td{opacity:.5}
+  .bulk-toggle{background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:12.5px; color:var(--muted); margin-left:10px}
+  .bulk-toggle:hover{border-color:var(--green-soft); color:var(--ink)}
+  .bulk-toggle.on{background:var(--green); color:#fff; border-color:var(--green)}
+  .bulk-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--green-wash); border:1px solid #dbe6df; border-radius:10px; padding:10px 12px; margin-bottom:12px}
+  .bulk-n{font-size:13px}
+  .bulk-act{border:none; border-radius:7px; padding:7px 13px; font-size:12.5px; font-weight:600; color:#fff}
+  .bulk-act.on-green{background:var(--green)} .bulk-act.on-green:hover{background:#183c31}
+  .bulk-act.on-gray{background:#8a8880} .bulk-act.on-gray:hover{background:#6d6b62}
+  .bulk-sep{width:1px; height:20px; background:#cddbd2}
+  .bulk-lite{background:none; border:1px solid var(--line); border-radius:7px; padding:6px 11px; font-size:12px; color:var(--ink)}
+  .bulk-lite:hover{border-color:var(--green-soft)}
+  .bulk-msg{font-size:12.5px; color:var(--muted)}
+  .bulk-msg.ok{color:var(--green)} .bulk-msg.err{color:#9a2f24}
+  tbody tr.sel{background:var(--green-wash)}
+  .rowcheck{display:inline-block; width:16px; color:var(--green); font-weight:700}
   tr.inactive td:first-child::after{content:"inactive"; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:8px; opacity:1}
   .dstatus{margin:10px 0 4px}
   .statbtn{border:1px solid var(--line); background:#fff; border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:500; display:inline-flex; align-items:center; gap:8px}
@@ -247,7 +262,11 @@
   /* team */
   .team-help{font-size:13.5px; color:var(--muted); margin:0 0 14px}
   .team-count{font-size:12.5px; color:var(--muted); margin-bottom:8px}
-  .team-picker{display:flex; flex-wrap:wrap; gap:8px; max-height:230px; overflow-y:auto; padding:2px; margin-bottom:16px}
+  .team-controls{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap}
+  .team-controls .statusseg{margin-left:0}
+  .team-controls .team-count{margin-bottom:0}
+  .team-picker{display:flex; flex-wrap:wrap; gap:8px; max-height:340px; overflow-y:auto; padding:2px; margin-bottom:16px}
+  .team-pick-count{flex-basis:100%; font-size:11.5px; color:var(--muted); position:sticky; top:0; background:var(--surface); padding:2px 0 6px}
   .team-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; background:#fff; user-select:none}
   .team-chip:hover{border-color:var(--green-soft)}
   .team-chip.on{background:var(--green); color:#fff; border-color:var(--green)}
@@ -426,8 +445,10 @@
             <button data-s="Inactive">Inactive</button>
             <button data-s="All">All</button>
           </div>
+          <button class="bulk-toggle" id="bulkToggle" style="display:none">Bulk status</button>
           <span id="typeFilterBar" class="tfbar" style="display:none"></span>
         </div>
+        <div class="bulk-bar" id="bulkBar" style="display:none"></div>
         <div class="tablewrap">
           <table>
             <thead>
@@ -466,7 +487,14 @@
         <div class="body">
           <p class="team-help">Pick up to 10 people, then read how the team is wired — who should drive, who fills which role, and where friction is likely.</p>
           <input id="teamSearch" placeholder="Search to add…" autocomplete="off" style="margin-bottom:12px" />
-          <div class="team-count"><span id="teamCount">0</span> of 10 selected</div>
+          <div class="team-controls">
+            <div class="statusseg" id="teamStatusSeg">
+              <button data-s="Active" class="on">Active</button>
+              <button data-s="Inactive">Inactive</button>
+              <button data-s="All">All</button>
+            </div>
+            <span class="team-count"><span id="teamCount">0</span> of 10 selected</span>
+          </div>
           <div id="teamPicker" class="team-picker"></div>
           <button class="btn team-btn" id="teamAnalyze" disabled>Analyze team</button>
           <div id="teamResult"></div>
@@ -515,6 +543,8 @@ let sortKey = "Full Name", sortDir = 1;
 let activeId = null;
 let typeFilter = null;
 let statusFilter = "Active";
+let selectMode = false;
+let selected = new Set();
 let AUTH = null;
 let CAN_ADD = false;
 
@@ -606,6 +636,7 @@ function startApp(data){
   }
   sel.addEventListener("change", applyFilter);
   $("search").addEventListener("input", renderTable);
+  $("bulkToggle").addEventListener("click", toggleBulk);
   $("statusSeg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
     statusFilter = b.dataset.s;
     $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x===b));
@@ -619,6 +650,7 @@ function startApp(data){
   wireViews();
   CAN_ADD = data.canAdd === true;
   $("tabAdd").style.display = CAN_ADD ? "" : "none";
+  $("bulkToggle").style.display = CAN_ADD ? "" : "none";
   if (CAN_ADD) buildAddForm();
   $("login").value = ""; $("password").value = "";
   applyFilter();
@@ -681,17 +713,68 @@ function renderTable(){
   else bar.style.display="none";
   const tb = $("rows");
   tb.innerHTML = rows.map(r => `
-    <tr data-id="${r.id}" class="${r.id===activeId?'active':''} ${statusOf(r)==='Inactive'?'inactive':''}">
-      <td>${r["Full Name"]||"—"}</td>
+    <tr data-id="${r.id}" class="${r.id===activeId?'active':''} ${statusOf(r)==='Inactive'?'inactive':''} ${selectMode&&selected.has(r.id)?'sel':''}">
+      <td>${selectMode?`<span class="rowcheck">${selected.has(r.id)?'✓':''}</span>`:''}${r["Full Name"]||"—"}</td>
       <td>${r.Country||"—"}</td>
       <td><span class="pri"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></td>
       <td class="acc">${pct(r.Accuracy)}</td>
     </tr>`).join("");
   $("tableEmpty").style.display = rows.length ? "none" : "block";
-  tb.querySelectorAll("tr").forEach(tr => tr.addEventListener("click", () => openDrawer(tr.dataset.id)));
+  tb.querySelectorAll("tr").forEach(tr => tr.addEventListener("click", () => {
+    const id = tr.dataset.id;
+    if (selectMode){ selected.has(id) ? selected.delete(id) : selected.add(id); renderTable(); renderBulkBar(); }
+    else openDrawer(id);
+  }));
   document.querySelectorAll("th[data-k]").forEach(th => {
     th.querySelector(".arrow").textContent = th.dataset.k === sortKey ? (sortDir>0?"↑":"↓") : "";
   });
+  window._shownRows = rows; // for "select all shown"
+}
+
+function renderBulkBar(){
+  const bar = $("bulkBar");
+  if (!selectMode){ bar.style.display = "none"; return; }
+  bar.style.display = "";
+  const shown = (window._shownRows||[]).length;
+  bar.innerHTML = `
+    <span class="bulk-n"><b>${selected.size}</b> selected</span>
+    <button class="bulk-act on-green" data-a="Active">Mark Active</button>
+    <button class="bulk-act on-gray" data-a="Inactive">Mark Inactive</button>
+    <span class="bulk-sep"></span>
+    <button class="bulk-lite" data-a="all">Select all shown (${shown})</button>
+    <button class="bulk-lite" data-a="clear">Clear</button>
+    <span class="bulk-msg" id="bulkMsg"></span>`;
+  bar.querySelector('[data-a="all"]').addEventListener("click", () => { (window._shownRows||[]).forEach(r=>selected.add(r.id)); renderTable(); renderBulkBar(); });
+  bar.querySelector('[data-a="clear"]').addEventListener("click", () => { selected.clear(); renderTable(); renderBulkBar(); });
+  bar.querySelector('[data-a="Active"]').addEventListener("click", () => applyBulkStatus("Active"));
+  bar.querySelector('[data-a="Inactive"]').addEventListener("click", () => applyBulkStatus("Inactive"));
+}
+
+async function applyBulkStatus(status){
+  const ids = [...selected];
+  const msg = $("bulkMsg");
+  if (!ids.length){ if(msg){ msg.className="bulk-msg err"; msg.textContent="Select some people first."; } return; }
+  if (msg){ msg.className="bulk-msg"; msg.textContent=`Updating ${ids.length}…`; }
+  try {
+    const res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ action:"status", login:AUTH.login, password:AUTH.password, ids, status }) });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || "Couldn't update.");
+    ids.forEach(id => { const r = ALL.find(x=>x.id===id); if(r) r.Status = status; });
+    selected.clear();
+    applyFilter();
+    renderBulkBar();
+    if (msg){ msg.className="bulk-msg ok"; msg.textContent=`Marked ${data.count} ${status}.`; }
+  } catch(err){ if(msg){ msg.className="bulk-msg err"; msg.textContent=err.message; } }
+}
+
+function toggleBulk(){
+  selectMode = !selectMode;
+  selected.clear();
+  $("bulkToggle").classList.toggle("on", selectMode);
+  $("bulkToggle").textContent = selectMode ? "Done" : "Bulk status";
+  if (selectMode) closeDrawer();
+  renderTable(); renderBulkBar();
 }
 
 /* ================= GUIDANCE ENGINE =================
@@ -1255,16 +1338,21 @@ const ROLES = [
   { name:"Peacemaker / mediator", sub:"defuses tension, finds common ground", keys:["Collaborating","Accommodating","Compromising"] },
 ];
 let TEAM = new Set();
+let teamStatus = "Active";
 function teamRows(){ return VIEW.filter(r=>TEAM.has(r.id)); }
 function renderTeamPicker(){
   const q=($("teamSearch").value||"").toLowerCase();
-  const rows=VIEW.filter(r=>!q||(r["Full Name"]||"").toLowerCase().includes(q)).slice(0,80);
+  const rows=VIEW.filter(r=>
+      (teamStatus==="All" || statusOf(r)===teamStatus) &&
+      (!q||(r["Full Name"]||"").toLowerCase().includes(q)))
+    .sort((a,b)=>(a["Full Name"]||"").localeCompare(b["Full Name"]||""));
   const full=TEAM.size>=10;
-  $("teamPicker").innerHTML = rows.map(r=>{
+  const head=`<div class="team-pick-count">${rows.length} ${rows.length===1?"person":"people"}${q?" matching":" in view"} · tap to add</div>`;
+  $("teamPicker").innerHTML = head + (rows.map(r=>{
     const on=TEAM.has(r.id); const dis=full&&!on;
     return `<span class="team-chip ${on?'on':''}" data-id="${r.id}" ${dis?'aria-disabled="true"':''}>
       ${r["Full Name"]} <span class="tc-c">${r["Primary Personality"]||""}</span></span>`;
-  }).join("") || `<span class="team-help">No one matches.</span>`;
+  }).join("") || `<span class="team-help">No one matches.</span>`);
   $("teamPicker").querySelectorAll(".team-chip").forEach(ch=>ch.addEventListener("click",()=>{
     const id=ch.dataset.id;
     if(TEAM.has(id)) TEAM.delete(id);
@@ -1605,6 +1693,14 @@ function wireViews(){
   $("cmpA").addEventListener("change",renderCompare);
   $("cmpB").addEventListener("change",renderCompare);
   $("teamSearch").addEventListener("input",renderTeamPicker);
+  $("teamStatusSeg").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    teamStatus=b.dataset.s;
+    $("teamStatusSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    // drop any selected people no longer visible under this filter
+    [...TEAM].forEach(id=>{ const r=VIEW.find(x=>x.id===id); if(r && teamStatus!=="All" && statusOf(r)!==teamStatus) TEAM.delete(id); });
+    $("teamCount").textContent=TEAM.size; $("teamAnalyze").disabled=TEAM.size<2;
+    renderTeamPicker();
+  }));
   $("teamAnalyze").addEventListener("click",renderTeam);
 }
 
