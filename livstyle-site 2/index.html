@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LivStyle — Assessment Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f6f4ef; --surface:#ffffff; --ink:#17201c; --muted:#6d6b62;
+    --line:#e4ded2; --line-soft:#efeade;
+    --green:#1f4d3f; --green-soft:#35705b; --green-wash:#eef2ee;
+    --ochre:#a9702a; --ochre-wash:#f6efe1;
+    --radius:14px; --shadow:0 1px 2px rgba(23,32,28,.04), 0 8px 24px rgba(23,32,28,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:Inter,system-ui,sans-serif; font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wm{font-family:Fraunces,Georgia,serif; font-weight:500; letter-spacing:-.01em}
+  .num{font-variant-numeric:tabular-nums}
+  button{font-family:inherit; cursor:pointer}
+  a{color:var(--green)}
+
+  /* ---------- Login ---------- */
+  #login{padding:56px 22px 48px}
+  .card{
+    max-width:390px; width:100%; margin:0 auto; background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius); box-shadow:var(--shadow); padding:34px 32px;
+  }
+  .brandmark{display:flex; align-items:baseline; gap:10px; margin-bottom:4px}
+  .brandmark .dot{width:9px; height:9px; border-radius:50%; background:var(--green); transform:translateY(-2px)}
+  .brandmark h1{font-family:Fraunces,serif; font-weight:600; font-size:30px; margin:0; letter-spacing:-.02em}
+  .card .sub{color:var(--muted); font-size:13.5px; margin:0 0 24px}
+  label{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin:0 0 6px}
+  .field{margin-bottom:16px}
+  input{
+    display:block; width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:10px;
+    background:#fcfbf8; font-family:inherit; font-size:15px; line-height:1.3; color:var(--ink); transition:border-color .15s, box-shadow .15s;
+  }
+  .card input{height:44px; padding:0 13px}
+  input:focus{outline:none; border-color:var(--green-soft); box-shadow:0 0 0 3px rgba(53,112,91,.14)}
+  .btn{
+    width:100%; padding:12px; border:none; border-radius:10px; background:var(--green); color:#fff;
+    font-weight:600; font-size:15px; transition:background .15s, transform .05s;
+  }
+  .btn:hover{background:#183c31}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.65; cursor:default}
+  .msg{font-size:13px; margin-top:14px; min-height:18px}
+  .msg.err{color:#9a2f24}
+  .hint{margin-top:18px; padding-top:16px; border-top:1px solid var(--line-soft); font-size:12px; color:var(--muted)}
+
+  /* ---------- App shell ---------- */
+  #app{display:none}
+  header.bar{
+    position:sticky; top:0; z-index:20; background:rgba(246,244,239,.86); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:14px 22px; display:flex; align-items:center; gap:16px;
+  }
+  header.bar .brandmark h1{font-size:21px}
+  header.bar .who{margin-left:auto; text-align:right; line-height:1.25}
+  header.bar .who .n{font-weight:600; font-size:14px}
+  header.bar .who .r{font-size:12px; color:var(--muted)}
+  .signout{background:none; border:1px solid var(--line); color:var(--ink); padding:8px 12px; border-radius:9px; font-size:13px; font-weight:500}
+  .signout:hover{background:#fff}
+  main{max-width:1080px; margin:0 auto; padding:26px 22px 80px}
+
+  .scopebar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px}
+  .scopebar .eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
+  select{
+    font-family:inherit; font-size:14px; padding:8px 30px 8px 12px; border:1px solid var(--line);
+    border-radius:9px; background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%236d6b62' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 10px center;
+    -webkit-appearance:none; appearance:none; color:var(--ink); cursor:pointer;
+  }
+  select:focus{outline:none; border-color:var(--green-soft); box-shadow:0 0 0 3px rgba(53,112,91,.14)}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px}
+  .stat{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px}
+  .stat .k{font-family:Fraunces,serif; font-weight:600; font-size:34px; line-height:1; letter-spacing:-.02em}
+  .stat .l{font-size:12.5px; color:var(--muted); margin-top:7px}
+
+  .grid{display:grid; grid-template-columns:1.05fr 1.35fr; gap:20px; align-items:start}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .panel > h2{font-family:Fraunces,serif; font-weight:600; font-size:16.5px; margin:0; padding:17px 20px 13px; border-bottom:1px solid var(--line-soft); letter-spacing:-.01em}
+  .panel .body{padding:16px 20px 20px}
+
+  /* distribution */
+  .dist{display:flex; flex-direction:column; gap:9px}
+  .dist .row{display:grid; grid-template-columns:118px 1fr 30px; align-items:center; gap:10px; font-size:13px; padding:3px 6px; margin:0 -6px; border-radius:7px; cursor:pointer}
+  .dist .row:hover{background:#faf8f3}
+  .dist .row.active{background:var(--green-wash)}
+  .dist .row:focus-visible{outline:2px solid var(--green-soft); outline-offset:1px}
+  .tfbar{display:inline-flex; align-items:center; gap:7px; margin-left:10px; font-size:12.5px; color:var(--green); background:var(--green-wash); border:1px solid #dbe6df; padding:5px 6px 5px 11px; border-radius:20px; white-space:nowrap}
+  .tfbar button{background:none; border:none; color:var(--green); font-size:15px; line-height:1; cursor:pointer; padding:0 4px; border-radius:50%}
+  .tfbar button:hover{background:#d6e5dd}
+  .dist .row .name{display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .swatch{width:9px; height:9px; border-radius:2px; flex:none}
+  .track{height:8px; background:var(--line-soft); border-radius:5px; overflow:hidden}
+  .fill{display:block; height:100%; border-radius:5px}
+  .dist .row .c{text-align:right; color:var(--muted); font-variant-numeric:tabular-nums}
+
+  /* table */
+  .tablewrap{overflow:auto}
+  .searchrow{padding:14px 20px; border-bottom:1px solid var(--line-soft)}
+  .searchrow input{padding:9px 12px}
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th{
+    text-align:left; font-weight:500; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--muted); padding:11px 20px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:var(--surface);
+    cursor:pointer; white-space:nowrap;
+  }
+  th .arrow{opacity:.45; font-size:10px}
+  td{padding:11px 20px; border-bottom:1px solid var(--line-soft); vertical-align:middle}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#faf8f3}
+  tbody tr.active{background:var(--green-wash)}
+  td .pri{display:inline-flex; align-items:center; gap:7px}
+  .chip{display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:500; white-space:nowrap}
+  .acc{font-variant-numeric:tabular-nums; color:var(--muted)}
+  .empty{padding:40px 20px; text-align:center; color:var(--muted); font-size:14px}
+
+  /* detail drawer */
+  .scrim{position:fixed; inset:0; background:rgba(23,32,28,.34); opacity:0; pointer-events:none; transition:opacity .2s; z-index:30}
+  .scrim.open{opacity:1; pointer-events:auto}
+  .drawer{
+    position:fixed; top:0; right:0; height:100%; width:min(520px,100%); background:var(--paper);
+    border-left:1px solid var(--line); box-shadow:-16px 0 40px rgba(23,32,28,.12);
+    transform:translateX(100%); transition:transform .24s cubic-bezier(.4,0,.2,1); z-index:31; overflow-y:auto;
+  }
+  .drawer.open{transform:translateX(0)}
+  .drawer .dhead{position:sticky; top:0; background:var(--paper); padding:22px 24px 16px; border-bottom:1px solid var(--line); z-index:2}
+  .drawer .dhead .close{position:absolute; top:18px; right:18px; background:none; border:1px solid var(--line); width:32px; height:32px; border-radius:8px; font-size:16px; color:var(--muted); line-height:1}
+  .drawer .dhead .close:hover{background:#fff; color:var(--ink)}
+  .drawer h3{font-family:Fraunces,serif; font-weight:600; font-size:24px; margin:0 40px 4px 0; letter-spacing:-.02em}
+  .drawer .meta{font-size:13px; color:var(--muted)}
+  .twin{display:flex; gap:22px; margin-top:16px; flex-wrap:wrap}
+  .twin .t{font-size:12px; color:var(--muted)}
+  .twin .t .v{display:block; margin-top:5px}
+  .dbody{padding:20px 24px 44px}
+  .grp{margin-bottom:22px}
+  .grp h4{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); margin:0 0 12px; font-weight:600}
+  .trait{margin-bottom:11px}
+  .trait .tl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px}
+  .trait .tl .val{color:var(--muted); font-variant-numeric:tabular-nums}
+  .bar{height:7px; background:var(--line-soft); border-radius:5px; overflow:hidden}
+  .bar > i{display:block; height:100%; background:var(--green-soft); border-radius:5px}
+  /* bipolar */
+  .bip{margin-bottom:13px}
+  .bip .lbls{display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; color:var(--muted)}
+  .bip .lbls b{color:var(--ink); font-weight:500}
+  .bipbar{position:relative; height:8px; background:var(--line-soft); border-radius:5px}
+  .bipbar .mid{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--line)}
+  .bipbar .dotv{position:absolute; top:50%; width:12px; height:12px; border-radius:50%; background:var(--green); transform:translate(-50%,-50%); box-shadow:0 0 0 3px #fff}
+  .dm{background:var(--ochre-wash); border:1px solid #ecdcc0; border-radius:10px; padding:12px 14px; font-size:13px}
+  .dm .k{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ochre); font-weight:600; margin-bottom:4px}
+
+  /* guidance block */
+  .guide{background:var(--green-wash); border:1px solid #dbe6df; border-radius:12px; padding:18px 20px; margin-bottom:22px}
+  .ghead{display:flex; align-items:center; gap:9px; font-family:Fraunces,serif; font-weight:600; font-size:17px; color:var(--green); margin-bottom:6px; letter-spacing:-.01em}
+  .ghead .gdot{width:8px; height:8px; border-radius:50%; background:var(--green)}
+  .gcap{font-size:12.5px; color:var(--muted); margin:0 0 4px; font-style:italic}
+  .gsec{margin-top:14px}
+  .gsec h5{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--green-soft); margin:0 0 7px; font-weight:600}
+  .gsec ul{margin:0; padding-left:18px}
+  .gsec li{font-size:13.5px; margin-bottom:6px; line-height:1.45}
+  .grf{font-size:13.5px; margin:0 0 6px}
+  .grf b{color:var(--green)}
+  .gnote{font-size:12.5px; color:var(--muted); margin:8px 0 0; font-style:italic; line-height:1.45}
+  .profhead{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 16px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+
+  /* tabs */
+  .tabs{display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid var(--line)}
+  .tabs button{background:none; border:none; padding:10px 16px; font-size:14px; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px}
+  .tabs button:hover{color:var(--ink)}
+  .tabs button.active{color:var(--green); border-bottom-color:var(--green)}
+
+  /* corner chip */
+  .corner{display:inline-block; padding:2px 9px; border-radius:6px; font-size:11.5px; font-weight:600; letter-spacing:.02em}
+  .corner.Power{background:#f6e3df; color:#a3442f}
+  .corner.Promotion{background:#f6efd6; color:#8a6b1e}
+  .corner.Peace{background:#e2efe6; color:#2f6d4f}
+  .corner.Process{background:#e0e9f2; color:#356088}
+  .corner.Balanced{background:#eceae4; color:#6d6b62}
+
+  /* compare */
+  .cmp-pick{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px}
+  .cmp-pick select{flex:1; min-width:160px}
+  .cmp-and{color:var(--muted); font-size:13px}
+  .cmp-head{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0}
+  .cmp-person{border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fcfbf8}
+  .cmp-person .nm{font-family:Fraunces,serif; font-weight:600; font-size:17px; letter-spacing:-.01em}
+  .cmp-person .mt{font-size:12.5px; color:var(--muted); margin-top:3px}
+  .cmp-person .cn{margin-top:8px}
+  .cmp-bridge{background:var(--green-wash); border:1px solid #dbe6df; border-radius:12px; padding:14px 16px; margin-bottom:18px}
+  .cmp-bridge h5{margin:0 0 6px; font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); font-weight:600}
+  .cmp-bridge p{margin:0; font-size:14px}
+  .cmp-dir{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  .cmp-col h5{font-size:13px; margin:0 0 8px; font-weight:600}
+  .cmp-col ul{margin:0 0 10px; padding-left:18px}
+  .cmp-col li{font-size:13px; margin-bottom:6px; line-height:1.45}
+  .cmp-msg{font-size:12.5px; font-style:italic; color:var(--muted)}
+  @media (max-width:720px){ .cmp-head,.cmp-dir{grid-template-columns:1fr} }
+
+  /* conflict comparison */
+  .cf-head,.cf-row{display:grid; grid-template-columns:118px 1fr 1fr; gap:12px; align-items:center}
+  .cf-head{margin-bottom:8px}
+  .cf-nm{font-weight:600; font-size:12.5px}
+  .cf-row{margin-bottom:8px; font-size:12.5px}
+  .cf-l{color:var(--ink)}
+  .cf-bar{display:flex; align-items:center; gap:8px}
+  .cf-bar .track{flex:1}
+  .cf-bar b{font-variant-numeric:tabular-nums; font-weight:400; color:var(--muted); min-width:34px; text-align:right; font-size:12px}
+
+  .pill{display:inline-block; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:5px; margin-right:8px; vertical-align:middle}
+  .pill.differ{background:#f6e3df; color:#a3442f}
+  .pill.aligned{background:#e2efe6; color:#2f6d4f}
+  .pill.mixed{background:#eceae4; color:#6d6b62}
+  .fitline{font-size:13.5px; line-height:1.5; margin:8px 0}
+  .flags{margin-bottom:16px}
+  .flagline{font-size:13px; margin:6px 0; line-height:1.5}
+
+  /* team */
+  .team-help{font-size:13.5px; color:var(--muted); margin:0 0 14px}
+  .team-count{font-size:12.5px; color:var(--muted); margin-bottom:8px}
+  .team-picker{display:flex; flex-wrap:wrap; gap:8px; max-height:230px; overflow-y:auto; padding:2px; margin-bottom:16px}
+  .team-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; background:#fff; user-select:none}
+  .team-chip:hover{border-color:var(--green-soft)}
+  .team-chip.on{background:var(--green); color:#fff; border-color:var(--green)}
+  .team-chip.on .tc-c{color:rgba(255,255,255,.8)}
+  .team-chip .tc-c{font-size:11px; color:var(--muted)}
+  .team-chip[aria-disabled="true"]{opacity:.4; cursor:default}
+  .team-btn{width:auto; padding:10px 20px}
+  .team-btn[disabled]{opacity:.5}
+  .rep-sec{margin-top:24px}
+  .rep-sec h3{font-family:Fraunces,serif; font-weight:600; font-size:18px; margin:0 0 4px; letter-spacing:-.01em}
+  .rep-sec .rsub{font-size:12.5px; color:var(--muted); margin:0 0 12px}
+  .rep-bal{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px}
+  .rep-bar{display:flex; height:30px; border-radius:8px; overflow:hidden; border:1px solid var(--line); margin-bottom:10px}
+  .rep-bar > span{display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff; min-width:34px}
+  .rep-note{font-size:13.5px; line-height:1.5; margin:6px 0}
+  .role-row{display:grid; grid-template-columns:172px 1fr; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-soft); align-items:start}
+  .role-row .rl{font-weight:600; font-size:13.5px}
+  .role-row .rl small{display:block; font-weight:400; color:var(--muted); font-size:12px; margin-top:2px}
+  .role-row .rp{font-size:13.5px}
+  .role-row .rp .who{font-weight:500}
+  .role-gap{color:#9a2f24; font-weight:500}
+  .friction{border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; font-size:13.5px}
+  .friction .fpair{font-weight:600; margin-bottom:4px}
+  .watch{background:var(--ochre-wash); border:1px solid #ecdcc0; border-radius:10px; padding:12px 14px; font-size:13.5px; margin-top:8px}
+  @media (max-width:720px){ .role-row{grid-template-columns:1fr; gap:2px} }
+
+  /* role fit */
+  .rf-preset{margin-bottom:18px}
+  .rf-preset label{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin-bottom:6px}
+  .rf-preset select{min-width:280px; max-width:100%}
+  .rf-dims{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin-bottom:20px}
+  .rf-dim label{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin-bottom:6px}
+  .rf-dim select{width:100%}
+  .rf-help{margin-top:7px}
+  .rf-help summary{font-size:12px; color:var(--green); cursor:pointer; list-style:none; display:inline-flex; align-items:center; gap:5px}
+  .rf-help summary::-webkit-details-marker{display:none}
+  .rf-help summary::before{content:"?"; display:inline-grid; place-items:center; width:15px; height:15px; border:1px solid var(--green-soft); border-radius:50%; font-size:10px; font-weight:600}
+  .rf-help[open] summary{margin-bottom:8px}
+  .rf-q{font-size:13px; color:var(--ink); margin:0 0 8px; font-style:italic}
+  .rf-opt{display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:9px; padding:8px 11px; margin-bottom:6px; cursor:pointer; font-size:12.5px; line-height:1.4}
+  .rf-opt:hover{border-color:var(--green-soft)}
+  .rf-opt.on{border-color:var(--green); background:var(--green-wash)}
+  .rf-opt b{display:inline-block; min-width:60px; color:var(--green)}
+  .rf-opt span{color:var(--muted)}
+  .rf-opt.on span{color:var(--ink)}
+  .rf-target{background:var(--green-wash); border:1px solid #dbe6df; border-radius:12px; padding:14px 18px; margin-bottom:20px}
+  .rf-target h5{margin:0 0 8px; font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); font-weight:600}
+  .rf-target p{margin:5px 0; font-size:13.5px}
+  .rf-list-head{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 8px}
+  .rf-row{display:grid; grid-template-columns:1fr 96px; gap:14px; align-items:center; padding:11px 8px; margin:0 -8px; border-bottom:1px solid var(--line-soft); border-radius:8px; cursor:pointer}
+  .rf-row:hover{background:#faf8f3}
+  .rf-nm{font-weight:500; font-size:14px}
+  .rf-meta{font-size:12px; color:var(--muted); margin-top:2px}
+  .rf-why{font-size:12.5px; color:var(--green-soft); margin-top:3px}
+  .rf-score{text-align:right}
+  .rf-score b{font-variant-numeric:tabular-nums; font-size:15px}
+  .rf-mbar{height:7px; background:var(--line-soft); border-radius:5px; overflow:hidden; margin-top:4px}
+  .rf-mbar > i{display:block; height:100%; background:var(--green-soft); border-radius:5px}
+  @media (max-width:640px){ .rf-dims{grid-template-columns:1fr} }
+
+  .loading{padding:60px 20px; text-align:center; color:var(--muted)}
+  .spin{width:22px; height:22px; border:2.5px solid var(--line); border-top-color:var(--green); border-radius:50%; margin:0 auto 12px; animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  @media (max-width:860px){
+    .grid{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr 1fr}
+    main{padding:20px 16px 70px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<section id="login">
+  <form class="card" id="loginForm" autocomplete="on">
+    <div class="brandmark"><span class="dot"></span><h1>LivStyle</h1></div>
+    <p class="sub">Personality assessment directory · Josiah Venture</p>
+    <div class="field">
+      <label for="login">Login</label>
+      <input id="login" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" />
+    </div>
+    <button class="btn" id="loginBtn" type="submit">Sign in</button>
+    <div class="msg" id="loginMsg"></div>
+    <p class="hint">You'll see the people in the countries assigned to you. Questions about access go to the People &amp; Culture team.</p>
+  </form>
+</section>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <header class="bar">
+    <div class="brandmark"><span class="dot"></span><h1 class="wm">LivStyle</h1></div>
+    <div class="who">
+      <div class="n" id="whoName"></div>
+      <div class="r" id="whoRole"></div>
+    </div>
+    <button class="signout" id="signout">Sign out</button>
+  </header>
+
+  <main>
+    <div class="scopebar">
+      <span class="eyebrow">Showing</span>
+      <select id="countrySel"></select>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button data-view="directory" class="active">Directory</button>
+      <button data-view="compare">Compare two</button>
+      <button data-view="team">Build a team</button>
+      <button data-view="role">Role fit</button>
+    </nav>
+
+    <section id="viewDirectory">
+    <div class="stats">
+      <div class="stat"><div class="k num" id="sPeople">0</div><div class="l">People assessed</div></div>
+      <div class="stat"><div class="k num" id="sTypes">0</div><div class="l">Distinct primary types</div></div>
+      <div class="stat"><div class="k num" id="sScope">0</div><div class="l" id="sScopeLbl">Countries in view</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>Primary personality mix</h2>
+        <div class="body"><div class="dist" id="dist"></div></div>
+      </div>
+
+      <div class="panel">
+        <h2>People</h2>
+        <div class="searchrow">
+          <input id="search" placeholder="Search by name…" autocomplete="off" />
+          <span id="typeFilterBar" class="tfbar" style="display:none"></span>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-k="Full Name">Name <span class="arrow"></span></th>
+                <th data-k="Country">Country <span class="arrow"></span></th>
+                <th data-k="Primary Personality">Primary <span class="arrow"></span></th>
+                <th data-k="Accuracy">Acc. <span class="arrow"></span></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div class="empty" id="tableEmpty" style="display:none">No one matches that search.</div>
+        </div>
+      </div>
+    </div>
+    </section>
+
+    <section id="viewCompare" style="display:none">
+      <div class="panel">
+        <h2>How these two work together</h2>
+        <div class="body">
+          <div class="cmp-pick">
+            <select id="cmpA"></select>
+            <span class="cmp-and">with</span>
+            <select id="cmpB"></select>
+          </div>
+          <div id="cmpResult"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewTeam" style="display:none">
+      <div class="panel">
+        <h2>Build a team</h2>
+        <div class="body">
+          <p class="team-help">Pick up to 10 people, then read how the team is wired — who should drive, who fills which role, and where friction is likely.</p>
+          <input id="teamSearch" placeholder="Search to add…" autocomplete="off" style="margin-bottom:12px" />
+          <div class="team-count"><span id="teamCount">0</span> of 10 selected</div>
+          <div id="teamPicker" class="team-picker"></div>
+          <button class="btn team-btn" id="teamAnalyze" disabled>Analyze team</button>
+          <div id="teamResult"></div>
+        </div>
+      </div>
+    </section>
+    <section id="viewRole" style="display:none">
+      <div class="panel">
+        <h2>Find the best fit for a role</h2>
+        <div class="body">
+          <p class="team-help">Describe what the position needs — pick a template or set the dials — and see who fits best. Scored against the same LivStyle traits, within your current country scope.</p>
+          <div class="rf-preset">
+            <label for="rfPreset">Start from a template</label>
+            <select id="rfPreset"></select>
+          </div>
+          <div id="rfDims" class="rf-dims"></div>
+          <div id="rfTarget"></div>
+          <div id="rfResults"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Person detail"></aside>
+
+<script>
+const ENDPOINT = "/.netlify/functions/livstyle";
+let ALL = [];        // records visible to this leader
+let VIEW = [];       // after country filter
+let sortKey = "Full Name", sortDir = 1;
+let activeId = null;
+let typeFilter = null;
+
+/* ---- personality palette (stable, cohesive muted set) ---- */
+const TYPES = ["Ambassador","Communicator","Designer","Discerner","Encourager","Examiner","Exhorter","Innovator","Instructor","Invalid","Motivator","Navigator","Pragmatist","Refiner","Researcher","Supporter","Visionary"];
+const PALETTE = ["#1f4d3f","#35705b","#5b8a6f","#7d7a3f","#a9702a","#c08a3e","#8a6d3b","#4a6d7c","#3f6d8a","#6b6a8f","#8a5f78","#a35d5d","#5f7a4a","#2f6d59","#7a8a5b","#9a8452","#587a6d"];
+const colorFor = (t) => { const i = TYPES.indexOf(t); return i >= 0 ? PALETTE[i % PALETTE.length] : "#8a8880"; };
+
+/* ---- trait groupings for the detail view ---- */
+const BIPOLAR = [
+  { g:"Processing blueprint", pairs:[
+    ["External","Internal"],["Intuitive","Concrete"],["Head","Heart"],["Spontaneous","Orderly"]
+  ]},
+];
+const WHY_PAIRS = { g:"Motivation · why (initiating vs responsive)", pairs:[
+  ["Activity","Affiliation"],["Power","Compliance"],["Attainment","Recognition"]
+]};
+const HOW_PAIRS = { g:"Motivation · how (initiating vs responsive)", pairs:[
+  ["Ideas","Direction"],["Freedom","Consistency"],["Self-Affirmed","Other-Affirmed"],["Task Completion","Prefers Process"]
+]};
+const SIMPLE = [
+  { g:"Fundamental needs", keys:["Significance","Control","Security"] },
+  { g:"Conflict management", keys:["Collaborating","Accommodating","Compromising","Avoiding","Competing"] },
+  { g:"C.A.R.E. mindset", keys:["Creative","Adaptive","Refining","Engaging"] },
+];
+const F = (r,k) => {
+  // fields arrive as full names; bipolar/simple use short labels that map to prefixed field names
+  const map = {
+    "External":"Processing Blueprint: External","Internal":"Processing Blueprint: Internal",
+    "Intuitive":"Processing Blueprint: Intuitive","Concrete":"Processing Blueprint: Concrete",
+    "Head":"Processing Blueprint: Head","Heart":"Processing Blueprint: Heart",
+    "Spontaneous":"Processing Blueprint: Spontaneous","Orderly":"Processing Blueprint: Orderly",
+    "Activity":"Motivation Why: Activity","Affiliation":"Motivation Why: Affiliation","Power":"Motivation Why: Power",
+    "Compliance":"Motivation Why: Compliance","Attainment":"Motivation Why: Attainment","Recognition":"Motivation Why: Recognition",
+    "Ideas":"Motivation How: Ideas","Direction":"Motivation How: Direction","Freedom":"Motivation How: Freedom",
+    "Consistency":"Motivation How: Consistency","Self-Affirmed":"Motivation How: Self-Affirmed","Other-Affirmed":"Motivation How: Other-Affirmed",
+    "Task Completion":"Motivation How: Task Completion","Prefers Process":"Motivation How: Prefers Process",
+    "Significance":"Fundamental Needs: Significance","Control":"Fundamental Needs: Control","Security":"Fundamental Needs: Security",
+    "Collaborating":"Conflict Mngmt: Collaborating","Accommodating":"Conflict Mngmt: Accommodating","Compromising":"Conflict Mngmt: Compromising",
+    "Avoiding":"Conflict Mngmt: Avoiding","Competing":"Conflict Mngmt: Competing",
+    "Creative":"C.A.R.E. Mindset: Creative","Adaptive":"C.A.R.E. Mindset: Adaptive","Refining":"C.A.R.E. Mindset: Refining","Engaging":"C.A.R.E. Mindset: Engaging",
+  };
+  const v = r[map[k] ?? k];
+  return typeof v === "number" ? v : null;
+};
+const pct = (v) => v == null ? "—" : Math.round(v * 100) + "%";
+
+/* ================= LOGIN ================= */
+const $ = (id) => document.getElementById(id);
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("loginBtn"), msg = $("loginMsg");
+  const login = $("login").value.trim(), password = $("password").value;
+  const fail = (m) => { msg.className = "msg err"; msg.textContent = m; btn.disabled = false; btn.textContent = "Sign in"; };
+  if (!login || !password) { fail("Enter your login and password."); return; }
+  btn.disabled = true; btn.textContent = "Signing in…"; msg.textContent = ""; msg.className = "msg";
+  let res;
+  try {
+    res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ login, password }) });
+  } catch (netErr) {
+    return fail("Couldn't reach the server. If you opened the file directly, it has to be deployed to Netlify first.");
+  }
+  if (res.status === 404) return fail("Login service not found (404). The Netlify function didn't deploy — index.html and the netlify/ folder must sit at the site root.");
+  let data = null, text = "";
+  try { text = await res.text(); data = JSON.parse(text); }
+  catch (parseErr) {
+    if (/<\/?html|page ?not ?found/i.test(text)) return fail("Login service not found — no function at /.netlify/functions/livstyle. Check the deploy structure.");
+    return fail("Unexpected response from the server (status " + res.status + "). Check the function logs in Netlify.");
+  }
+  if (res.status === 500) return fail(data.error || "Server error — most likely AIRTABLE_PAT isn't set. Add it in Netlify, then redeploy.");
+  if (!res.ok || !data.ok) return fail(data.error || "That login and password don't match, or the account is inactive.");
+  startApp(data);
+});
+
+function startApp(data){
+  ALL = data.records;
+  $("whoName").textContent = data.name;
+  $("whoRole").textContent = data.role || (data.allAccess ? "All access" : "");
+  // country selector
+  const sel = $("countrySel");
+  const countries = data.allowedCountries || [];
+  const opts = (data.allAccess || countries.length > 1) ? ["All countries", ...countries] : countries;
+  sel.innerHTML = opts.map(c => `<option>${c}</option>`).join("");
+  sel.style.display = opts.length > 1 ? "" : "none";
+  if (opts.length <= 1 && countries.length === 1){
+    document.querySelector(".scopebar .eyebrow").textContent = "Showing";
+    sel.insertAdjacentHTML("beforebegin", `<strong style="font-size:15px">${countries[0]}</strong>`);
+  }
+  sel.addEventListener("change", applyFilter);
+  $("search").addEventListener("input", renderTable);
+  document.querySelectorAll("th[data-k]").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+    renderTable();
+  }));
+  $("signout").addEventListener("click", () => location.reload());
+  wireViews();
+  $("login").value = ""; $("password").value = "";
+  applyFilter();
+  $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("login").style.display = "none";
+}
+
+function applyFilter(){
+  const sel = $("countrySel");
+  const pick = sel.value || (sel.options[0] && sel.options[0].value);
+  VIEW = (!pick || pick === "All countries") ? ALL.slice() : ALL.filter(r => r.Country === pick);
+  typeFilter = null;
+  renderStats(); renderDist(); renderTable(); initViews();
+}
+
+function renderStats(){
+  $("sPeople").textContent = VIEW.length;
+  $("sTypes").textContent = new Set(VIEW.map(r => r["Primary Personality"]).filter(Boolean)).size;
+  const scope = new Set(VIEW.map(r => r.Country).filter(Boolean));
+  $("sScope").textContent = scope.size;
+  $("sScopeLbl").textContent = scope.size === 1 ? "Country in view" : "Countries in view";
+}
+
+function renderDist(){
+  const counts = {};
+  VIEW.forEach(r => { const t = r["Primary Personality"]; if (t) counts[t] = (counts[t]||0)+1; });
+  const arr = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const max = arr.length ? arr[0][1] : 1;
+  $("dist").innerHTML = arr.map(([t,c]) => `
+    <div class="row ${t===typeFilter?'active':''}" data-type="${t}" role="button" tabindex="0" aria-pressed="${t===typeFilter}" title="Show the ${c} ${t}${c===1?'':'s'}">
+      <span class="name"><span class="swatch" style="background:${colorFor(t)}"></span>${t}</span>
+      <span class="track"><span class="fill" style="width:${Math.max(6,(c/max)*100)}%;background:${colorFor(t)}"></span></span>
+      <span class="c num">${c}</span>
+    </div>`).join("") || `<div class="empty">No assessments in view.</div>`;
+  const pick = (t)=>{ typeFilter = (typeFilter===t) ? null : t; renderDist(); renderTable(); };
+  $("dist").querySelectorAll(".row").forEach(row => {
+    row.addEventListener("click", () => pick(row.dataset.type));
+    row.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(row.dataset.type); } });
+  });
+}
+
+function renderTable(){
+  const q = $("search").value.trim().toLowerCase();
+  let rows = VIEW.filter(r => (!q || (r["Full Name"]||"").toLowerCase().includes(q)) && (!typeFilter || r["Primary Personality"]===typeFilter));
+  rows.sort((a,b) => {
+    let x = a[sortKey], y = b[sortKey];
+    if (sortKey === "Accuracy"){ x = x ?? -1; y = y ?? -1; return (x-y)*sortDir; }
+    return String(x??"").localeCompare(String(y??""))*sortDir;
+  });
+  // active-filter chip
+  const bar = $("typeFilterBar");
+  if(typeFilter){ bar.style.display=""; bar.innerHTML = `Showing <b style="margin:0 2px">${typeFilter}</b> · ${rows.length} <button title="Clear filter" aria-label="Clear filter">×</button>`;
+    bar.querySelector("button").addEventListener("click", () => { typeFilter=null; renderDist(); renderTable(); }); }
+  else bar.style.display="none";
+  const tb = $("rows");
+  tb.innerHTML = rows.map(r => `
+    <tr data-id="${r.id}" class="${r.id===activeId?'active':''}">
+      <td>${r["Full Name"]||"—"}</td>
+      <td>${r.Country||"—"}</td>
+      <td><span class="pri"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></td>
+      <td class="acc">${pct(r.Accuracy)}</td>
+    </tr>`).join("");
+  $("tableEmpty").style.display = rows.length ? "none" : "block";
+  tb.querySelectorAll("tr").forEach(tr => tr.addEventListener("click", () => openDrawer(tr.dataset.id)));
+  document.querySelectorAll("th[data-k]").forEach(th => {
+    th.querySelector(".arrow").textContent = th.dataset.k === sortKey ? (sortDir>0?"↑":"↓") : "";
+  });
+}
+
+/* ================= GUIDANCE ENGINE =================
+   Translates the numeric profile into plain-language notes, grounded in the
+   LivStyle training manual (Processing Blueprint, Motivation Why/How as
+   Initiating<->Responsive pairs, Fundamental Needs, Conflict, C.A.R.E.,
+   Decision-Making, and Counter-Intuitive "strength carried too far").
+   Deterministic: fast, free, consistent across everyone. */
+function firstName(r){ return (r["First Name"] || (r["Full Name"]||"").split(" ")[0] || "They"); }
+function topKeys(r, keys, n){ return keys.map(k=>[k,F(r,k)??0]).sort((p,q)=>q[1]-p[1]).slice(0,n); }
+// dominant pole of a bipolar pair; "bal" when within margin
+function dom(r,a,b,margin){ margin=margin??0.12; const A=F(r,a),B=F(r,b);
+  if(A==null&&B==null) return null; const x=A??0,y=B??0,gap=Math.abs(x-y);
+  return {side: gap<margin?"bal":(x>y?"a":"b"), a,b,A,B,gap, strong:gap>=0.4}; }
+
+function decisionRead(r){
+  const s=r["Decision Making"]||""; if(!s) return null;
+  const outward=/Outward/i.test(s), inward=/Inward/i.test(s);
+  const careful=/Careful/i.test(s), rapid=/Rapid/i.test(s);
+  const color=(s.match(/Green|Yellow|Orange|Red/i)||[])[0];
+  const parts=[];
+  if(outward&&inward) parts.push("weighs decisions both out loud and privately");
+  else if(outward) parts.push("thinks decisions through out loud, with others");
+  else if(inward) parts.push("works decisions out internally before saying much");
+  if(careful&&rapid) parts.push("can move deliberately or quickly as the moment needs");
+  else if(careful) parts.push("deliberate — wants time to weigh it");
+  else if(rapid) parts.push("decides quickly");
+  if(!parts.length) return null;
+  let flex="";
+  const c=(color||"").toLowerCase();
+  if(c==="green") flex=" The style is flexible, so they can adapt to the situation.";
+  else if(c==="yellow") flex=" Fairly defined — some flex, but a clear default.";
+  else if(c==="orange") flex=" A strongly defined style — expect little flexing.";
+  else if(c==="red") flex=" A very fixed style — they'll rarely move off it, so plan around it.";
+  return `Decides by ${parts.join(", ")}.${flex}`;
+}
+
+function advise(r){
+  const N = firstName(r);
+
+  // -- Snapshot: primary vs under-pressure --
+  const snap=[];
+  const pp=r["Primary Personality"], up=r["Personality Under Pressure"];
+  if(pp && up && up!==pp) snap.push(`Runs as <b>${pp}</b>, but under pressure shifts toward <b>${up}</b> — watch for that shift when ${N} is stretched.`);
+  else if(pp) snap.push(`<b>${pp}</b> — and holds that same style under pressure, so ${N} stays consistent when stretched.`);
+
+  // -- How to communicate & decide (Processing Blueprint) --
+  const comm=[];
+  const ei=dom(r,"External","Internal");
+  if(ei){ if(ei.side==="a") comm.push(`Energized by interaction and thinks out loud — give room to talk it through; first reactions aren't final answers.`);
+    else if(ei.side==="b") comm.push(`Energized by reflection and processes privately — send things ahead and leave space before asking for a call.`);
+    else comm.push(`Comfortable processing both out loud and on their own.`); }
+  const ic=dom(r,"Intuitive","Concrete");
+  if(ic){ if(ic.side==="a") comm.push(`Takes in the big picture first — open with the why and the vision, then the detail.`);
+    else if(ic.side==="b") comm.push(`Wants facts and specifics — bring concrete examples and proven detail.`); }
+  const hh=dom(r,"Head","Heart");
+  if(hh){ if(hh.side==="a") comm.push(`Decides by logic — make the reasoned, objective case.`);
+    else if(hh.side==="b") comm.push(`Decides by values and impact on people — name who it affects, not just the numbers.`); }
+  const so=dom(r,"Spontaneous","Orderly");
+  if(so){ if(so.side==="b") comm.push(`Wants structure and closure — bring an agenda and flag changes early.`);
+    else if(so.side==="a") comm.push(`Stays flexible and open — over-structuring can feel constraining.`); }
+  const dr=decisionRead(r); if(dr) comm.push(dr);
+
+  // -- What motivates them (Why + How pairs, Fundamental need) --
+  const mot=[];
+  const whyText={Activity:"a fast pace and momentum",Affiliation:"relationships and belonging",
+    Power:"influence and shaping direction",Compliance:"clear standards and doing it right",
+    Attainment:"reaching the goal itself",Recognition:"being appreciated for the effort"};
+  const drivers=[dom(r,"Activity","Affiliation"),dom(r,"Power","Compliance"),dom(r,"Attainment","Recognition")]
+    .filter(p=>p&&p.side!=="bal").map(p=>whyText[p.side==="a"?p.a:p.b]);
+  if(drivers.length) mot.push(`Driven most by ${drivers.join(", ")}.`);
+  const fc=dom(r,"Freedom","Consistency");
+  if(fc&&fc.side==="a") mot.push(`Needs room to operate — give the goal, not the method.`);
+  else if(fc&&fc.side==="b") mot.push(`Runs on stability and routine — change costs ${N}; give lead time.`);
+  const idr=dom(r,"Ideas","Direction");
+  if(idr&&idr.side==="a") mot.push(`Wants to help shape the idea — invite input early.`);
+  else if(idr&&idr.side==="b") mot.push(`Wants clear direction — ambiguity slows them down.`);
+  const aff=dom(r,"Self-Affirmed","Other-Affirmed");
+  if(aff&&aff.side==="b") mot.push(`Needs affirmation from others — specific encouragement keeps ${N} going.`);
+  else if(aff&&aff.side==="a"&&aff.strong) mot.push(`Internally anchored — won't need much external validation.`);
+  const tc=dom(r,"Task Completion","Prefers Process");
+  if(tc&&tc.side==="a") mot.push(`Driven to finish — protect ${N} from endless open loops.`);
+  else if(tc&&tc.side==="b") mot.push(`Values the process itself — don't rush past the work.`);
+  const need=topKeys(r,["Significance","Control","Security"],1)[0];
+  const needText={Significance:"their contribution clearly matters and is acknowledged",
+    Control:"they have clarity and a measure of control over their own work",
+    Security:"things feel stable and predictable"};
+  if(need&&need[1]>0.34) mot.push(`Feels most secure when ${needText[need[0]]}.`);
+
+  // -- In conflict + stress signal (manual's Special Note) --
+  const conf=[];
+  const cmap={Collaborating:`Works toward win-win and will engage directly — bring ${N} into hard conversations.`,
+    Accommodating:`Tends to yield to keep the peace and may go quiet — ask directly for their real view.`,
+    Compromising:`Looks for the middle ground — pragmatic, but check a quick settle is actually right.`,
+    Avoiding:`Tends to sidestep conflict — raise issues gently and privately, don't corner ${N} in a group.`,
+    Competing:`Meets conflict head-on — be direct and clear; ${N} respects a firm position.`};
+  const cf=topKeys(r,["Collaborating","Accommodating","Compromising","Avoiding","Competing"],1)[0];
+  if(cf&&cf[1]>0) conf.push(cmap[cf[0]]);
+  const needVals=["Significance","Control","Security"].map(k=>F(r,k)).filter(v=>v!=null);
+  const balanced = needVals.length===3 && needVals.every(v=>v>0) && (Math.max(...needVals)-Math.min(...needVals))<0.15;
+  if(balanced) conf.push(`<b>Stress check:</b> the three fundamental needs are running nearly equal — the pattern LivStyle links to elevated stress. Worth a gentle check-in on how ${N} is doing.`);
+
+  // -- Problem-solving (C.A.R.E.) --
+  const care=[];
+  const careMotto={Creative:"generating several ideas where others see one",Adaptive:"seeing potential early and finding a way to make it work",
+    Refining:"catching flaws and getting it right the first time",Engaging:"driving a concept through to completion"};
+  const cHi=topKeys(r,["Creative","Adaptive","Refining","Engaging"],1)[0];
+  const cLo=topKeys(r,["Creative","Adaptive","Refining","Engaging"],4).slice(-1)[0];
+  if(cHi&&cHi[1]>0) care.push(`Strongest problem-solving gift is <b>${cHi[0]}</b> — ${careMotto[cHi[0]]}.`);
+  const clashOpp={Refining:"Engaging",Engaging:"Refining",Creative:"Refining"};
+  if(cHi&&clashOpp[cHi[0]]) care.push(`May rub against strong <b>${clashOpp[cHi[0]]}</b> people — different tempo on when something's "ready."`);
+  if(cLo&&cHi&&cLo[0]!==cHi[0]) care.push(`Lowest is <b>${cLo[0]}</b> — ${N} will value a teammate who brings that.`);
+
+  // -- Growth edge (Counter-Intuitive Management: strength carried too far -> opposite-positive) --
+  const growthRules=[
+    ["Power",0.7,"takes charge naturally","overbearing or controlling","empowering others and sharing control"],
+    ["Competing",0.6,"direct and assertive","domineering or blunt","patience, collaboration, and gentleness"],
+    ["Orderly",0.7,"structured and precise","rigid or inflexible","flexibility and openness to new ideas"],
+    ["Refining",0.7,"sharp on detail and quality","critical or perfectionistic","valuing \u201cgood enough\u201d and the big picture"],
+    ["Concrete",0.72,"grounded in facts","closed to the big picture","openness to possibility and vision"],
+    ["Affiliation",0.72,"warm and relational","reluctant to deliver hard truths","being direct and forthright"],
+    ["Avoiding",0.55,"a peace-keeper","conflict-avoidant, so issues get buried","addressing issues and setting boundaries"],
+    ["Accommodating",0.5,"accommodating","passive or a push-over","assertiveness and holding their own view"],
+    ["Spontaneous",0.72,"flexible and high-energy","short on follow-through","order and bringing things to closure"],
+    ["External",0.75,"quick to think out loud","dominating the airtime","listening and leaving space for others"],
+    ["Engaging",0.72,"driven to execute","launching before it's fully ready","refining and planning first"],
+    ["Recognition",0.72,"energized by appreciation","needing the spotlight","internal validation"],
+  ];
+  const growth = growthRules.map(g=>[F(r,g[0]),g]).filter(x=>x[0]!=null&&x[0]>=x[1][1])
+    .sort((a,b)=>b[0]-a[0]).slice(0,2)
+    .map(x=>{const g=x[1]; return `Strength: <b>${g[2]}</b>. Carried too far it can read as <b>${g[3]}</b> — the growth edge is cultivating ${g[4]}.`;});
+
+  // -- Role-fit signals --
+  const clusters = {
+    "Execution & quality":["Orderly","Task Completion","Refining","Compliance"],
+    "Vision & innovation":["Intuitive","Ideas","Creative"],
+    "People & relationships":["External","Affiliation","Engaging","Heart"],
+    "Analysis & standards":["Head","Concrete","Compliance","Refining"],
+    "Drive & leadership":["Power","Attainment","Competing","Self-Affirmed"],
+    "Adaptability":["Adaptive","Spontaneous","Freedom"],
+  };
+  const clusterScore = Object.entries(clusters).map(([name,ks])=>{
+    const vals=ks.map(k=>F(r,k)).filter(v=>v!=null); const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    return [name,avg];
+  }).sort((a,b)=>b[1]-a[1]);
+  const strengths = clusterScore.slice(0,3).filter(c=>c[1]>=0.45).map(c=>c[0]);
+  const drainRules = [
+    ["Freedom",0.6,"micromanagement and rigid process"],["Consistency",0.6,"constant change and shifting priorities"],
+    ["Internal",0.6,"nonstop interaction with no quiet time"],["Orderly",0.6,"ambiguity and last-minute chaos"],
+    ["Affiliation",0.6,"isolation or purely transactional work"],["Ideas",0.6,"pure execution with no room to shape"],
+    ["Task Completion",0.6,"open-ended work that never closes"],["Concrete",0.65,"vague direction with no specifics"],
+  ];
+  const drains = drainRules.map(([k,t,txt])=>[F(r,k),t,txt]).filter(x=>x[0]!=null&&x[0]>=x[1])
+    .sort((a,b)=>b[0]-a[0]).slice(0,3).map(x=>x[2]);
+
+  return { N, snap, comm, mot, conf, care, growth, strengths, drains };
+}
+
+function guidanceBlock(r){
+  const a = advise(r);
+  const list = (arr) => arr.map(t=>`<li>${t}</li>`).join("");
+  const sec = (title, arr) => arr.length ? `<div class="gsec"><h5>${title}</h5><ul>${list(arr)}</ul></div>` : "";
+  return `
+    <div class="guide">
+      <div class="ghead"><span class="gdot"></span>Working with ${a.N}</div>
+      <p class="gcap">Practical read of the profile — how to engage ${a.N}, and where their role may fit or chafe.</p>
+      ${sec("At a glance", a.snap)}
+      ${sec("How to communicate & decide", a.comm)}
+      ${sec(`What motivates ${a.N}`, a.mot)}
+      ${sec("In conflict", a.conf)}
+      ${sec("Problem-solving (C.A.R.E.)", a.care)}
+      ${sec("Growth edge", a.growth)}
+      <div class="gsec">
+        <h5>Role-fit signals</h5>
+        ${a.strengths.length?`<p class="grf"><b>Natural strengths:</b> ${a.strengths.join(" · ")}</p>`:""}
+        ${a.drains.length?`<p class="grf"><b>Likely drains:</b> ${a.drains.join("; ")}</p>`:""}
+        <p class="gnote">Hold these against ${a.N}'s actual responsibilities. Broad overlap points to a good fit; if their day-to-day runs against these, that mismatch often shows up as friction or fatigue.</p>
+      </div>
+    </div>`;
+}
+
+/* ================= FOUR-CORNER STYLE (derived from traits) =================
+   The manual's Personality Style square: Power / Promotion / Peace / Process.
+   Axis 1 people<->task (Heart<->Head family); Axis 2 fast<->steady.
+   Derived from trait data and labelled as such (no official 17-type->corner key). */
+function mean(arr){ const v=arr.filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; }
+function styleCorner(r){
+  const people = mean([F(r,"Heart"),F(r,"Affiliation"),F(r,"Recognition"),F(r,"Other-Affirmed"),F(r,"Accommodating"),F(r,"Engaging"),F(r,"Collaborating")]);
+  const task   = mean([F(r,"Head"),F(r,"Power"),F(r,"Attainment"),F(r,"Task Completion"),F(r,"Competing"),F(r,"Refining")]);
+  const fast   = mean([F(r,"Spontaneous"),F(r,"Activity"),F(r,"External"),F(r,"Competing"),F(r,"Ideas"),F(r,"Freedom"),F(r,"Creative"),F(r,"Engaging")]);
+  const steady = mean([F(r,"Orderly"),F(r,"Consistency"),F(r,"Internal"),F(r,"Avoiding"),F(r,"Concrete"),F(r,"Refining"),F(r,"Direction"),F(r,"Accommodating")]);
+  const peopleLean = people - task;      // >0 relational
+  const fastLean   = fast - steady;      // >0 fast/assertive
+  let corner;
+  if (Math.abs(peopleLean) < 0.06 && Math.abs(fastLean) < 0.06) corner = "Balanced";
+  else if (fastLean >= 0 && peopleLean < 0) corner = "Power";
+  else if (fastLean >= 0 && peopleLean >= 0) corner = "Promotion";
+  else if (fastLean < 0 && peopleLean >= 0) corner = "Peace";
+  else corner = "Process";
+  return { corner, peopleLean, fastLean, strength: Math.hypot(peopleLean, fastLean) };
+}
+const CORNER_TAG = { Power:"drive & results", Promotion:"people & energy", Peace:"harmony & steadiness", Process:"detail & quality", Balanced:"flexible / central" };
+
+/* Condensed from the manual's "When Personalities Clash" (from -> with). */
+const CLASH = {
+  Power:{
+    Power:{b:["Get territorial and struggle over who's in control","Interrupt each other; both push hard"],m:"Hey, I can do it just as good as you can!"},
+    Promotion:{b:["Get turned off by too much talk and not enough results","See Promotion as too emotional / needing center stage","Forget to praise or have fun"],m:"I wish your walk would match your talk."},
+    Peace:{b:["See Peace as unassertive, indirect and slow to change","Get pushy and controlling","Miss how Peace actually feels or thinks"],m:"Don't take things so personally!"},
+    Process:{b:["Feel Process bogs things down with detail and nitpicking","See them as pessimistic and risk-intolerant","Feel a loss of control when perfectionism slows the pace"],m:"Take an Ex-lax so we can get the job done."},
+  },
+  Promotion:{
+    Power:{b:["Get offended when their opinion isn't considered","Compete over who's center stage","See Power as inflexible and quick to write off feelings"],m:"Have some fun, dude!"},
+    Promotion:{b:["Compete for attention and center stage","Overuse humor; talk big without backing it up"],m:"Hey, I can be charming too!"},
+    Peace:{b:["Read Peace as over-sensitive and 'pokey'","Move too fast for them","Keep things light where Peace wants depth"],m:"I'm just kidding; don't take things so hard!"},
+    Process:{b:["Get impatient with Process's analysis and caution","Charge ahead and leave Process the detail work","See them as rigid and legalistic"],m:"Lighten up! Have some fun!"},
+  },
+  Peace:{
+    Power:{b:["Go indirect or quiet, then build resentment","Soft-shoe to keep the peace, which only delays the conflict","Feel run over; too slow to change for Power"],m:"Just tone it down."},
+    Promotion:{b:["Move too slowly for Promotion's pace","Get worn out by the talk; seem nonchalant","Prefer routine over constant novelty"],m:"Excuse me, can I say something now?"},
+    Peace:{b:["Get along but accomplish little","Neither initiates; indecision creates delayed stress","May quietly hold hard feelings"],m:"I don't know — whatever you want to do."},
+    Process:{b:["Feel judged or looked down on for lower standards","Accommodate Process's preferences, then resent it","Show little concern for the details Process prizes"],m:"Give me a break; I'm not perfect."},
+  },
+  Process:{
+    Power:{b:["Are too risk-averse for Power's pace","See Power as a know-it-all who acts without counting the cost","Get frustrated by the expectation of quick decisions"],m:"Think about somebody besides yourself."},
+    Promotion:{b:["See Promotion as talk with little follow-through","Get annoyed by disorganization and exaggeration","Bristle at missed deadlines and loose details"],m:"The job isn't complete until the paperwork is done."},
+    Peace:{b:["Come across as task-first and short on feeling","Feel unsupported when Peace stays silent","Leave Peace feeling inferior with high standards"],m:"Make a to-do list so you can get something done."},
+    Process:{b:["Get into turf battles over who's right","Bog down decisions on competing details","Under-affirm each other; breed pessimism"],m:"Let's get it done right; I can't afford to be wrong."},
+  },
+};
+function bridgeKey(a,b){ return [a,b].sort().join("+"); }
+const BRIDGE = {
+  "Power+Power":"Two drivers. Define clear lanes and who owns the final call, or it becomes a turf war.",
+  "Power+Promotion":"Both fast-moving. Power wants results, Promotion wants energy and people — great on launches if Power makes room to celebrate and Promotion shows results.",
+  "Peace+Power":"Opposite tempo. Power should slow down and invite input; Peace should speak up early instead of soft-shoeing. Peace steadies Power.",
+  "Power+Process":"Complementary: Power drives, Process safeguards quality. Agree up front on pace vs. detail so neither feels blocked.",
+  "Promotion+Promotion":"Two energizers — strong on morale, but assign someone to own follow-through and the details.",
+  "Peace+Promotion":"Both relational and warm. Make sure decisions actually land and Peace isn't steamrolled by Promotion's pace.",
+  "Process+Promotion":"Idea-energy meets rigor. Promotion should respect the detail; Process shouldn't kill the spark. Powerful pairing once trust is there.",
+  "Peace+Peace":"Two harmonizers — very cooperative, but may dodge hard calls. Set explicit owners and deadlines.",
+  "Peace+Process":"Both careful and thorough, but can be slow and risk-averse together. Give them a firm decision deadline.",
+  "Process+Process":"Two detail-owners: high quality, but can bog down and battle over what's 'right.' Split scope so they aren't editing each other.",
+};
+
+/* How two dominant conflict styles tend to interact (Thomas-Kilmann modes). */
+const CONFLICT_PAIR = {
+  "Competing+Competing":"Two who push to win — expect escalation and power struggles. Set ground rules and a neutral tiebreaker, and keep them aimed at the shared goal rather than winning.",
+  "Collaborating+Competing":"One drives to win, one seeks win-win. The collaborator can steer that drive toward a joint solution — but shouldn't get steamrolled. Name the shared objective up front.",
+  "Competing+Compromising":"The competer may push past the compromiser's middle ground. The compromiser should hold a clear floor; the competer should treat a compromise as progress, not defeat.",
+  "Avoiding+Competing":"The riskiest mix: one pushes hard, the other withdraws. Resentment builds silently while the competer assumes agreement. Build in structured space for the avoider to speak, and ask the competer to dial back.",
+  "Accommodating+Competing":"The accommodator yields, so conflict looks 'resolved' while the real issue is buried and they quietly burn out. Deliberately draw out the accommodator's true view before moving on.",
+  "Collaborating+Collaborating":"Both want win-win — the healthiest pairing for hard problems. Just guard against over-processing; give them a decision deadline.",
+  "Collaborating+Compromising":"Compatible. The compromiser may settle before the collaborator has explored the best joint answer — agree whether this issue deserves full collaboration or a quick trade.",
+  "Avoiding+Collaborating":"The collaborator wants to engage; the avoider wants distance. Go gently and privately, give prep time, and don't read the avoider's silence as agreement.",
+  "Accommodating+Collaborating":"Warm and low-heat, but the accommodator may defer rather than contribute. The collaborator should actively invite their real position.",
+  "Compromising+Compromising":"Two dealmakers — quick to find middle ground, but may settle for 'okay' over 'right.' Push them to check the fast compromise actually solves it.",
+  "Avoiding+Compromising":"One wants a deal, one wants out — issues get half-addressed or dropped. Name the issue explicitly and hold a clear decision point.",
+  "Accommodating+Compromising":"Low friction — both give ground, so the real problem can get smoothed over rather than solved. Make sure the core issue is actually named.",
+  "Avoiding+Avoiding":"Both sidestep — conflict goes underground and festers. Nothing surfaces unless someone forces a safe, structured conversation. Assign a facilitator.",
+  "Accommodating+Avoiding":"Very little overt conflict, but nothing resolves — one hides, one yields, and problems quietly accumulate. Create explicit, safe prompts for honest input.",
+  "Accommodating+Accommodating":"Two peace-keepers — pleasant but conflict-avoidant; each defers and decisions stall. Set clear owners and actively invite candid disagreement.",
+};
+function conflictCompare(A,B){
+  const styles=["Collaborating","Accommodating","Compromising","Avoiding","Competing"];
+  const dominant=(r)=>styles.map(s=>[s,F(r,s)??0]).sort((x,y)=>y[1]-x[1])[0][0];
+  const dA=dominant(A), dB=dominant(B);
+  const rows=styles.map(s=>{
+    const a=Math.round((F(A,s)??0)*100), b=Math.round((F(B,s)??0)*100);
+    const strong=(v,d)=>s===d?"font-weight:600;color:var(--ink)":"";
+    return `<div class="cf-row">
+      <span class="cf-l">${s}</span>
+      <span class="cf-bar"><span class="track"><span class="fill" style="width:${a}%;background:var(--green-soft)"></span></span><b style="${strong(a,dA)}">${a}%</b></span>
+      <span class="cf-bar"><span class="track"><span class="fill" style="width:${b}%;background:var(--ochre)"></span></span><b style="${strong(b,dB)}">${b}%</b></span>
+    </div>`;
+  }).join("");
+  const guide=CONFLICT_PAIR[[dA,dB].sort().join("+")]||"";
+  return `<div class="rep-sec">
+    <h3>In conflict, where they land</h3>
+    <p class="rsub">Dominant mode — ${firstName(A)}: <b>${dA}</b> · ${firstName(B)}: <b>${dB}</b></p>
+    <div class="cf-head"><span></span><span class="cf-nm" style="color:var(--green)">${firstName(A)}</span><span class="cf-nm" style="color:var(--ochre)">${firstName(B)}</span></div>
+    ${rows}
+    ${guide?`<div class="cmp-bridge" style="margin-top:14px"><h5>How conflict is likely to go</h5><p>${guide}</p></div>`:""}
+  </div>`;
+}
+
+/* ---------- Compare deep-dive helpers ---------- */
+function cmpSection(title,sub,body){ return `<div class="rep-sec"><h3>${title}</h3><p class="rsub">${sub}</p>${body}</div>`; }
+function sideOf(r,a,b){ const d=dom(r,a,b,0.1); return d?d.side:null; }
+
+const GROWTH_RULES=[
+  ["Power",0.7,"takes charge naturally","overbearing or controlling","empowering others and sharing control"],
+  ["Competing",0.6,"direct and assertive","domineering or blunt","patience, collaboration, and gentleness"],
+  ["Orderly",0.7,"structured and precise","rigid or inflexible","flexibility and openness to new ideas"],
+  ["Refining",0.7,"sharp on detail and quality","critical or perfectionistic","valuing \u201cgood enough\u201d and the big picture"],
+  ["Concrete",0.72,"grounded in facts","closed to the big picture","openness to possibility and vision"],
+  ["Affiliation",0.72,"warm and relational","reluctant to deliver hard truths","being direct and forthright"],
+  ["Avoiding",0.55,"a peace-keeper","conflict-avoidant, so issues get buried","addressing issues and setting boundaries"],
+  ["Accommodating",0.5,"accommodating","passive or a push-over","assertiveness and holding their own view"],
+  ["Spontaneous",0.72,"flexible and high-energy","short on follow-through","order and bringing things to closure"],
+  ["External",0.75,"quick to think out loud","dominating the airtime","listening and leaving space for others"],
+  ["Engaging",0.72,"driven to execute","launching before it's fully ready","refining and planning first"],
+  ["Recognition",0.72,"energized by appreciation","needing the spotlight","internal validation"],
+];
+function topGrowth(r){ const g=GROWTH_RULES.map(x=>[F(r,x[0]),x]).filter(x=>x[0]!=null&&x[0]>=x[1][1]).sort((a,b)=>b[0]-a[0])[0]; return g?g[1]:null; }
+
+const PROC_AXES=[
+  {a:"External",b:"Internal",title:"Talking vs reflecting",aLabel:"thinks out loud",bLabel:"processes privately",
+   clash:"one talks to think while the other needs quiet — send things ahead and leave room for both modes, or meetings frustrate both.",
+   align_a:"both process out loud — lively exchanges, but make sure the quieter details don't get lost.",
+   align_b:"both process privately — thoughtful, but decisions can stall unless someone voices where things stand."},
+  {a:"Intuitive",b:"Concrete",title:"Big-picture vs detail",aLabel:"big-picture",bLabel:"facts & specifics",
+   clash:"one leads with the big picture, the other wants specifics — pair the vision with the proof, or each dismisses the other.",
+   align_a:"both big-picture — strong on vision, but assign someone to nail the specifics.",
+   align_b:"both detail-first — thorough, but watch for missing the forest for the trees."},
+  {a:"Head",b:"Heart",title:"Logic vs people",aLabel:"logic-first",bLabel:"people-first",
+   clash:"one decides on logic, the other on people-impact — name both the reasoning and the human cost, or each feels unheard.",
+   align_a:"both decide on logic — efficient, but keep an eye on morale and the relational read.",
+   align_b:"both decide on people-impact — caring, but push each other to weigh the hard trade-offs too."},
+  {a:"Spontaneous",b:"Orderly",title:"Flexible vs structured",aLabel:"keeps options open",bLabel:"wants a plan",
+   clash:"one keeps options open, the other wants a plan and closure — agree up front how much structure this work needs.",
+   align_a:"both flexible — adaptable, but set enough structure to actually finish.",
+   align_b:"both structured — organised, but leave room to flex when things change."},
+];
+function processingFit(A,B){
+  const lines=PROC_AXES.map(ax=>{
+    const sa=sideOf(A,ax.a,ax.b), sb=sideOf(B,ax.a,ax.b);
+    let tag,note;
+    if(sa&&sb&&sa!=="bal"&&sb!=="bal"){ if(sa===sb){tag="aligned"; note=sa==="a"?ax.align_a:ax.align_b;} else {tag="differ"; note=ax.clash;} }
+    else { tag="mixed"; note="one sits near the middle here, so they can flex either way."; }
+    return `<p class="fitline"><span class="pill ${tag}">${tag}</span><b>${ax.title}:</b> ${note}</p>`;
+  }).join("");
+  return cmpSection("Communication & processing fit","how each takes in information and connects",lines);
+}
+
+const MOT_PAIRS=[
+  {a:"Attainment",b:"Recognition",title:"What 'success' feels like",
+   clash:"one measures success by hitting the goal, the other by being appreciated for the effort — give the first clear outcomes and the second genuine recognition.",
+   same_a:"both driven by hitting goals — results-focused, but remember to acknowledge effort too.",
+   same_b:"both driven by recognition — affirm generously; neither thrives feeling unseen."},
+  {a:"Freedom",b:"Consistency",title:"Autonomy vs stability",
+   clash:"one needs room to run, the other needs routine — a change that energises one unsettles the other, so flag changes early.",
+   same_a:"both want autonomy — give latitude, but agree on guardrails.",
+   same_b:"both want stability — dependable, but change will be hard for the pair."},
+  {a:"Power",b:"Compliance",title:"Leading vs following the standard",
+   clash:"one is driven to set direction, the other to uphold clear standards — clarify who steers so it isn't a tug-of-war.",
+   same_a:"both want to drive direction — define lanes or they'll contend for the wheel.",
+   same_b:"both prefer a clear standard to follow — orderly, but someone still needs to set direction."},
+];
+function motivationFit(A,B){
+  const lines=MOT_PAIRS.map(p=>{
+    const sa=sideOf(A,p.a,p.b), sb=sideOf(B,p.a,p.b);
+    let tag,note;
+    if(sa&&sb&&sa!=="bal"&&sb!=="bal"){ if(sa!==sb){tag="differ";note=p.clash;} else {tag="aligned";note=sa==="a"?p.same_a:p.same_b;} }
+    else {tag="mixed";note="one is fairly balanced here.";}
+    return `<p class="fitline"><span class="pill ${tag}">${tag}</span><b>${p.title}:</b> ${note}</p>`;
+  });
+  const af=(()=>{ const sa=sideOf(A,"Self-Affirmed","Other-Affirmed"), sb=sideOf(B,"Self-Affirmed","Other-Affirmed");
+    if(sa&&sb&&sa!==sb&&sa!=="bal"&&sb!=="bal"){ const other = sa==="b"?firstName(A):firstName(B), self = sa==="a"?firstName(A):firstName(B);
+      return `<p class="fitline"><span class="pill differ">differ</span><b>Affirmation:</b> ${other} needs affirmation from others while ${self} is self-anchored — ${self} can easily forget to encourage ${other}.</p>`; }
+    return ""; })();
+  return cmpSection("Motivation fit","what drives each, and how to keep both engaged",lines.join("")+af);
+}
+
+const STRESS_TENDENCY={
+  Power:"tightens control, gets critical and pushes harder (or goes cold and works alone)",
+  Promotion:"gets distractible, makes light of it, deflects or procrastinates",
+  Peace:"goes passive, withdraws and tunes out",
+  Process:"turns inward, over-analyses and rehearses the problem",
+  Balanced:"stays fairly adaptable, though still feels the strain",
+};
+function underPressureFit(A,B){
+  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
+  const shift=(r)=>{ const up=r["Personality Under Pressure"], pp=r["Primary Personality"];
+    return up&&up!==pp ? `${firstName(r)} shifts from ${pp} to <b>${up}</b> under pressure` : `${firstName(r)} holds steady as ${pp||"their style"} under pressure`; };
+  const combo=`When both are stressed, ${firstName(A)} ${STRESS_TENDENCY[ca]}, while ${firstName(B)} ${STRESS_TENDENCY[cb]}.`;
+  const set=[ca,cb]; let risk;
+  if(set.includes("Power")&&(set.includes("Peace")||set.includes("Process"))) risk="One pushes harder while the other withdraws — the gap widens fast. Name the strain early instead of chasing and retreating.";
+  else if(ca==="Power"&&cb==="Power") risk="Two who tighten control under stress — expect a clash of wills; agree a tiebreaker before you need it.";
+  else if((ca==="Peace"||ca==="Process")&&(cb==="Peace"||cb==="Process")) risk="Both tend to withdraw under stress, so issues can go quiet and unaddressed — schedule a low-pressure check-in.";
+  else if(ca==="Promotion"&&cb==="Promotion") risk="Both deflect under stress — things can get talked around rather than resolved; land the hard point explicitly.";
+  else risk="Their stress responses pull in different directions; a quick check-in keeps small strain from compounding.";
+  return cmpSection("Under pressure","how each shifts when stressed, and the pairing risk",
+    `<p class="rep-note">• ${shift(A)}.</p><p class="rep-note">• ${shift(B)}.</p><p class="rep-note">• ${combo}</p><p class="rep-note"><b>Risk:</b> ${risk}</p>`);
+}
+
+function mutualGrowth(A,B){
+  const gA=topGrowth(A), gB=topGrowth(B);
+  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
+  const diag = (ca==="Power"&&cb==="Peace")||(ca==="Peace"&&cb==="Power")||(ca==="Promotion"&&cb==="Process")||(ca==="Process"&&cb==="Promotion");
+  const line=(r,g)=> g?`<p class="rep-note">• <b>${firstName(r)}'s growth edge:</b> cultivate ${g[4]} — their gift for being ${g[2]} can overshoot into ${g[3]}.</p>`:`<p class="rep-note">• ${firstName(r)} has no single trait running to an extreme — a fairly balanced profile.</p>`;
+  let synth;
+  if(ca===cb && ca!=="Balanced") synth="Similar leans mean similar blind spots — they may reinforce the same overdone strength, so pull in an outside voice on it.";
+  else if(diag) synth="Their styles are near-opposites, so what each needs to grow, the other already models — they make natural growth partners.";
+  else synth="Their styles differ enough that each can model something the other is stretching toward — good coaching material both ways.";
+  return cmpSection("Mutual growth edges","what each can learn — often from the other",
+    `${line(A,gA)}${line(B,gB)}<div class="cmp-bridge" style="margin-top:10px"><h5>The opportunity</h5><p>${synth}</p></div>`);
+}
+
+function bottomLine(A,B){
+  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
+  const strengths=[], watch=[];
+  if(ca!==cb && ca!=="Balanced" && cb!=="Balanced") strengths.push(`bring different working styles (${ca} + ${cb}) and cover ground the other misses;`);
+  else if(ca===cb && ca!=="Balanced") watch.push(`both lean ${ca}, so they share instincts — and blind spots;`);
+  const careTop=(r)=>topKeys(r,["Creative","Adaptive","Refining","Engaging"],1)[0][0];
+  const cA=careTop(A), cB=careTop(B);
+  if(cA!==cB) strengths.push(`complement in problem-solving (${firstName(A)}: ${cA}, ${firstName(B)}: ${cB});`);
+  else strengths.push(`are both strongest in ${cA} — double strength there, thin elsewhere;`);
+  const divs=PROC_AXES.filter(ax=>{const sa=sideOf(A,ax.a,ax.b),sb=sideOf(B,ax.a,ax.b);return sa&&sb&&sa!=="bal"&&sb!=="bal"&&sa!==sb;});
+  if(divs.length>=2) watch.push(`differ on ${divs.length} of four communication axes — miscommunication is the main risk;`);
+  else if(divs.length===0) strengths.push(`communicate in similar ways, so rapport comes easily;`);
+  const dConf=(r)=>["Collaborating","Accommodating","Compromising","Avoiding","Competing"].map(s=>[s,F(r,s)??0]).sort((x,y)=>y[1]-x[1])[0][0];
+  const key=[dConf(A),dConf(B)].sort().join("+");
+  if(["Avoiding+Competing","Competing+Competing","Accommodating+Competing","Avoiding+Avoiding","Accommodating+Avoiding"].includes(key))
+    watch.push(`have a tricky conflict-style combo (${dConf(A)} / ${dConf(B)});`);
+  if(sideOf(A,"Attainment","Recognition")!==sideOf(B,"Attainment","Recognition"))
+    watch.push(`are motivated differently (results vs recognition), so motivate each on their own terms;`);
+  const action = BRIDGE[bridgeKey(ca,cb)] || "Talk openly about how each prefers to communicate and decide, before the first real disagreement.";
+  return cmpSection("Bottom line","the pair at a glance",
+    `${strengths.length?`<p class="rep-note"><b>Together they</b> ${strengths.slice(0,3).join(" ")}</p>`:""}
+     ${watch.length?`<p class="rep-note"><b>Watch that they</b> ${watch.slice(0,3).join(" ")}</p>`:""}
+     <div class="cmp-bridge" style="margin-top:10px"><h5>To work well together</h5><p>${action}</p></div>`);
+}
+
+function compareFlags(A,B){
+  const f=[];
+  [A,B].forEach(r=>{
+    const acc=r.Accuracy;
+    if(acc!=null && acc<0.75) f.push(`<span class="pill mixed">accuracy</span> ${firstName(r)}'s accuracy is ${Math.round(acc*100)}% — read their portrait as a lighter guide.`);
+    const v=["Significance","Control","Security"].map(k=>F(r,k)).filter(x=>x!=null);
+    if(v.length===3&&v.every(x=>x>0)&&(Math.max(...v)-Math.min(...v))<0.15) f.push(`<span class="pill differ">stress</span> ${firstName(r)} shows the elevated-stress pattern — the dynamic may be strained right now.`);
+  });
+  return f.length?`<div class="flags">${f.map(x=>`<p class="flagline">${x}</p>`).join("")}</div>`:"";
+}
+
+/* ---------- Compare two ---------- */
+function cornerChip(c){ return `<span class="corner ${c}">${c}</span>`; }
+function renderCompare(){
+  const A = VIEW.find(r=>r.id===$("cmpA").value), B = VIEW.find(r=>r.id===$("cmpB").value);
+  const out = $("cmpResult");
+  if(!A||!B){ out.innerHTML=`<p class="team-help">Pick two people to see how they're likely to work together.</p>`; return; }
+  if(A.id===B.id){ out.innerHTML=`<p class="team-help">Pick two different people.</p>`; return; }
+  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
+  const dir=(from,to,X,Y)=>{ const d=(CLASH[from]&&CLASH[from][to]); if(!d) return "";
+    return `<div class="cmp-col"><h5>${firstName(X)} (${from}) working with ${firstName(Y)}</h5><ul>${d.b.map(x=>`<li>${x}</li>`).join("")}</ul><p class="cmp-msg">Underlying message: "${d.m}"</p></div>`; };
+  const bridge = BRIDGE[bridgeKey(ca,cb)] || "";
+  out.innerHTML = `
+    ${compareFlags(A,B)}
+    <div class="cmp-head">
+      <div class="cmp-person"><div class="nm">${A["Full Name"]}</div><div class="mt">${A.Country||""} · ${A["Primary Personality"]||""}</div><div class="cn">Style lean: ${cornerChip(ca)} <span class="team-help" style="font-size:12px">${CORNER_TAG[ca]}</span></div></div>
+      <div class="cmp-person"><div class="nm">${B["Full Name"]}</div><div class="mt">${B.Country||""} · ${B["Primary Personality"]||""}</div><div class="cn">Style lean: ${cornerChip(cb)} <span class="team-help" style="font-size:12px">${CORNER_TAG[cb]}</span></div></div>
+    </div>
+    ${processingFit(A,B)}
+    ${motivationFit(A,B)}
+    ${(ca!=="Balanced"&&cb!=="Balanced")?`<div class="rep-sec"><h3>Style clash points</h3><p class="rsub">what each may feel about the other, from the manual</p><div class="cmp-dir">${dir(ca,cb,A,B)}${dir(cb,ca,B,A)}</div></div>`
+      :`<p class="rep-note">One of these profiles sits near the centre of the grid (a flexible, balanced style), so it doesn't lock into a single corner's clash pattern.</p>`}
+    ${conflictCompare(A,B)}
+    ${underPressureFit(A,B)}
+    ${mutualGrowth(A,B)}
+    ${bottomLine(A,B)}
+    <p class="gnote" style="margin-top:14px">Style lean is derived from the trait profile using the manual's four-corner model, not the named personality type. Use all of this as a conversation starter, not a verdict.</p>`;
+}
+
+/* ---------- Team ---------- */
+const ROLES = [
+  { name:"Driver / decision-maker", sub:"pushes for calls and results", keys:["Power","Competing","Attainment","Task Completion"] },
+  { name:"Visionary / idea source", sub:"generates direction and possibilities", keys:["Creative","Intuitive","Ideas"] },
+  { name:"Strategist / adapter", sub:"turns ideas into a workable plan", keys:["Adaptive","Intuitive","Direction"] },
+  { name:"Implementer / finisher", sub:"drives work to completion", keys:["Engaging","Task Completion","Activity"] },
+  { name:"Quality / detail guardian", sub:"catches flaws, holds standards", keys:["Refining","Concrete","Orderly"] },
+  { name:"Relational glue / morale", sub:"keeps the team connected", keys:["Affiliation","Engaging","Heart","Collaborating"] },
+  { name:"Peacemaker / mediator", sub:"defuses tension, finds common ground", keys:["Collaborating","Accommodating","Compromising"] },
+];
+let TEAM = new Set();
+function teamRows(){ return VIEW.filter(r=>TEAM.has(r.id)); }
+function renderTeamPicker(){
+  const q=($("teamSearch").value||"").toLowerCase();
+  const rows=VIEW.filter(r=>!q||(r["Full Name"]||"").toLowerCase().includes(q)).slice(0,80);
+  const full=TEAM.size>=10;
+  $("teamPicker").innerHTML = rows.map(r=>{
+    const on=TEAM.has(r.id); const dis=full&&!on;
+    return `<span class="team-chip ${on?'on':''}" data-id="${r.id}" ${dis?'aria-disabled="true"':''}>
+      ${r["Full Name"]} <span class="tc-c">${r["Primary Personality"]||""}</span></span>`;
+  }).join("") || `<span class="team-help">No one matches.</span>`;
+  $("teamPicker").querySelectorAll(".team-chip").forEach(ch=>ch.addEventListener("click",()=>{
+    const id=ch.dataset.id;
+    if(TEAM.has(id)) TEAM.delete(id);
+    else { if(TEAM.size>=10) return; TEAM.add(id); }
+    $("teamCount").textContent=TEAM.size;
+    $("teamAnalyze").disabled = TEAM.size<2;
+    renderTeamPicker();
+  }));
+}
+function bestFor(rows, keys, n){
+  return rows.map(r=>({r, s:mean(keys.map(k=>F(r,k)))})).sort((a,b)=>b.s-a.s).slice(0,n);
+}
+function renderTeam(){
+  const rows=teamRows();
+  const out=$("teamResult");
+  if(rows.length<2){ out.innerHTML=""; return; }
+  // corner distribution
+  const corners={Power:0,Promotion:0,Peace:0,Process:0,Balanced:0};
+  const cmap={};
+  rows.forEach(r=>{ const c=styleCorner(r).corner; corners[c]++; cmap[r.id]=c; });
+  const cornerColor={Power:"#a3442f",Promotion:"#b08a2b",Peace:"#2f6d4f",Process:"#356088",Balanced:"#8a8880"};
+  const present=Object.entries(corners).filter(([,n])=>n>0);
+  const bar=present.map(([c,n])=>`<span style="flex:${n};background:${cornerColor[c]}" title="${c}: ${n}">${n}</span>`).join("");
+
+  // balance narrative
+  const notes=[];
+  if(corners.Power===0) notes.push("No clear <b>driver</b> (Power) — decisions may stall or drift. Name who owns the call.");
+  if(corners.Process===0) notes.push("No natural <b>detail guardian</b> (Process) — quality and follow-through can slip; assign a checker.");
+  if(corners.Promotion===0 && corners.Peace===0) notes.push("Light on <b>relational</b> styles — strong on task, but watch morale and communication.");
+  if(corners.Power>=3) notes.push("Several <b>drivers</b> (Power) — expect territorial friction; define clear lanes and final-call ownership.");
+  if(corners.Peace+corners.Process>=rows.length-1 && rows.length>=3) notes.push("Heavily <b>careful/steady</b> (Peace + Process) — thorough but can be slow and risk-averse; set firm deadlines.");
+  if((corners.Promotion+corners.Power)>=rows.length-1 && rows.length>=3) notes.push("Heavily <b>fast/assertive</b> (Power + Promotion) — high energy, but details and follow-through may get dropped.");
+  if(!notes.length) notes.push("Reasonably balanced across the four styles — a good spread of drive, people, and detail.");
+
+  // CARE coverage
+  const careCov=["Creative","Adaptive","Refining","Engaging"].map(k=>{
+    const top=bestFor(rows,[k],1)[0]; return {k, ok: top && top.s>=0.55, who: top?top.r:null, s: top?top.s:0};
+  });
+  const careMiss=careCov.filter(c=>!c.ok).map(c=>c.k);
+
+  // role assignments
+  const roleHtml = ROLES.map(role=>{
+    const top=bestFor(rows, role.keys, 2);
+    const lead=top[0];
+    if(!lead || lead.s<0.42) return `<div class="role-row"><div class="rl">${role.name}<small>${role.sub}</small></div><div class="rp"><span class="role-gap">No strong fit</span> — cover it deliberately or add someone.</div></div>`;
+    const second = top[1] && top[1].s>=0.5 && (lead.s-top[1].s)<0.08 ? ` &nbsp;·&nbsp; backup: <span class="who">${firstName(top[1].r)}</span>` : "";
+    return `<div class="role-row"><div class="rl">${role.name}<small>${role.sub}</small></div><div class="rp"><span class="who">${lead.r["Full Name"]}</span> ${cornerChip(cmap[lead.r.id])}${second}</div></div>`;
+  }).join("");
+
+  // friction: most-opposed corner pair present
+  const clashRank={ "Power+Peace":3,"Power+Process":3,"Process+Promotion":3,"Peace+Promotion":2,"Power+Power":2,"Process+Process":2,"Power+Promotion":1,"Peace+Process":1,"Peace+Peace":1,"Promotion+Promotion":1 };
+  const pairsSeen={};
+  rows.forEach((a,i)=>rows.forEach((b,j)=>{ if(j<=i) return; const ca=cmap[a.id],cb=cmap[b.id]; if(ca==="Balanced"||cb==="Balanced")return;
+    const k=bridgeKey(ca,cb); const score=clashRank[k]||0;
+    if(!pairsSeen[k]||score>pairsSeen[k].score) pairsSeen[k]={score,ca,cb,a,b,k}; }));
+  const frictions=Object.values(pairsSeen).filter(p=>p.score>=3).sort((a,b)=>b.score-a.score).slice(0,2);
+  const frictionHtml = frictions.map(p=>`<div class="friction"><div class="fpair">${firstName(p.a)} (${p.ca}) ↔ ${firstName(p.b)} (${p.cb})</div>${BRIDGE[p.k]||""}</div>`).join("");
+
+  // stress watch
+  const stressed=rows.filter(r=>{ const v=["Significance","Control","Security"].map(k=>F(r,k)).filter(x=>x!=null);
+    return v.length===3 && v.every(x=>x>0) && (Math.max(...v)-Math.min(...v))<0.15; });
+
+  out.innerHTML = `
+    <div class="rep-sec">
+      <h3>Team composition</h3>
+      <p class="rsub">${rows.length} people · style mix across the four corners</p>
+      <div class="rep-bar">${bar}</div>
+      <div class="rep-bal">${present.map(([c,n])=>`${cornerChip(c)}&nbsp;${n}`).join("&nbsp;&nbsp;")}</div>
+      ${notes.map(n=>`<p class="rep-note">• ${n}</p>`).join("")}
+    </div>
+    <div class="rep-sec">
+      <h3>Who should do what</h3>
+      <p class="rsub">Best-fit role for each person's strengths — a starting point, not a box</p>
+      ${roleHtml}
+    </div>
+    <div class="rep-sec">
+      <h3>Problem-solving coverage (C.A.R.E.)</h3>
+      <p class="rsub">Every team needs idea-generation, adaptation, refining, and execution</p>
+      ${careCov.map(c=>`<p class="rep-note">• <b>${c.k}</b>: ${c.ok?`covered by <span class="who">${firstName(c.who)}</span>`:`<span class="role-gap">thin</span> — no one strong here`}</p>`).join("")}
+      ${careMiss.length?`<p class="rep-note" style="color:var(--muted)">Watch the gap${careMiss.length>1?'s':''} in ${careMiss.join(", ")}: ${careMiss.includes("Refining")?"things may ship with flaws; ":""}${careMiss.includes("Engaging")?"ideas may not get executed; ":""}${careMiss.includes("Creative")?"few fresh ideas; ":""}${careMiss.includes("Adaptive")?"trouble adjusting plans; ":""}assign or add for it.</p>`:""}
+    </div>
+    ${frictionHtml?`<div class="rep-sec"><h3>Where friction is likely</h3><p class="rsub">Opposed styles on the team — name it early and use the bridge</p>${frictionHtml}</div>`:""}
+    ${stressed.length?`<div class="rep-sec"><h3>Stress watch</h3><div class="watch">${stressed.map(r=>firstName(r)).join(", ")} show${stressed.length===1?'s':''} the balanced-needs pattern the manual links to elevated stress — worth a check-in before leaning on them harder.</div></div>`:""}
+    <p class="gnote" style="margin-top:18px">Style leans are derived from trait profiles via the four-corner model. Treat this as a map for conversation and assignment, not a fixed judgement of anyone.</p>`;
+}
+
+/* ================= ROLE FIT =================
+   Describe the role via dials (each mapped to real LivStyle traits), build a
+   target profile, and rank people by fit. Deterministic — no API key needed. */
+const RF_DIMS = [
+  {key:"drive", label:"Drive & decisiveness", fields:["Power","Competing","Attainment"],
+   q:"How much does this role depend on someone taking charge, making the call, and pushing for results?",
+   hi:"It's the heart of the job — this person sets direction and drives outcomes.",
+   me:"They'll make some calls, but it's shared or occasional.",
+   lo:"The role carries out direction rather than setting it."},
+  {key:"people", label:"People & relational care", fields:["Heart","Affiliation","Engaging","Collaborating"],
+   q:"How central are relationships, care, and connecting with people to succeeding here?",
+   hi:"Fundamentally about people — pastoring, discipling, team care, hospitality.",
+   me:"People work matters, but alongside tasks and outcomes.",
+   lo:"Mostly heads-down or task work with a light relational load."},
+  {key:"structure", label:"Structure & consistency", fields:["Orderly","Consistency","Prefers Process"],
+   q:"Does the role need someone who brings order, routine, and dependable follow-through — or someone comfortable with fluidity?",
+   hi:"Consistency and reliable rhythms are essential — recurring systems, steady follow-through.",
+   me:"Some structure helps, but the role also flexes.",
+   lo:"Fluid and changes often; rigidity would get in the way."},
+  {key:"detail", label:"Detail & precision", fields:["Concrete","Refining"],
+   q:"How much does getting the details exactly right matter — accuracy, quality, catching errors?",
+   hi:"Precision is critical — finances, compliance, quality control, careful records.",
+   me:"Details matter, but it isn't a make-or-break precision role.",
+   lo:"Broad strokes are fine; over-focus on detail would slow it down."},
+  {key:"vision", label:"Vision & new ideas", fields:["Intuitive","Ideas","Creative"],
+   q:"Does the role need someone generating fresh ideas and seeing the big picture — or executing a known path?",
+   hi:"Invents and imagines — starting things, casting vision, solving open problems.",
+   me:"Some fresh thinking helps, but the path is fairly defined.",
+   lo:"The 'what' is already clear; the role delivers it, not reinvents it."},
+  {key:"execution", label:"Drive to execute & finish", fields:["Engaging","Task Completion","Activity"],
+   q:"How much is this role about pushing work through to completion and getting things shipped?",
+   hi:"Getting things done and closed out is the core — momentum and follow-through.",
+   me:"Completion matters, but it's balanced with other demands.",
+   lo:"More about ideas, care, or analysis than closing tasks."},
+  {key:"autonomy", label:"Autonomy / self-direction", fields:["Freedom","Self-Affirmed"],
+   q:"Will this person mostly work on their own initiative, or within close direction and support?",
+   hi:"Largely self-directed — remote, pioneering, or lightly supervised; must self-start.",
+   me:"A mix of independence and guidance.",
+   lo:"Works closely within a team and clear direction, with support around them."},
+];
+const RF_LEVEL = { low:0.25, med:0.55, high:0.82 };
+const RF_PRESETS = {
+  leader:{label:"Team leader / driver", dims:{drive:"high",execution:"high",structure:"med",people:"med",vision:"med",detail:"low",autonomy:"high"}},
+  ops:{label:"Operations / administrator / steward", dims:{structure:"high",detail:"high",execution:"med",drive:"low",people:"med",vision:"low",autonomy:"low"}},
+  care:{label:"Relational / discipleship / member care", dims:{people:"high",structure:"low",detail:"low",drive:"low",vision:"med",execution:"med",autonomy:"med"}},
+  starter:{label:"Innovator / starter / church planter", dims:{vision:"high",autonomy:"high",drive:"med",execution:"med",structure:"low",detail:"low",people:"med"}},
+  finisher:{label:"Quality / project finisher", dims:{execution:"high",detail:"high",structure:"high",drive:"med",people:"low",vision:"low",autonomy:"med"}},
+  connector:{label:"Connector / recruiter / mobiliser", dims:{people:"high",drive:"med",vision:"med",execution:"med",structure:"low",detail:"low",autonomy:"med"}},
+  custom:{label:"Custom (set your own)", dims:{}},
+};
+let RF_STATE = {}; RF_DIMS.forEach(d=>RF_STATE[d.key]="any");
+function rfPersonVal(r,dim){ return mean(dim.fields.map(k=>F(r,k))); }
+function rfScore(r){
+  const active=RF_DIMS.filter(d=>RF_STATE[d.key]!=="any");
+  if(!active.length) return null;
+  const per=active.map(d=>{
+    const lvl=RF_STATE[d.key], t=RF_LEVEL[lvl], pv=rfPersonVal(r,d);
+    let m; // asymmetric: "high" only penalises being under; "low" only over; "med" symmetric
+    if(lvl==="high") m = 1 - Math.max(0,t-pv)/t;
+    else if(lvl==="low") m = 1 - Math.max(0,pv-t)/(1-t);
+    else m = 1 - Math.abs(pv-t)/0.55;
+    return {d,lvl,pv,m:Math.max(0,Math.min(1,m))};
+  });
+  const score=mean(per.map(x=>x.m));
+  const strong=per.filter(x=>x.m>=0.82).sort((a,b)=>b.m-a.m).map(x=>x.d.label);
+  const gaps=per.filter(x=>x.m<0.55).sort((a,b)=>a.m-b.m).map(x=>x.d.label);
+  return {score,strong,gaps};
+}
+function rfTargetSummary(){
+  const active=RF_DIMS.filter(d=>RF_STATE[d.key]!=="any");
+  if(!active.length) return "";
+  const highs=active.filter(d=>RF_STATE[d.key]==="high").map(d=>d.label.split(" &")[0].toLowerCase());
+  const lows=active.filter(d=>RF_STATE[d.key]==="low").map(d=>d.label.split(" &")[0].toLowerCase());
+  const g=(k)=>{ const l=RF_STATE[k]; return l==="any"?null:RF_LEVEL[l]; };
+  const avg=(a)=>{ const v=a.filter(x=>x!=null); return v.length?v.reduce((p,q)=>p+q,0)/v.length:0.5; };
+  const fast=avg([g("drive"),g("vision"),g("execution")]) - avg([g("structure"),g("detail")]);
+  const ppl =avg([g("people")]) - avg([g("drive")]);
+  let corner="Balanced";
+  if(Math.abs(fast)>0.05||Math.abs(ppl)>0.05){
+    if(fast>=0&&ppl<0) corner="Power"; else if(fast>=0&&ppl>=0) corner="Promotion";
+    else if(fast<0&&ppl>=0) corner="Peace"; else corner="Process";
+  }
+  return `<div class="rf-target"><h5>Ideal profile for this role</h5>
+    <p>Points toward a ${cornerChip(corner)} <b>${corner}</b> lean — ${CORNER_TAG[corner]}.</p>
+    ${highs.length?`<p><b>Most important:</b> ${highs.join(", ")}.</p>`:""}
+    ${lows.length?`<p><b>Less needed:</b> ${lows.join(", ")}.</p>`:""}
+  </div>`;
+}
+function renderRolePreset(){ $("rfPreset").innerHTML = Object.entries(RF_PRESETS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join(""); }
+function renderRoleDims(){
+  $("rfDims").innerHTML = RF_DIMS.map(d=>{
+    const v=RF_STATE[d.key];
+    const opt=(val,lbl)=>`<option value="${val}" ${v===val?"selected":""}>${lbl}</option>`;
+    const optRow=(lvl,name,desc)=>`<button type="button" class="rf-opt ${v===lvl?'on':''}" data-dim="${d.key}" data-lvl="${lvl}"><b>${name}</b><span>${desc}</span></button>`;
+    return `<div class="rf-dim" data-dimwrap="${d.key}">
+      <label>${d.label}</label>
+      <select data-dim="${d.key}">${opt("any","Not important")}${opt("low","Low")}${opt("med","Medium")}${opt("high","High")}</select>
+      <details class="rf-help">
+        <summary>Help me decide</summary>
+        <p class="rf-q">${d.q}</p>
+        ${optRow("high","High",d.hi)}
+        ${optRow("med","Medium",d.me)}
+        ${optRow("low","Low",d.lo)}
+        ${optRow("any","Not important","This trait isn't really a factor for the role.")}
+      </details>
+    </div>`;
+  }).join("");
+  const setLevel=(key,lvl)=>{
+    RF_STATE[key]=lvl; $("rfPreset").value="custom";
+    const wrap=$("rfDims").querySelector(`[data-dimwrap="${key}"]`);
+    wrap.querySelector("select").value=lvl;
+    wrap.querySelectorAll(".rf-opt").forEach(b=>b.classList.toggle("on", b.dataset.lvl===lvl));
+    renderRoleResults();
+  };
+  $("rfDims").querySelectorAll("select").forEach(sel=>sel.addEventListener("change",()=>setLevel(sel.dataset.dim, sel.value)));
+  $("rfDims").querySelectorAll(".rf-opt").forEach(btn=>btn.addEventListener("click",()=>setLevel(btn.dataset.dim, btn.dataset.lvl)));
+}
+function renderRoleResults(){
+  $("rfTarget").innerHTML = rfTargetSummary();
+  const active=RF_DIMS.some(d=>RF_STATE[d.key]!=="any");
+  const out=$("rfResults");
+  if(!active){ out.innerHTML=`<p class="team-help">Set at least one dial to High, Medium or Low to rank people.</p>`; return; }
+  const scored=VIEW.map(r=>({r,...rfScore(r)})).sort((a,b)=>b.score-a.score);
+  out.innerHTML = `<div class="rf-list-head">Best matches in view · ${scored.length} scored</div>` + scored.slice(0,15).map(x=>{
+    const pctv=Math.round(x.score*100);
+    const why=[x.strong.length?`strong on ${x.strong.slice(0,2).join(", ")}`:"", x.gaps.length?`light on ${x.gaps[0]}`:""].filter(Boolean).join(" · ");
+    const c=styleCorner(x.r).corner;
+    return `<div class="rf-row" data-id="${x.r.id}">
+      <div><div class="rf-nm">${x.r["Full Name"]} <span class="corner ${c}" style="margin-left:4px">${c}</span></div>
+        <div class="rf-meta">${x.r.Country||""} · ${x.r["Primary Personality"]||""}</div>
+        ${why?`<div class="rf-why">${why}</div>`:""}</div>
+      <div class="rf-score"><b>${pctv}%</b><div class="rf-mbar"><i style="width:${pctv}%"></i></div></div>
+    </div>`;
+  }).join("");
+  out.querySelectorAll(".rf-row").forEach(row=>row.addEventListener("click",()=>openDrawer(row.dataset.id)));
+}
+function applyPreset(key){
+  const p=RF_PRESETS[key]; if(!p) return;
+  if(key!=="custom") RF_DIMS.forEach(d=>RF_STATE[d.key]=p.dims[d.key]||"any");
+  renderRoleDims(); renderRoleResults();
+}
+let rfInited=false;
+function initRoleFit(){
+  if(rfInited) return; rfInited=true;
+  renderRolePreset(); $("rfPreset").value="leader"; applyPreset("leader");
+  $("rfPreset").addEventListener("change",()=>applyPreset($("rfPreset").value));
+}
+
+/* ---------- view switching ---------- */
+function initViews(){
+  const pop=(sel,withBlank)=>{ const el=$(sel); const cur=el.value;
+    el.innerHTML=(withBlank?`<option value="">— choose —</option>`:"")+VIEW.slice().sort((a,b)=>(a["Full Name"]||"").localeCompare(b["Full Name"]||"")).map(r=>`<option value="${r.id}">${r["Full Name"]}${r.Country?` · ${r.Country}`:""}</option>`).join("");
+    if([...el.options].some(o=>o.value===cur)) el.value=cur;
+  };
+  pop("cmpA",true); pop("cmpB",true);
+  // prune team selections outside current scope
+  const ids=new Set(VIEW.map(r=>r.id)); [...TEAM].forEach(id=>{ if(!ids.has(id)) TEAM.delete(id); });
+  $("teamCount").textContent=TEAM.size; $("teamAnalyze").disabled=TEAM.size<2;
+  renderTeamPicker();
+  if($("viewCompare").style.display!=="none") renderCompare();
+  if($("viewTeam").style.display!=="none" && TEAM.size>=2) renderTeam();
+  if($("viewRole").style.display!=="none" && rfInited) renderRoleResults();
+}
+function wireViews(){
+  $("tabs").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{
+    $("tabs").querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const v=btn.dataset.view;
+    $("viewDirectory").style.display = v==="directory"?"":"none";
+    $("viewCompare").style.display   = v==="compare"?"":"none";
+    $("viewTeam").style.display      = v==="team"?"":"none";
+    $("viewRole").style.display      = v==="role"?"":"none";
+    if(v==="compare") renderCompare();
+    if(v==="team"){ renderTeamPicker(); if(TEAM.size>=2) renderTeam(); }
+    if(v==="role"){ initRoleFit(); renderRoleResults(); }
+  }));
+  $("cmpA").addEventListener("change",renderCompare);
+  $("cmpB").addEventListener("change",renderCompare);
+  $("teamSearch").addEventListener("input",renderTeamPicker);
+  $("teamAnalyze").addEventListener("click",renderTeam);
+}
+
+/* ================= DETAIL DRAWER ================= */
+function bipRow(r, left, right){
+  const lv = F(r,left), rv = F(r,right);
+  // position: share of the "right" pole (0..1). If both null, center.
+  let pos = 0.5;
+  if (lv != null && rv != null && (lv+rv) > 0) pos = rv/(lv+rv);
+  else if (rv != null) pos = rv; else if (lv != null) pos = 1-lv;
+  return `
+    <div class="bip">
+      <div class="lbls"><b>${left}</b><span>${pct(lv)} · ${pct(rv)}</span><b>${right}</b></div>
+      <div class="bipbar"><span class="mid"></span><span class="dotv" style="left:${(pos*100).toFixed(1)}%"></span></div>
+    </div>`;
+}
+function simpleRow(r,k){
+  const v = F(r,k);
+  return `<div class="trait"><div class="tl"><span>${k}</span><span class="val">${pct(v)}</span></div>
+    <div class="bar"><i style="width:${v!=null?Math.round(v*100):0}%"></i></div></div>`;
+}
+function openDrawer(id){
+  const r = VIEW.find(x => x.id === id) || ALL.find(x => x.id === id);
+  if (!r) return;
+  activeId = id;
+  renderTable();
+  const dm = r["Decision Making"];
+  const html = `
+    <div class="dhead">
+      <button class="close" id="dClose" aria-label="Close">×</button>
+      <h3>${r["Full Name"]||"—"}</h3>
+      <div class="meta">${r.Country||""}${r["Assessment Date"]?" · assessed "+r["Assessment Date"]:""}${r.Accuracy!=null?" · "+pct(r.Accuracy)+" accuracy":""}</div>
+      <div class="twin">
+        <div class="t">Primary<span class="v"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></div>
+        <div class="t">Under pressure<span class="v"><span class="chip" style="background:${colorFor(r["Personality Under Pressure"])}1f;color:${colorFor(r["Personality Under Pressure"])}">${r["Personality Under Pressure"]||"—"}</span></span></div>
+      </div>
+    </div>
+    <div class="dbody">
+      ${guidanceBlock(r)}
+      <div class="profhead">The underlying profile</div>
+      ${dm?`<div class="dm"><div class="k">Decision making</div>${dm}</div><div style="height:20px"></div>`:""}
+      ${BIPOLAR.map(b => `<div class="grp"><h4>${b.g}</h4>${b.pairs.map(p=>bipRow(r,p[0],p[1])).join("")}</div>`).join("")}
+      <div class="grp"><h4>${WHY_PAIRS.g}</h4>${WHY_PAIRS.pairs.map(p=>bipRow(r,p[0],p[1])).join("")}</div>
+      <div class="grp"><h4>${HOW_PAIRS.g}</h4>${HOW_PAIRS.pairs.map(p=>bipRow(r,p[0],p[1])).join("")}</div>
+      ${SIMPLE.map(s => `<div class="grp"><h4>${s.g}</h4>${s.keys.map(k=>simpleRow(r,k)).join("")}</div>`).join("")}
+    </div>`;
+  const d = $("drawer"); d.innerHTML = html; d.classList.add("open"); $("scrim").classList.add("open");
+  $("dClose").addEventListener("click", closeDrawer);
+}
+function closeDrawer(){ $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); activeId=null; renderTable(); }
+$("scrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+</script>
+</body>
+</html>
