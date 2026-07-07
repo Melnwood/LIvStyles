@@ -288,6 +288,35 @@
   .rf-mbar > i{display:block; height:100%; background:var(--green-soft); border-radius:5px}
   @media (max-width:640px){ .rf-dims{grid-template-columns:1fr} }
 
+  /* add a person */
+  .add-grp{margin-bottom:22px}
+  .add-grp h4{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); margin:0 0 12px; font-weight:600; padding-bottom:6px; border-bottom:1px solid var(--line-soft)}
+  .add-fields{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px}
+  .add-f{display:flex; flex-direction:column}
+  .add-f.full{grid-column:1 / -1}
+  .add-f label{font-size:12.5px; font-weight:500; color:var(--muted); margin-bottom:6px}
+  .add-f input[type=text], .add-f input[type=date], .add-f input[type=number], .add-f select{
+    width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:9px; background:#fcfbf8; font-family:inherit; font-size:14px; color:var(--ink)}
+  .add-f input:focus, .add-f select:focus{outline:none; border-color:var(--green-soft); box-shadow:0 0 0 3px rgba(53,112,91,.14)}
+  .add-check{flex-direction:row; align-items:center; gap:8px}
+  .add-check input{width:16px; height:16px}
+  .add-check label{margin:0}
+  /* bipolar slider */
+  .bip-f{grid-column:1 / -1; margin-bottom:4px}
+  .bip-f .bl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px}
+  .bip-f .bl .lname{font-weight:500}
+  .bip-f .bl .lval{color:var(--muted); font-variant-numeric:tabular-nums}
+  .bip-f input[type=range]{width:100%; accent-color:var(--green)}
+  .sum-note{grid-column:1 / -1; font-size:12px; color:var(--muted); margin-top:2px}
+  .sum-note b{color:var(--ink)}
+  .sum-note.warn b{color:#9a2f24}
+  .add-actions{display:flex; align-items:center; gap:16px; margin-top:8px; padding-top:16px; border-top:1px solid var(--line)}
+  .add-save{width:auto; padding:11px 22px}
+  .add-msg{font-size:13.5px}
+  .add-msg.ok{color:var(--green)}
+  .add-msg.err{color:#9a2f24}
+  @media (max-width:640px){ .add-fields{grid-template-columns:1fr} }
+
   .loading{padding:60px 20px; text-align:center; color:var(--muted)}
   .spin{width:22px; height:22px; border:2.5px solid var(--line); border-top-color:var(--green); border-radius:50%; margin:0 auto 12px; animation:sp .8s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
@@ -343,6 +372,7 @@
       <button data-view="compare">Compare two</button>
       <button data-view="team">Build a team</button>
       <button data-view="role">Role fit</button>
+      <button data-view="add" id="tabAdd" style="display:none">Add a person</button>
     </nav>
 
     <section id="viewDirectory">
@@ -424,6 +454,19 @@
         </div>
       </div>
     </section>
+    <section id="viewAdd" style="display:none">
+      <div class="panel">
+        <h2>Add a person</h2>
+        <div class="body">
+          <p class="team-help">Enter a completed LivStyle assessment. The trait pairs are single sliders — set one side and the other fills automatically. Percentages are whole numbers (e.g. 70). Saves straight into the directory.</p>
+          <div id="addForm"></div>
+          <div class="add-actions">
+            <button class="btn add-save" id="addSave">Save to directory</button>
+            <span class="add-msg" id="addMsg"></span>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -437,6 +480,8 @@ let VIEW = [];       // after country filter
 let sortKey = "Full Name", sortDir = 1;
 let activeId = null;
 let typeFilter = null;
+let AUTH = null;
+let CAN_ADD = false;
 
 /* ---- personality palette (stable, cohesive muted set) ---- */
 const TYPES = ["Ambassador","Communicator","Designer","Discerner","Encourager","Examiner","Exhorter","Innovator","Instructor","Invalid","Motivator","Navigator","Pragmatist","Refiner","Researcher","Supporter","Visionary"];
@@ -506,6 +551,7 @@ $("loginForm").addEventListener("submit", async (e) => {
   }
   if (res.status === 500) return fail(data.error || "Server error — most likely AIRTABLE_PAT isn't set. Add it in Netlify, then redeploy.");
   if (!res.ok || !data.ok) return fail(data.error || "That login and password don't match, or the account is inactive.");
+  AUTH = { login, password };
   startApp(data);
 });
 
@@ -531,6 +577,9 @@ function startApp(data){
   }));
   $("signout").addEventListener("click", () => location.reload());
   wireViews();
+  CAN_ADD = data.canAdd === true;
+  $("tabAdd").style.display = CAN_ADD ? "" : "none";
+  if (CAN_ADD) buildAddForm();
   $("login").value = ""; $("password").value = "";
   applyFilter();
   $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
@@ -777,6 +826,96 @@ function guidanceBlock(r){
         <p class="gnote">Hold these against ${a.N}'s actual responsibilities. Broad overlap points to a good fit; if their day-to-day runs against these, that mismatch often shows up as friction or fatigue.</p>
       </div>
     </div>`;
+}
+
+/* ================= ADD A PERSON ================= */
+const ADD_COUNTRIES = ["A-team","Albania","Bulgaria","Croatia","Czech Republic","E-team","EGCC","Estonia","Former 1st Culture Staff","Former 2nd Culture Staff","Former Croatia Intern","Former Germany Intern","Former I-team Intern","Former Slovakia - Interns","Friess Group","Germany","Hotel Malenovice","Hungary","I-team","JV Board","JV Canada","JV USA","Latvia","Moldova","Montenegro","Pavel Schwarz","Poland","Romania","Serbia","Slovakia","Slovenia","Ukraine","United States"];
+const ADD_BIPOLAR = {
+  "Processing Blueprint": [["External","Internal"],["Intuitive","Concrete"],["Head","Heart"],["Spontaneous","Orderly"]],
+  "Motivation — Why": [["Activity","Affiliation"],["Power","Compliance"],["Attainment","Recognition"]],
+  "Motivation — How": [["Ideas","Direction"],["Freedom","Consistency"],["Self-Affirmed","Other-Affirmed"],["Task Completion","Prefers Process"]],
+};
+const ADD_PREFIX = { "Processing Blueprint":"Processing Blueprint: ", "Motivation — Why":"Motivation Why: ", "Motivation — How":"Motivation How: " };
+const ADD_MULTI = {
+  "Fundamental Needs": { prefix:"Fundamental Needs: ", keys:["Significance","Control","Security"], sum:true },
+  "Conflict Management": { prefix:"Conflict Mngmt: ", keys:["Collaborating","Accommodating","Compromising","Avoiding","Competing"], sum:true },
+  "C.A.R.E. Mindset": { prefix:"C.A.R.E. Mindset: ", keys:["Creative","Adaptive","Refining","Engaging"], sum:false },
+};
+
+function buildAddForm(){
+  const typeOpts = ['<option value=""></option>', ...TYPES.map(t=>`<option>${t}</option>`)].join("");
+  const countryOpts = ['<option value=""></option>', ...ADD_COUNTRIES.map(c=>`<option>${c}</option>`)].join("");
+  let html = "";
+  html += `<div class="add-grp"><h4>Basics</h4><div class="add-fields">
+    <div class="add-f"><label>First name *</label><input type="text" data-k="First Name"></div>
+    <div class="add-f"><label>Last name *</label><input type="text" data-k="Last Name"></div>
+    <div class="add-f"><label>Country</label><select data-k="Country">${countryOpts}</select></div>
+    <div class="add-f"><label>Country representative</label><input type="text" data-k="Country Representative"></div>
+    <div class="add-f"><label>Assessment date</label><input type="date" data-k="Assessment Date"></div>
+    <div class="add-f"><label>Accuracy (%)</label><input type="number" min="0" max="100" data-k="Accuracy" data-pct="1"></div>
+    <div class="add-f add-check"><input type="checkbox" id="add-shared" data-k="Shared" data-bool="1"><label for="add-shared">Shared</label></div>
+  </div></div>`;
+  html += `<div class="add-grp"><h4>Personality</h4><div class="add-fields">
+    <div class="add-f"><label>Primary personality</label><select data-k="Primary Personality">${typeOpts}</select></div>
+    <div class="add-f"><label>PP# (optional)</label><input type="text" data-k="PP#"></div>
+    <div class="add-f"><label>Personality under pressure</label><select data-k="Personality Under Pressure">${typeOpts}</select></div>
+    <div class="add-f"><label>PUP# (optional)</label><input type="text" data-k="PUP#"></div>
+    <div class="add-f full"><label>Decision-making (e.g. "Careful Inward Red")</label><input type="text" data-k="Decision Making"></div>
+  </div></div>`;
+  for (const [grp, pairs] of Object.entries(ADD_BIPOLAR)) {
+    const pfx = ADD_PREFIX[grp];
+    html += `<div class="add-grp"><h4>${grp}</h4><div class="add-fields">` +
+      pairs.map((p)=>{
+        const id = `bip-${pfx}${p[0]}`.replace(/[^a-zA-Z0-9]/g,"");
+        return `<div class="bip-f">
+          <div class="bl"><span class="lname">${p[0]}</span><span class="lval"><b class="lv">50</b>% · <span class="rv">50</span>% <span class="lname" style="color:var(--ink)">${p[1]}</span></span></div>
+          <input type="range" min="0" max="100" value="50" id="${id}" data-left="${pfx}${p[0]}" data-right="${pfx}${p[1]}">
+        </div>`;
+      }).join("") + `</div></div>`;
+  }
+  for (const [grp, cfg] of Object.entries(ADD_MULTI)) {
+    html += `<div class="add-grp"><h4>${grp}</h4><div class="add-fields">` +
+      cfg.keys.map(k=>`<div class="add-f"><label>${k} (%)</label><input type="number" min="0" max="100" value="0" data-k="${cfg.prefix}${k}" data-pct="1" ${cfg.sum?`data-sum="${grp}"`:""}></div>`).join("") +
+      (cfg.sum?`<div class="sum-note" data-sumnote="${grp}">Total: <b>0</b>% (aim for 100%)</div>`:"") + `</div></div>`;
+  }
+  $("addForm").innerHTML = html;
+  $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{
+    const upd=()=>{ const v=+sl.value; const row=sl.closest(".bip-f"); row.querySelector(".lv").textContent=v; row.querySelector(".rv").textContent=100-v; };
+    sl.addEventListener("input", upd); upd();
+  });
+  $("addForm").querySelectorAll('input[data-sum]').forEach(inp=>inp.addEventListener("input", ()=>updateSum(inp.dataset.sum)));
+  $("addMsg").textContent=""; $("addMsg").className="add-msg";
+}
+function updateSum(grp){
+  const inputs=[...$("addForm").querySelectorAll(`input[data-sum="${grp}"]`)];
+  const total=inputs.reduce((s,i)=>s+(parseFloat(i.value)||0),0);
+  const note=$("addForm").querySelector(`[data-sumnote="${grp}"]`);
+  if(note){ note.innerHTML=`Total: <b>${Math.round(total)}</b>% (aim for 100%)`; note.className="sum-note"+(Math.abs(total-100)>1?" warn":""); }
+}
+async function submitAdd(){
+  const msg=$("addMsg"), btn=$("addSave");
+  const F={};
+  $("addForm").querySelectorAll("[data-k]").forEach(el=>{
+    const key=el.dataset.k;
+    if(el.dataset.bool){ if(el.checked) F[key]=true; return; }
+    let v=el.value; if(v===""||v==null) return;
+    if(el.dataset.pct){ const n=parseFloat(v); if(!isNaN(n)) F[key]=Math.max(0,Math.min(100,n))/100; }
+    else F[key]=v;
+  });
+  $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{ const v=+sl.value; F[sl.dataset.left]=v/100; F[sl.dataset.right]=(100-v)/100; });
+  const first=(F["First Name"]||"").trim(), last=(F["Last Name"]||"").trim();
+  if(!first || !last){ msg.className="add-msg err"; msg.textContent="First and last name are required."; return; }
+  F["First Name"]=first; F["Last Name"]=last; F["Full Name"]=`${first} ${last}`;
+  btn.disabled=true; btn.textContent="Saving…"; msg.className="add-msg"; msg.textContent="";
+  try{
+    const res=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"add", login:AUTH.login, password:AUTH.password, fields:F})});
+    const data=await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error||"Couldn't save.");
+    msg.className="add-msg ok"; msg.textContent=`Saved ${data.name}. They're in the directory now.`;
+    ALL.push({ id:data.id, ...F }); applyFilter(); buildAddForm();
+  }catch(err){ msg.className="add-msg err"; msg.textContent=err.message; }
+  btn.disabled=false; btn.textContent="Save to directory";
 }
 
 /* ================= FOUR-CORNER STYLE (derived from traits) =================
@@ -1339,10 +1478,12 @@ function wireViews(){
     $("viewCompare").style.display   = v==="compare"?"":"none";
     $("viewTeam").style.display      = v==="team"?"":"none";
     $("viewRole").style.display      = v==="role"?"":"none";
+    $("viewAdd").style.display       = v==="add"?"":"none";
     if(v==="compare") renderCompare();
     if(v==="team"){ renderTeamPicker(); if(TEAM.size>=2) renderTeam(); }
     if(v==="role"){ initRoleFit(); renderRoleResults(); }
   }));
+  $("addSave").addEventListener("click", submitAdd);
   $("cmpA").addEventListener("change",renderCompare);
   $("cmpB").addEventListener("change",renderCompare);
   $("teamSearch").addEventListener("input",renderTeamPicker);
