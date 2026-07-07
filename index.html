@@ -81,6 +81,9 @@
 
   .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px}
   .stat{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px}
+  .stat.clickable{cursor:pointer; transition:border-color .12s, background .12s}
+  .stat.clickable:hover{border-color:var(--green-soft)}
+  .stat.clickable.on{border-color:var(--green); background:var(--green-wash)}
   .stat .k{font-family:Fraunces,serif; font-weight:600; font-size:34px; line-height:1; letter-spacing:-.02em}
   .stat .l{font-size:12.5px; color:var(--muted); margin-top:7px}
 
@@ -371,8 +374,13 @@
 
   @media (max-width:860px){
     .grid{grid-template-columns:1fr}
-    .stats{grid-template-columns:1fr 1fr}
     main{padding:20px 16px 70px}
+  }
+  @media (max-width:560px){
+    .stats{gap:8px}
+    .stat{padding:12px 10px}
+    .stat .k{font-size:24px}
+    .stat .l{font-size:11px; margin-top:4px}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 </style>
@@ -425,9 +433,9 @@
 
     <section id="viewDirectory">
     <div class="stats">
-      <div class="stat"><div class="k num" id="sPeople">0</div><div class="l">People assessed</div></div>
-      <div class="stat"><div class="k num" id="sTypes">0</div><div class="l">Distinct primary types</div></div>
-      <div class="stat"><div class="k num" id="sScope">0</div><div class="l" id="sScopeLbl">Countries in view</div></div>
+      <div class="stat clickable" data-status="Active"><div class="k num" id="sActive">0</div><div class="l">Active</div></div>
+      <div class="stat clickable" data-status="Inactive"><div class="k num" id="sInactive">0</div><div class="l">Inactive</div></div>
+      <div class="stat clickable" data-status="All"><div class="k num" id="sTotal">0</div><div class="l">Total assessments</div></div>
     </div>
 
     <div class="grid">
@@ -637,6 +645,11 @@ function startApp(data){
   sel.addEventListener("change", applyFilter);
   $("search").addEventListener("input", renderTable);
   $("bulkToggle").addEventListener("click", toggleBulk);
+  document.querySelectorAll(".stat.clickable").forEach(s => s.addEventListener("click", () => {
+    statusFilter = s.dataset.status;
+    $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.s === statusFilter));
+    renderStats(); renderTable();
+  }));
   $("statusSeg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
     statusFilter = b.dataset.s;
     $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x===b));
@@ -668,11 +681,11 @@ function applyFilter(){
 }
 
 function renderStats(){
-  $("sPeople").textContent = VIEW.length;
-  $("sTypes").textContent = new Set(VIEW.map(r => r["Primary Personality"]).filter(Boolean)).size;
-  const scope = new Set(VIEW.map(r => r.Country).filter(Boolean));
-  $("sScope").textContent = scope.size;
-  $("sScopeLbl").textContent = scope.size === 1 ? "Country in view" : "Countries in view";
+  const active = VIEW.filter(r => statusOf(r) === "Active").length;
+  $("sActive").textContent = active;
+  $("sInactive").textContent = VIEW.length - active;
+  $("sTotal").textContent = VIEW.length;
+  document.querySelectorAll(".stat.clickable").forEach(s => s.classList.toggle("on", s.dataset.status === statusFilter));
 }
 
 function renderDist(){
