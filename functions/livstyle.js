@@ -72,6 +72,23 @@ async function airtableUpdate(table, id, fields) {
   return res.json();
 }
 
+async function airtablePatchMany(table, records) {
+  const url = `${API}/${BASE_ID}/${encodeURIComponent(table)}`;
+  for (let i = 0; i < records.length; i += 50) {
+    const batch = records.slice(i, i + 50);
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${PAT}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ records: batch, typecast: true }),
+    });
+    if (!res.ok) {
+      let detail = ""; try { detail = (await res.text()).slice(0, 400); } catch {}
+      const err = new Error(`Bulk placement failed (${res.status}). ${detail}`);
+      err.status = res.status; throw err;
+    }
+  }
+}
+
 async function airtableUpdateMany(table, ids, fields) {
   const url = `${API}/${BASE_ID}/${encodeURIComponent(table)}`;
   for (let i = 0; i < ids.length; i += 50) {
@@ -100,6 +117,7 @@ async function getOrgConfig() {
   if (rec && rec.fields.OrgConfig) { try { cfg = JSON.parse(rec.fields.OrgConfig); } catch {} }
   if (!Array.isArray(cfg.divisions)) cfg.divisions = [];
   if (!Array.isArray(cfg.teams)) cfg.teams = [];
+  if (!Array.isArray(cfg.countries)) cfg.countries = [];
   return { id: rec && rec.id, cfg };
 }
 async function saveOrgConfig(id, cfg) {
@@ -155,6 +173,20 @@ exports.handler = async (event) => {
   catch (e) { return json(502, { error: "Couldn't reach the directory (" + (e.status || "network") + "). The token may not have access to the base." }); }
   if (!leader) return json(401, { error: "That login and password don't match, or the account is inactive." });
 
+  // ---- Bulk placement (Country / Team / Division / Department) ----
+  if (action === "placeBulk") {
+    if (leader.fields["Can Edit"] !== true) return json(403, { error: "This account isn't allowed to edit people." });
+    const updates = Array.isArray(body.updates) ? body.updates : [];
+    const allowed = new Set(["Country", "Team", "Division", "Department"]);
+    const clean = updates.map(u => ({
+      id: u.id,
+      fields: Object.fromEntries(Object.entries(u.fields || {}).filter(([k]) => allowed.has(k))),
+    })).filter(u => u.id && Object.keys(u.fields).length);
+    if (!clean.length) return json(400, { error: "Nothing to update." });
+    try { await airtablePatchMany(ASSESSMENTS_TABLE, clean); return json(200, { ok: true, count: clean.length }); }
+    catch (e) { return json(502, { error: "Couldn't update placement. " + e.message }); }
+  }
+
   // ---- Org structure: read ----
   if (action === "orgGet") {
     try { const { cfg } = await getOrgConfig(); return json(200, { ok: true, org: cfg }); }
@@ -177,6 +209,8 @@ exports.handler = async (event) => {
         if (!dv.departments.some(x => x.toLowerCase() === name.toLowerCase())) dv.departments.push(name);
       } else if (kind === "team") {
         if (!cfg.teams.some(t => t.name.toLowerCase() === name.toLowerCase())) cfg.teams.push({ name, country: (body.country || "").trim() });
+      } else if (kind === "country") {
+        if (!cfg.countries.some(c => c.toLowerCase() === name.toLowerCase())) cfg.countries.push(name);
       } else return json(400, { error: "Unknown item type." });
       await saveOrgConfig(id, cfg);
       return json(200, { ok: true, org: cfg });
@@ -198,6 +232,8 @@ exports.handler = async (event) => {
         if (dv) dv.departments = dv.departments.filter(x => x !== name);
       } else if (kind === "team") {
         cfg.teams = cfg.teams.filter(t => t.name !== name);
+      } else if (kind === "country") {
+        cfg.countries = cfg.countries.filter(c => c !== name);
       } else return json(400, { error: "Unknown item type." });
       await saveOrgConfig(id, cfg);
       return json(200, { ok: true, org: cfg });

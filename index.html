@@ -120,7 +120,18 @@
   .bulk-toggle{background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:12.5px; color:var(--muted); margin-left:10px}
   .bulk-toggle:hover{border-color:var(--green-soft); color:var(--ink)}
   .bulk-toggle.on{background:var(--green); color:#fff; border-color:var(--green)}
-  .bulk-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--green-wash); border:1px solid #dbe6df; border-radius:10px; padding:10px 12px; margin-bottom:12px}
+  .bulk-bar{display:flex; flex-direction:column; gap:10px; background:var(--green-wash); border:1px solid #dbe6df; border-radius:10px; padding:10px 12px; margin-bottom:12px}
+  .bulk-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .place-panel{border-top:1px solid #cddbd2; padding-top:12px}
+  .pl-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .pl-f{display:flex; flex-direction:column}
+  .pl-f label{font-size:12px; font-weight:500; color:var(--muted); margin-bottom:5px}
+  .pl-f select{padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; font-size:13px}
+  .pl-teams{margin-top:10px}
+  .pl-actions{display:flex; align-items:center; gap:14px; margin-top:12px}
+  .pl-apply{width:auto; padding:9px 18px}
+  @media (max-width:720px){ .pl-grid{grid-template-columns:1fr 1fr} }
+  @media (max-width:480px){ .pl-grid{grid-template-columns:1fr} }
   .bulk-n{font-size:13px}
   .bulk-act{border:none; border-radius:7px; padding:7px 13px; font-size:12.5px; font-weight:600; color:#fff}
   .bulk-act.on-green{background:var(--green)} .bulk-act.on-green:hover{background:#183c31}
@@ -502,7 +513,7 @@
         <h2>People</h2>
         <div class="searchrow">
           <input id="search" placeholder="Search by name…" autocomplete="off" />
-          <button class="bulk-toggle" id="bulkToggle" style="display:none">Bulk status</button>
+          <button class="bulk-toggle" id="bulkToggle" style="display:none">Bulk edit</button>
           <span id="typeFilterBar" class="tfbar" style="display:none"></span>
         </div>
         <div class="bulk-bar" id="bulkBar" style="display:none"></div>
@@ -824,23 +835,83 @@ function renderTable(){
   window._shownRows = rows; // for "select all shown"
 }
 
+let placeOpen = false;
 function renderBulkBar(){
   const bar = $("bulkBar");
-  if (!selectMode){ bar.style.display = "none"; return; }
+  if (!selectMode){ bar.style.display = "none"; placeOpen = false; return; }
   bar.style.display = "";
   const shown = (window._shownRows||[]).length;
   bar.innerHTML = `
-    <span class="bulk-n"><b>${selected.size}</b> selected</span>
-    <button class="bulk-act on-green" data-a="Active">Mark Active</button>
-    <button class="bulk-act on-gray" data-a="Inactive">Mark Inactive</button>
-    <span class="bulk-sep"></span>
-    <button class="bulk-lite" data-a="all">Select all shown (${shown})</button>
-    <button class="bulk-lite" data-a="clear">Clear</button>
-    <span class="bulk-msg" id="bulkMsg"></span>`;
+    <div class="bulk-row">
+      <span class="bulk-n"><b>${selected.size}</b> selected</span>
+      <button class="bulk-act on-green" data-a="Active">Mark Active</button>
+      <button class="bulk-act on-gray" data-a="Inactive">Mark Inactive</button>
+      ${CAN_EDIT?`<button class="bulk-lite ${placeOpen?'on':''}" data-a="place">Set placement…</button>`:""}
+      <span class="bulk-sep"></span>
+      <button class="bulk-lite" data-a="all">Select all shown (${shown})</button>
+      <button class="bulk-lite" data-a="clear">Clear</button>
+      <span class="bulk-msg" id="bulkMsg"></span>
+    </div>
+    ${placeOpen ? placePanelHTML() : ""}`;
   bar.querySelector('[data-a="all"]').addEventListener("click", () => { (window._shownRows||[]).forEach(r=>selected.add(r.id)); renderTable(); renderBulkBar(); });
   bar.querySelector('[data-a="clear"]').addEventListener("click", () => { selected.clear(); renderTable(); renderBulkBar(); });
   bar.querySelector('[data-a="Active"]').addEventListener("click", () => applyBulkStatus("Active"));
   bar.querySelector('[data-a="Inactive"]').addEventListener("click", () => applyBulkStatus("Inactive"));
+  const pb = bar.querySelector('[data-a="place"]'); if (pb) pb.addEventListener("click", () => { placeOpen = !placeOpen; renderBulkBar(); });
+  if (placeOpen){
+    const tm = $("plTeamMode");
+    if (tm) tm.addEventListener("change", () => { $("plTeams").style.display = (tm.value==="add"||tm.value==="replace") ? "" : "none"; });
+    $("plApply").addEventListener("click", applyPlacement);
+  }
+}
+
+function placePanelHTML(){
+  const countryList = (ORG.countries && ORG.countries.length) ? ORG.countries : ADD_COUNTRIES;
+  const leadClear = `<option value="__leave">— leave unchanged —</option><option value="__clear">(clear)</option>`;
+  const cOpts = leadClear + countryList.map(c=>`<option value="${c}">${c}</option>`).join("");
+  const dvOpts = leadClear + ORG.divisions.map(d=>`<option value="${d.name}">${d.name}</option>`).join("");
+  const deptOpts = leadClear + ORG.divisions.map(d=> d.departments.length?`<optgroup label="${d.name}">`+d.departments.map(x=>`<option value="${x}">${x}</option>`).join("")+`</optgroup>`:"").join("");
+  const teamChecks = ORG.teams.length ? ORG.teams.map(t=>`<label class="team-chk"><input type="checkbox" class="pl-team" data-team="${t.name}"> ${t.name}</label>`).join("") : '<span class="team-help">No teams defined.</span>';
+  return `<div class="place-panel">
+    <div class="pl-grid">
+      <div class="pl-f"><label>Country</label><select id="plCountry">${cOpts}</select></div>
+      <div class="pl-f"><label>Division</label><select id="plDivision">${dvOpts}</select></div>
+      <div class="pl-f"><label>Department</label><select id="plDepartment">${deptOpts}</select></div>
+      <div class="pl-f"><label>Teams</label><select id="plTeamMode"><option value="leave">— leave unchanged —</option><option value="add">Add selected</option><option value="replace">Replace with selected</option><option value="clear">Clear all</option></select></div>
+    </div>
+    <div class="pl-teams" id="plTeams" style="display:none"><div class="team-checks">${teamChecks}</div></div>
+    <div class="pl-actions"><button class="btn pl-apply" id="plApply">Apply to ${selected.size}</button><span class="bulk-msg" id="plMsg"></span></div>
+  </div>`;
+}
+
+async function applyPlacement(){
+  const ids = [...selected]; const msg = $("plMsg");
+  if (!ids.length){ if(msg){ msg.className="bulk-msg err"; msg.textContent="Select people first."; } return; }
+  const base = {};
+  const c = $("plCountry").value; if (c==="__clear") base.Country=null; else if (c!=="__leave") base.Country=c;
+  const dv = $("plDivision").value; if (dv==="__clear") base.Division=null; else if (dv!=="__leave") base.Division=dv;
+  const dp = $("plDepartment").value; if (dp==="__clear") base.Department=null; else if (dp!=="__leave") base.Department=dp;
+  const tm = $("plTeamMode").value;
+  const selTeams = [...document.querySelectorAll(".pl-team:checked")].map(x=>x.dataset.team);
+  if (!Object.keys(base).length && tm==="leave"){ if(msg){ msg.className="bulk-msg err"; msg.textContent="Nothing set to change."; } return; }
+  const updates = ids.map(id => {
+    const r = ALL.find(x=>x.id===id) || {}; const f = {...base};
+    if (tm==="replace") f.Team = selTeams;
+    else if (tm==="clear") f.Team = [];
+    else if (tm==="add"){ const cur = Array.isArray(r.Team)?r.Team:[]; f.Team = [...new Set([...cur, ...selTeams])]; }
+    return { id, fields:f };
+  });
+  const btn = $("plApply"); if(btn){ btn.disabled=true; btn.textContent="Applying…"; }
+  if (msg){ msg.className="bulk-msg"; msg.textContent=`Updating ${ids.length}…`; }
+  try{
+    const res = await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ action:"placeBulk", login:AUTH.login, password:AUTH.password, updates })});
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error||"Couldn't update.");
+    updates.forEach(u => { const r=ALL.find(x=>x.id===u.id); if(r) Object.entries(u.fields).forEach(([k,v])=>{ if(v===null) delete r[k]; else r[k]=v; }); });
+    selected.clear(); placeOpen=false; applyFilter(); renderBulkBar();
+    const bm=$("bulkMsg"); if(bm){ bm.className="bulk-msg ok"; bm.textContent=`Updated placement for ${data.count}.`; }
+  }catch(err){ if(btn){ btn.disabled=false; btn.textContent="Apply"; } if(msg){ msg.className="bulk-msg err"; msg.textContent=err.message; } }
 }
 
 async function applyBulkStatus(status){
@@ -865,7 +936,7 @@ function toggleBulk(){
   selectMode = !selectMode;
   selected.clear();
   $("bulkToggle").classList.toggle("on", selectMode);
-  $("bulkToggle").textContent = selectMode ? "Done" : "Bulk status";
+  $("bulkToggle").textContent = selectMode ? "Done" : "Bulk edit";
   if (selectMode) closeDrawer();
   renderTable(); renderBulkBar();
 }
@@ -1065,7 +1136,8 @@ const ADD_MULTI = {
 
 function buildAddForm(record){
   const typeOpts = ['<option value=""></option>', ...TYPES.map(t=>`<option>${t}</option>`)].join("");
-  const countryOpts = ['<option value=""></option>', ...ADD_COUNTRIES.map(c=>`<option>${c}</option>`)].join("");
+  const countryList = (ORG.countries && ORG.countries.length) ? ORG.countries : ADD_COUNTRIES;
+  const countryOpts = ['<option value=""></option>', ...countryList.map(c=>`<option>${c}</option>`)].join("");
   let html = "";
   html += `<div class="add-grp"><h4>Basics</h4><div class="add-fields">
     <div class="add-f"><label>First name *</label><input type="text" data-k="First Name"></div>
@@ -1192,7 +1264,11 @@ function renderManage(){
       <div class="mg-add"><input placeholder="Add department…" data-adddept="${d.name}"><button class="mg-btn" data-adddept-btn="${d.name}">Add</button></div>
     </div>`).join("") || '<p class="mg-empty">No divisions yet.</p>';
   const teams = ORG.teams.map(t=>`<li>${t.name}${t.country?` · <span class="tc-c">${t.country}</span>`:""} <button class="mg-del" data-delteam="${t.name}" title="Delete team">×</button></li>`).join("") || '<li class="mg-empty">No teams yet</li>';
+  const countries = (ORG.countries||[]).map(c=>`<li>${c} <button class="mg-del" data-delcountry="${c}" title="Delete country">×</button></li>`).join("") || '<li class="mg-empty">No countries yet</li>';
   mb.innerHTML = `
+    <div class="mg-sec"><h3>Countries</h3><ul class="mg-teams mg-countries">${countries}</ul>
+      <div class="mg-add mg-add-top"><input id="mgNewCountry" placeholder="Add a country"><button class="mg-btn" id="mgAddCountry">Add country</button></div>
+    </div>
     <div class="mg-sec"><h3>Divisions &amp; departments</h3>${divs}
       <div class="mg-add mg-add-top"><input id="mgNewDiv" placeholder="Add a division"><button class="mg-btn" id="mgAddDiv">Add division</button></div>
     </div>
@@ -1200,6 +1276,7 @@ function renderManage(){
       <div class="mg-add mg-add-top"><input id="mgNewTeam" placeholder="Team name"><input id="mgNewTeamCountry" placeholder="Country (optional)"><button class="mg-btn" id="mgAddTeam">Add team</button></div>
     </div>
     <div class="mg-msg" id="mgMsg"></div>`;
+  mb.querySelector("#mgAddCountry").addEventListener("click", ()=>orgAdd({kind:"country", name:$("mgNewCountry").value}));
   mb.querySelector("#mgAddDiv").addEventListener("click", ()=>orgAdd({kind:"division", name:$("mgNewDiv").value}));
   mb.querySelector("#mgAddTeam").addEventListener("click", ()=>orgAdd({kind:"team", name:$("mgNewTeam").value, country:$("mgNewTeamCountry").value}));
   mb.querySelectorAll("[data-adddept-btn]").forEach(b=>b.addEventListener("click", ()=>{
@@ -1209,6 +1286,7 @@ function renderManage(){
   mb.querySelectorAll("[data-deldiv]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-deldiv"); orgDelete({kind:"division", name:n}, `the division “${n}” and its departments`); }));
   mb.querySelectorAll("[data-deldept]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-deldept"); orgDelete({kind:"department", name:n, division:b.getAttribute("data-div")}, `the department “${n}”`); }));
   mb.querySelectorAll("[data-delteam]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-delteam"); orgDelete({kind:"team", name:n}, `the team “${n}”`); }));
+  mb.querySelectorAll("[data-delcountry]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-delcountry"); orgDelete({kind:"country", name:n}, `the country “${n}”`); }));
 }
 async function orgAdd(payload){
   const msg = $("mgMsg");
