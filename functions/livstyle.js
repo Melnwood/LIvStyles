@@ -90,6 +90,21 @@ async function airtableUpdateMany(table, ids, fields) {
 }
 
 function esc(v) { return String(v).replace(/'/g, "\\'"); }
+function arr(v) { return Array.isArray(v) ? v : []; }
+
+const CONFIG_LOGIN = "__config__";
+async function getOrgConfig() {
+  const rows = await airtableList(LEADERS_TABLE, { filterByFormula: `{Login}='${CONFIG_LOGIN}'` });
+  const rec = rows[0];
+  let cfg = { divisions: [], teams: [] };
+  if (rec && rec.fields.OrgConfig) { try { cfg = JSON.parse(rec.fields.OrgConfig); } catch {} }
+  if (!Array.isArray(cfg.divisions)) cfg.divisions = [];
+  if (!Array.isArray(cfg.teams)) cfg.teams = [];
+  return { id: rec && rec.id, cfg };
+}
+async function saveOrgConfig(id, cfg) {
+  await airtableUpdate(LEADERS_TABLE, id, { OrgConfig: JSON.stringify(cfg) });
+}
 
 async function findLeader(login, password) {
   const leaders = await airtableList(LEADERS_TABLE, {
@@ -140,6 +155,46 @@ exports.handler = async (event) => {
   catch (e) { return json(502, { error: "Couldn't reach the directory (" + (e.status || "network") + "). The token may not have access to the base." }); }
   if (!leader) return json(401, { error: "That login and password don't match, or the account is inactive." });
 
+  // ---- Org structure: read ----
+  if (action === "orgGet") {
+    try { const { cfg } = await getOrgConfig(); return json(200, { ok: true, org: cfg }); }
+    catch (e) { return json(502, { error: "Couldn't load the structure. " + e.message }); }
+  }
+
+  // ---- Org structure: add a division / department / team ----
+  if (action === "orgAdd") {
+    if (leader.fields["Can Edit"] !== true) return json(403, { error: "This account isn't allowed to manage the structure." });
+    const kind = body.kind, name = (body.name || "").trim();
+    if (!name) return json(400, { error: "Enter a name." });
+    try {
+      const { id, cfg } = await getOrgConfig();
+      if (!id) return json(502, { error: "Structure record not found." });
+      if (kind === "division") {
+        if (!cfg.divisions.some(d => d.name.toLowerCase() === name.toLowerCase())) cfg.divisions.push({ name, departments: [] });
+      } else if (kind === "department") {
+        const dv = cfg.divisions.find(d => d.name === body.division);
+        if (!dv) return json(400, { error: "Pick a division for this department." });
+        if (!dv.departments.some(x => x.toLowerCase() === name.toLowerCase())) dv.departments.push(name);
+      } else if (kind === "team") {
+        if (!cfg.teams.some(t => t.name.toLowerCase() === name.toLowerCase())) cfg.teams.push({ name, country: (body.country || "").trim() });
+      } else return json(400, { error: "Unknown item type." });
+      await saveOrgConfig(id, cfg);
+      return json(200, { ok: true, org: cfg });
+    } catch (e) { return json(502, { error: "Couldn't save the structure. " + e.message }); }
+  }
+
+  // ---- Edit an existing person (any fields) ----
+  if (action === "edit") {
+    if (leader.fields["Can Edit"] !== true) return json(403, { error: "This account isn't allowed to edit people." });
+    if (!body.id || !fields || typeof fields !== "object") return json(400, { error: "Nothing to update." });
+    try {
+      const updated = await airtableUpdate(ASSESSMENTS_TABLE, body.id, fields);
+      return json(200, { ok: true, id: updated.id, name: fields["Full Name"] });
+    } catch (e) {
+      return json(502, { error: "Couldn't save the changes. " + e.message });
+    }
+  }
+
   // ---- Add a person ----
   if (action === "add") {
     if (leader.fields["Can Add"] !== true) return json(403, { error: "This account isn't allowed to add people." });
@@ -170,13 +225,26 @@ exports.handler = async (event) => {
 
   // ---- Login: return scoped data ----
   const allAccess = leader.fields["All Access"] === true;
-  const allowed = Array.isArray(leader.fields["Allowed Countries"]) ? leader.fields["Allowed Countries"] : [];
+  const allowedCountries = arr(leader.fields["Allowed Countries"]);
+  const allowedTeams = arr(leader.fields["Allowed Teams"]);
+  const allowedDivisions = arr(leader.fields["Allowed Divisions"]);
+  const allowedDepartments = arr(leader.fields["Allowed Departments"]);
+
   let assessments;
   try { assessments = await airtableList(ASSESSMENTS_TABLE); }
   catch (e) { return json(502, { error: "Couldn't load assessments. Try again in a moment." }); }
 
-  const visible = allAccess ? assessments : assessments.filter((r) => allowed.includes(r.fields.Country));
+  const visible = allAccess ? assessments : assessments.filter((r) => {
+    const f = r.fields;
+    return allowedCountries.includes(f.Country)
+      || arr(f.Team).some((t) => allowedTeams.includes(t))
+      || allowedDivisions.includes(f.Division)
+      || allowedDepartments.includes(f.Department);
+  });
   const records = visible.map((r) => ({ id: r.id, ...r.fields }));
+
+  let org = { divisions: [], teams: [] };
+  try { org = (await getOrgConfig()).cfg; } catch {}
 
   return json(200, {
     ok: true,
@@ -184,7 +252,9 @@ exports.handler = async (event) => {
     role: leader.fields.Role || "",
     allAccess,
     canAdd: leader.fields["Can Add"] === true,
-    allowedCountries: allAccess ? [...new Set(assessments.map((r) => r.fields.Country).filter(Boolean))].sort() : allowed.slice().sort(),
+    canEdit: leader.fields["Can Edit"] === true,
+    org,
+    allowedCountries: allAccess ? [...new Set(assessments.map((r) => r.fields.Country).filter(Boolean))].sort() : allowedCountries.slice().sort(),
     count: records.length,
     records,
   });

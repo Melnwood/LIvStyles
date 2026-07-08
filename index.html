@@ -144,6 +144,38 @@
   .statbadge .dotp{width:8px; height:8px; border-radius:50%}
   .statbadge.active .dotp{background:var(--green)}
   .statbadge.inactive .dotp{background:#b0aca3}
+  .editbtn{border:1px solid var(--line); background:#fff; border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:500; color:var(--green); margin-left:6px}
+  .editbtn:hover{border-color:var(--green-soft); background:var(--green-wash)}
+  .add-mode{font-size:13px; color:var(--muted); margin-bottom:14px}
+  .add-mode b{color:var(--ink)}
+  .linklike{background:none; border:none; color:var(--green); font-size:13px; text-decoration:underline; cursor:pointer; padding:0}
+  .team-checks{display:flex; flex-wrap:wrap; gap:8px 16px}
+  .team-chk{display:inline-flex; align-items:center; gap:7px; font-size:13.5px}
+  .team-chk .tc-c{font-size:11px; color:var(--muted)}
+  .scopestatus{margin-left:14px}
+  @media (max-width:560px){ .scopestatus{margin-left:0; margin-top:6px} .scopebar{flex-wrap:wrap} }
+  .subtabs{display:inline-flex; gap:4px; background:#f1efe9; border-radius:10px; padding:4px; margin-bottom:20px}
+  .subtabs button{background:none; border:none; padding:7px 16px; font-size:13.5px; font-weight:500; color:var(--muted); border-radius:7px}
+  .subtabs button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(23,32,28,.08)}
+  .subtabs button{background:none; border:none; padding:7px 16px; font-size:13.5px; font-weight:500; color:var(--muted); border-radius:7px}
+  .subtabs button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(23,32,28,.08)}
+  .mg-sec{margin-bottom:28px}
+  .mg-sec h3{font-family:Fraunces,serif; font-weight:600; font-size:18px; margin:0 0 12px}
+  .mg-div{border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#fcfbf8}
+  .mg-div-h{font-weight:600; font-size:14.5px; margin-bottom:8px}
+  .mg-depts{margin:0 0 10px; padding-left:20px}
+  .mg-depts li{font-size:13.5px; margin-bottom:4px}
+  .mg-empty{color:var(--muted); font-style:italic; list-style:none; margin-left:-20px}
+  .mg-teams{margin:0 0 12px; padding-left:20px}
+  .mg-teams li{font-size:13.5px; margin-bottom:4px}
+  .mg-teams .tc-c{color:var(--muted)}
+  .mg-add{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .mg-add-top{margin-top:6px}
+  .mg-add input{flex:1; min-width:160px; padding:8px 11px; border:1px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; font-size:13.5px}
+  .mg-btn{background:var(--green); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:500}
+  .mg-btn:hover{background:#183c31}
+  .mg-msg{font-size:13px; margin-top:10px; min-height:16px}
+  .mg-msg.ok{color:var(--green)} .mg-msg.err{color:#9a2f24}
   .dist .row .name{display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .swatch{width:9px; height:9px; border-radius:2px; flex:none}
   .track{height:8px; background:var(--line-soft); border-radius:5px; overflow:hidden}
@@ -174,11 +206,17 @@
   .scrim{position:fixed; inset:0; background:rgba(23,32,28,.34); opacity:0; pointer-events:none; transition:opacity .2s; z-index:30}
   .scrim.open{opacity:1; pointer-events:auto}
   .drawer{
-    position:fixed; top:0; right:0; height:100%; width:min(520px,100%); background:var(--paper);
-    border-left:1px solid var(--line); box-shadow:-16px 0 40px rgba(23,32,28,.12);
-    transform:translateX(100%); transition:transform .24s cubic-bezier(.4,0,.2,1); z-index:31; overflow-y:auto;
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.98);
+    width:min(1000px,94vw); max-height:92vh; background:var(--paper);
+    border:1px solid var(--line); border-radius:16px; box-shadow:0 24px 70px rgba(23,32,28,.28);
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s cubic-bezier(.4,0,.2,1);
+    z-index:31; overflow-y:auto;
   }
-  .drawer.open{transform:translateX(0)}
+  .drawer.open{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
+  @media (max-width:640px){
+    .drawer{ width:100vw; max-width:none; height:100%; max-height:none; top:0; left:0; border-radius:0; border:none; transform:translateY(100%); }
+    .drawer.open{ transform:translateY(0); }
+  }
   .drawer .dhead{position:sticky; top:0; background:var(--paper); padding:22px 24px 16px; border-bottom:1px solid var(--line); z-index:2}
   .drawer .dhead .close{position:absolute; top:18px; right:18px; background:none; border:1px solid var(--line); width:32px; height:32px; border-radius:8px; font-size:16px; color:var(--muted); line-height:1}
   .drawer .dhead .close:hover{background:#fff; color:var(--ink)}
@@ -187,7 +225,7 @@
   .twin{display:flex; gap:22px; margin-top:16px; flex-wrap:wrap}
   .twin .t{font-size:12px; color:var(--muted)}
   .twin .t .v{display:block; margin-top:5px}
-  .dbody{padding:20px 24px 44px}
+  .dbody{padding:22px 28px 48px; max-width:880px; margin:0 auto}
   .grp{margin-bottom:22px}
   .grp h4{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); margin:0 0 12px; font-weight:600}
   .trait{margin-bottom:11px}
@@ -429,6 +467,11 @@
     <div class="scopebar">
       <span class="eyebrow">Showing</span>
       <select id="countrySel"></select>
+      <div class="statusseg scopestatus" id="statusSeg">
+        <button data-s="Active" class="on">Active</button>
+        <button data-s="Inactive">Inactive</button>
+        <button data-s="All">All</button>
+      </div>
     </div>
 
     <nav class="tabs" id="tabs">
@@ -436,7 +479,7 @@
       <button data-view="compare">Compare two</button>
       <button data-view="team">Build a team</button>
       <button data-view="role">Role fit</button>
-      <button data-view="add" id="tabAdd" style="display:none">Add a person</button>
+      <button data-view="manage" id="tabManage" style="display:none">Manage</button>
     </nav>
 
     <section id="viewDirectory">
@@ -456,11 +499,6 @@
         <h2>People</h2>
         <div class="searchrow">
           <input id="search" placeholder="Search by name…" autocomplete="off" />
-          <div class="statusseg" id="statusSeg">
-            <button data-s="Active" class="on">Active</button>
-            <button data-s="Inactive">Inactive</button>
-            <button data-s="All">All</button>
-          </div>
           <button class="bulk-toggle" id="bulkToggle" style="display:none">Bulk status</button>
           <span id="typeFilterBar" class="tfbar" style="display:none"></span>
         </div>
@@ -532,15 +570,26 @@
         </div>
       </div>
     </section>
-    <section id="viewAdd" style="display:none">
+    <section id="viewManage" style="display:none">
       <div class="panel">
-        <h2>Add a person</h2>
+        <h2>Manage</h2>
         <div class="body">
-          <p class="team-help">Enter a completed LivStyle assessment. The trait pairs are single sliders — set one side and the other fills automatically. Percentages are whole numbers (e.g. 70). Saves straight into the directory.</p>
-          <div id="addForm"></div>
-          <div class="add-actions">
-            <button class="btn add-save" id="addSave">Save to directory</button>
-            <span class="add-msg" id="addMsg"></span>
+          <nav class="subtabs" id="manageSubtabs">
+            <button data-m="add" id="subAdd" class="on">Add a person</button>
+            <button data-m="structure" id="subStructure">Structure</button>
+          </nav>
+          <div id="mgAddPane">
+            <p class="team-help">Enter a completed LivStyle assessment. The trait pairs are single sliders — set one side and the other fills automatically. Percentages are whole numbers (e.g. 70). Saves straight into the directory.</p>
+            <div id="addMode" class="add-mode"></div>
+            <div id="addForm"></div>
+            <div class="add-actions">
+              <button class="btn add-save" id="addSave">Save to directory</button>
+              <span class="add-msg" id="addMsg"></span>
+            </div>
+          </div>
+          <div id="mgStructurePane" style="display:none">
+            <p class="team-help">Your divisions and their departments, and your teams. Add new ones here — they become available when tagging people and granting leaders access.</p>
+            <div id="manageBody"></div>
           </div>
         </div>
       </div>
@@ -564,6 +613,9 @@ let selectMode = false;
 let selected = new Set();
 let AUTH = null;
 let CAN_ADD = false;
+let CAN_EDIT = false;
+let EDIT_ID = null;
+let ORG = { divisions: [], teams: [] };
 
 /* ---- personality palette (stable, cohesive muted set) ---- */
 const TYPES = ["Ambassador","Communicator","Designer","Discerner","Encourager","Examiner","Exhorter","Innovator","Instructor","Invalid","Motivator","Navigator","Pragmatist","Refiner","Researcher","Supporter","Visionary"];
@@ -648,16 +700,8 @@ function startApp(data){
   sel.addEventListener("change", applyFilter);
   $("search").addEventListener("input", renderTable);
   $("bulkToggle").addEventListener("click", toggleBulk);
-  document.querySelectorAll(".stat.clickable").forEach(s => s.addEventListener("click", () => {
-    statusFilter = s.dataset.status;
-    $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.s === statusFilter));
-    renderStats(); renderTable();
-  }));
-  $("statusSeg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
-    statusFilter = b.dataset.s;
-    $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x===b));
-    renderTable();
-  }));
+  document.querySelectorAll(".stat.clickable").forEach(s => s.addEventListener("click", () => setStatus(s.dataset.status)));
+  $("statusSeg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.s)));
   document.querySelectorAll("th[data-k]").forEach(th => th.addEventListener("click", () => {
     const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
     renderTable();
@@ -665,9 +709,14 @@ function startApp(data){
   $("signout").addEventListener("click", () => location.reload());
   wireViews();
   CAN_ADD = data.canAdd === true;
-  $("tabAdd").style.display = CAN_ADD ? "" : "none";
+  CAN_EDIT = data.canEdit === true;
+  ORG = data.org || { divisions: [], teams: [] };
+  $("tabManage").style.display = (CAN_ADD || CAN_EDIT) ? "" : "none";
   $("bulkToggle").style.display = CAN_ADD ? "" : "none";
-  if (CAN_ADD) buildAddForm();
+  $("subAdd").style.display = CAN_ADD ? "" : "none";
+  $("subStructure").style.display = CAN_EDIT ? "" : "none";
+  $("manageSubtabs").style.display = (CAN_ADD && CAN_EDIT) ? "" : "none";
+  if (CAN_ADD || CAN_EDIT) buildAddForm();
   $("login").value = ""; $("password").value = "";
   applyFilter();
   $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
@@ -675,12 +724,13 @@ function startApp(data){
   document.getElementById("loginView").style.display = "none";
 }
 
-function activeCountries(){
-  return [...new Set(ALL.filter(r => statusOf(r) === "Active").map(r => r.Country).filter(Boolean))].sort();
+function countriesForStatus(){
+  const ok = r => statusFilter==="All" ? true : statusOf(r)===statusFilter;
+  return [...new Set(ALL.filter(ok).map(r => r.Country).filter(Boolean))].sort();
 }
 function rebuildCountrySelect(){
   const sel = $("countrySel"); const cur = sel.value;
-  const countries = activeCountries();
+  const countries = countriesForStatus();
   const showAll = ALL_ALLACCESS || countries.length > 1;
   const opts = showAll ? ["All countries", ...countries] : countries;
   sel.innerHTML = opts.map(c => `<option>${c}</option>`).join("");
@@ -691,6 +741,11 @@ function rebuildCountrySelect(){
     sel.insertAdjacentHTML("beforebegin", `<strong style="font-size:15px">${countries[0]}</strong>`);
   }
   sel.value = opts.includes(cur) ? cur : (opts[0] || "");
+}
+function setStatus(s){
+  statusFilter = s;
+  $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.s === s));
+  applyFilter();
 }
 
 function applyFilter(){
@@ -1005,7 +1060,7 @@ const ADD_MULTI = {
   "C.A.R.E. Mindset": { prefix:"C.A.R.E. Mindset: ", keys:["Creative","Adaptive","Refining","Engaging"], sum:false },
 };
 
-function buildAddForm(){
+function buildAddForm(record){
   const typeOpts = ['<option value=""></option>', ...TYPES.map(t=>`<option>${t}</option>`)].join("");
   const countryOpts = ['<option value=""></option>', ...ADD_COUNTRIES.map(c=>`<option>${c}</option>`)].join("");
   let html = "";
@@ -1024,6 +1079,14 @@ function buildAddForm(){
     <div class="add-f"><label>Personality under pressure</label><select data-k="Personality Under Pressure">${typeOpts}</select></div>
     <div class="add-f"><label>PUP# (optional)</label><input type="text" data-k="PUP#"></div>
     <div class="add-f full"><label>Decision-making (e.g. "Careful Inward Red")</label><input type="text" data-k="Decision Making"></div>
+  </div></div>`;
+  const divOpts = ['<option value=""></option>', ...ORG.divisions.map(d=>`<option>${d.name}</option>`)].join("");
+  const deptOpts = ['<option value=""></option>', ...ORG.divisions.map(d=> d.departments.length?`<optgroup label="${d.name}">`+d.departments.map(x=>`<option>${x}</option>`).join("")+`</optgroup>`:"").join("")].join("");
+  const teamChecks = ORG.teams.length ? ORG.teams.map(t=>`<label class="team-chk"><input type="checkbox" class="teamcheck" data-team="${t.name}"> ${t.name}${t.country?` <span class="tc-c">${t.country}</span>`:""}</label>`).join("") : '<span class="team-help">No teams yet — add them in Manage.</span>';
+  html += `<div class="add-grp"><h4>Placement</h4><div class="add-fields">
+    <div class="add-f"><label>Division</label><select data-k="Division">${divOpts}</select></div>
+    <div class="add-f"><label>Department</label><select data-k="Department">${deptOpts}</select></div>
+    <div class="add-f full"><label>Teams</label><div class="team-checks">${teamChecks}</div></div>
   </div></div>`;
   for (const [grp, pairs] of Object.entries(ADD_BIPOLAR)) {
     const pfx = ADD_PREFIX[grp];
@@ -1048,6 +1111,30 @@ function buildAddForm(){
   });
   $("addForm").querySelectorAll('input[data-sum]').forEach(inp=>inp.addEventListener("input", ()=>updateSum(inp.dataset.sum)));
   $("addMsg").textContent=""; $("addMsg").className="add-msg";
+
+  const mode = $("addMode"), save = $("addSave");
+  if (record){
+    EDIT_ID = record.id;
+    $("addForm").querySelectorAll("[data-k]").forEach(el=>{
+      const key=el.dataset.k, v=record[key];
+      if(el.dataset.bool){ el.checked = v===true; return; }
+      if(v==null||v==="") return;
+      el.value = el.dataset.pct ? Math.round(v*100) : v;
+    });
+    $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{
+      const lv=record[sl.dataset.left];
+      if(lv!=null){ sl.value=Math.round(lv*100); sl.dispatchEvent(new Event("input")); }
+    });
+    $("addForm").querySelectorAll('input[data-sum]').forEach(inp=>updateSum(inp.dataset.sum));
+    if(Array.isArray(record.Team)) $("addForm").querySelectorAll(".teamcheck").forEach(cb=>{ cb.checked = record.Team.includes(cb.dataset.team); });
+    save.textContent = "Save changes";
+    mode.innerHTML = `Editing <b>${record["Full Name"]||"this person"}</b> · <button class="linklike" id="addNew">start a new person instead</button>`;
+    const nb=$("addNew"); if(nb) nb.addEventListener("click", ()=>buildAddForm());
+  } else {
+    EDIT_ID = null;
+    save.textContent = "Save to directory";
+    mode.textContent = "";
+  }
 }
 function updateSum(grp){
   const inputs=[...$("addForm").querySelectorAll(`input[data-sum="${grp}"]`)];
@@ -1066,19 +1153,69 @@ async function submitAdd(){
     else F[key]=v;
   });
   $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{ const v=+sl.value; F[sl.dataset.left]=v/100; F[sl.dataset.right]=(100-v)/100; });
+  const teams=[...$("addForm").querySelectorAll(".teamcheck:checked")].map(cb=>cb.dataset.team);
+  if(teams.length) F["Team"]=teams; else if(EDIT_ID) F["Team"]=[];
   const first=(F["First Name"]||"").trim(), last=(F["Last Name"]||"").trim();
   if(!first || !last){ msg.className="add-msg err"; msg.textContent="First and last name are required."; return; }
   F["First Name"]=first; F["Last Name"]=last; F["Full Name"]=`${first} ${last}`;
-  btn.disabled=true; btn.textContent="Saving…"; msg.className="add-msg"; msg.textContent="";
+  const editing = !!EDIT_ID;
+  btn.disabled=true; btn.textContent=editing?"Saving…":"Saving…"; msg.className="add-msg"; msg.textContent="";
   try{
-    const res=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"add", login:AUTH.login, password:AUTH.password, fields:F})});
+    const payload = editing
+      ? { action:"edit", login:AUTH.login, password:AUTH.password, id:EDIT_ID, fields:F }
+      : { action:"add",  login:AUTH.login, password:AUTH.password, fields:F };
+    const res=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
     const data=await res.json();
     if(!res.ok || !data.ok) throw new Error(data.error||"Couldn't save.");
-    msg.className="add-msg ok"; msg.textContent=`Saved ${data.name}. They're in the directory now.`;
-    ALL.push({ id:data.id, ...F }); applyFilter(); buildAddForm();
+    if(editing){
+      const r=ALL.find(x=>x.id===EDIT_ID); if(r) Object.assign(r, F);
+      applyFilter();
+      msg.className="add-msg ok"; msg.textContent=`Saved changes to ${data.name}.`;
+    } else {
+      ALL.push({ id:data.id, ...F }); applyFilter(); buildAddForm();
+      msg.className="add-msg ok"; msg.textContent=`Saved ${data.name}. They're in the directory now.`;
+    }
   }catch(err){ msg.className="add-msg err"; msg.textContent=err.message; }
-  btn.disabled=false; btn.textContent="Save to directory";
+  btn.disabled=false; btn.textContent=editing?"Save changes":"Save to directory";
+}
+
+/* ================= MANAGE STRUCTURE ================= */
+function renderManage(){
+  const mb = $("manageBody"); if(!mb) return;
+  const divs = ORG.divisions.map(d=>`
+    <div class="mg-div">
+      <div class="mg-div-h">${d.name}</div>
+      <ul class="mg-depts">${d.departments.map(x=>`<li>${x}</li>`).join("") || '<li class="mg-empty">No departments yet</li>'}</ul>
+      <div class="mg-add"><input placeholder="Add department…" data-adddept="${d.name}"><button class="mg-btn" data-adddept-btn="${d.name}">Add</button></div>
+    </div>`).join("") || '<p class="mg-empty">No divisions yet.</p>';
+  const teams = ORG.teams.map(t=>`<li>${t.name}${t.country?` · <span class="tc-c">${t.country}</span>`:""}</li>`).join("") || '<li class="mg-empty">No teams yet</li>';
+  mb.innerHTML = `
+    <div class="mg-sec"><h3>Divisions &amp; departments</h3>${divs}
+      <div class="mg-add mg-add-top"><input id="mgNewDiv" placeholder="Add a division"><button class="mg-btn" id="mgAddDiv">Add division</button></div>
+    </div>
+    <div class="mg-sec"><h3>Teams</h3><ul class="mg-teams">${teams}</ul>
+      <div class="mg-add mg-add-top"><input id="mgNewTeam" placeholder="Team name"><input id="mgNewTeamCountry" placeholder="Country (optional)"><button class="mg-btn" id="mgAddTeam">Add team</button></div>
+    </div>
+    <div class="mg-msg" id="mgMsg"></div>`;
+  mb.querySelector("#mgAddDiv").addEventListener("click", ()=>orgAdd({kind:"division", name:$("mgNewDiv").value}));
+  mb.querySelector("#mgAddTeam").addEventListener("click", ()=>orgAdd({kind:"team", name:$("mgNewTeam").value, country:$("mgNewTeamCountry").value}));
+  mb.querySelectorAll("[data-adddept-btn]").forEach(b=>b.addEventListener("click", ()=>{
+    const dv=b.getAttribute("data-adddept-btn");
+    orgAdd({kind:"department", name:mb.querySelector(`[data-adddept="${dv}"]`).value, division:dv});
+  }));
+}
+async function orgAdd(payload){
+  const msg = $("mgMsg");
+  if(!payload.name || !payload.name.trim()){ if(msg){ msg.className="mg-msg err"; msg.textContent="Enter a name."; } return; }
+  if(msg){ msg.className="mg-msg"; msg.textContent="Saving…"; }
+  try{
+    const res = await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"orgAdd", login:AUTH.login, password:AUTH.password, ...payload})});
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error||"Couldn't save.");
+    ORG = data.org; renderManage();
+    if(CAN_ADD || CAN_EDIT) buildAddForm();
+  }catch(err){ if(msg){ msg.className="mg-msg err"; msg.textContent=err.message; } }
 }
 
 /* ================= FOUR-CORNER STYLE (derived from traits) =================
@@ -1719,11 +1856,13 @@ function wireViews(){
     $("viewCompare").style.display   = v==="compare"?"":"none";
     $("viewTeam").style.display      = v==="team"?"":"none";
     $("viewRole").style.display      = v==="role"?"":"none";
-    $("viewAdd").style.display       = v==="add"?"":"none";
+    $("viewManage").style.display    = v==="manage"?"":"none";
     if(v==="compare") renderCompare();
     if(v==="team"){ renderTeamPicker(); if(TEAM.size>=2) renderTeam(); }
     if(v==="role"){ initRoleFit(); renderRoleResults(); }
+    if(v==="manage") setManageSub(CAN_ADD ? "add" : "structure");
   }));
+  $("manageSubtabs").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setManageSub(b.dataset.m)));
   $("addSave").addEventListener("click", submitAdd);
   $("cmpA").addEventListener("change",renderCompare);
   $("cmpB").addEventListener("change",renderCompare);
@@ -1767,7 +1906,7 @@ function openDrawer(id){
     <div class="dhead">
       <button class="close" id="dClose" aria-label="Close">×</button>
       <h3>${r["Full Name"]||"—"}</h3>
-      <div class="dstatus">${statusControl(r)}</div>
+      <div class="dstatus">${statusControl(r)}${CAN_EDIT?` <button class="editbtn" id="editProfile">Edit profile</button>`:""}</div>
       <div class="meta">${r.Country||""}${r["Assessment Date"]?" · assessed "+r["Assessment Date"]:""}${r.Accuracy!=null?" · "+pct(r.Accuracy)+" accuracy":""}</div>
       <div class="twin">
         <div class="t">Primary<span class="v"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></div>
@@ -1786,6 +1925,26 @@ function openDrawer(id){
   const d = $("drawer"); d.innerHTML = html; d.classList.add("open"); $("scrim").classList.add("open");
   $("dClose").addEventListener("click", closeDrawer);
   const st = $("statToggle"); if (st) st.addEventListener("click", () => toggleStatus(id));
+  const ep = $("editProfile"); if (ep) ep.addEventListener("click", () => { closeDrawer(); gotoAddForEdit(id); });
+}
+
+function setManageSub(sub){
+  if(sub==="add" && !CAN_ADD) sub="structure";
+  if(sub==="structure" && !CAN_EDIT) sub="add";
+  $("mgAddPane").style.display = sub==="add" ? "" : "none";
+  $("mgStructurePane").style.display = sub==="structure" ? "" : "none";
+  $("manageSubtabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m===sub));
+  if(sub==="structure") renderManage();
+}
+
+function gotoAddForEdit(id){
+  const r = ALL.find(x => x.id === id); if (!r) return;
+  $("tabs").querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.view === "manage"));
+  ["viewDirectory","viewCompare","viewTeam","viewRole","viewManage"].forEach(v =>
+    document.getElementById(v).style.display = (v === "viewManage" ? "" : "none"));
+  setManageSub("add");
+  buildAddForm(r);
+  window.scrollTo(0, 0);
 }
 
 function statusControl(r){
