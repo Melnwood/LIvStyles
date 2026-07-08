@@ -183,6 +183,27 @@ exports.handler = async (event) => {
     } catch (e) { return json(502, { error: "Couldn't save the structure. " + e.message }); }
   }
 
+  // ---- Org structure: delete a division / department / team ----
+  if (action === "orgDelete") {
+    if (leader.fields["Can Edit"] !== true) return json(403, { error: "This account isn't allowed to manage the structure." });
+    const kind = body.kind, name = (body.name || "").trim();
+    if (!name) return json(400, { error: "Nothing to delete." });
+    try {
+      const { id, cfg } = await getOrgConfig();
+      if (!id) return json(502, { error: "Structure record not found." });
+      if (kind === "division") {
+        cfg.divisions = cfg.divisions.filter(d => d.name !== name);
+      } else if (kind === "department") {
+        const dv = cfg.divisions.find(d => d.name === body.division);
+        if (dv) dv.departments = dv.departments.filter(x => x !== name);
+      } else if (kind === "team") {
+        cfg.teams = cfg.teams.filter(t => t.name !== name);
+      } else return json(400, { error: "Unknown item type." });
+      await saveOrgConfig(id, cfg);
+      return json(200, { ok: true, org: cfg });
+    } catch (e) { return json(502, { error: "Couldn't update the structure. " + e.message }); }
+  }
+
   // ---- Edit an existing person (any fields) ----
   if (action === "edit") {
     if (leader.fields["Can Edit"] !== true) return json(403, { error: "This account isn't allowed to edit people." });

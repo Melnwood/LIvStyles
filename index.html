@@ -162,7 +162,10 @@
   .mg-sec{margin-bottom:28px}
   .mg-sec h3{font-family:Fraunces,serif; font-weight:600; font-size:18px; margin:0 0 12px}
   .mg-div{border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#fcfbf8}
-  .mg-div-h{font-weight:600; font-size:14.5px; margin-bottom:8px}
+  .mg-div-h{font-weight:600; font-size:14.5px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .mg-del{background:none; border:none; color:#b0aca3; font-size:16px; line-height:1; cursor:pointer; padding:0 4px; border-radius:4px}
+  .mg-del:hover{color:#9a2f24; background:#f6e3df}
+  .mg-depts li, .mg-teams li{display:flex; align-items:center; justify-content:space-between; gap:8px}
   .mg-depts{margin:0 0 10px; padding-left:20px}
   .mg-depts li{font-size:13.5px; margin-bottom:4px}
   .mg-empty{color:var(--muted); font-style:italic; list-style:none; margin-left:-20px}
@@ -1184,11 +1187,11 @@ function renderManage(){
   const mb = $("manageBody"); if(!mb) return;
   const divs = ORG.divisions.map(d=>`
     <div class="mg-div">
-      <div class="mg-div-h">${d.name}</div>
-      <ul class="mg-depts">${d.departments.map(x=>`<li>${x}</li>`).join("") || '<li class="mg-empty">No departments yet</li>'}</ul>
+      <div class="mg-div-h"><span>${d.name}</span><button class="mg-del" data-deldiv="${d.name}" title="Delete division">×</button></div>
+      <ul class="mg-depts">${d.departments.map(x=>`<li>${x} <button class="mg-del" data-deldept="${x}" data-div="${d.name}" title="Delete department">×</button></li>`).join("") || '<li class="mg-empty">No departments yet</li>'}</ul>
       <div class="mg-add"><input placeholder="Add department…" data-adddept="${d.name}"><button class="mg-btn" data-adddept-btn="${d.name}">Add</button></div>
     </div>`).join("") || '<p class="mg-empty">No divisions yet.</p>';
-  const teams = ORG.teams.map(t=>`<li>${t.name}${t.country?` · <span class="tc-c">${t.country}</span>`:""}</li>`).join("") || '<li class="mg-empty">No teams yet</li>';
+  const teams = ORG.teams.map(t=>`<li>${t.name}${t.country?` · <span class="tc-c">${t.country}</span>`:""} <button class="mg-del" data-delteam="${t.name}" title="Delete team">×</button></li>`).join("") || '<li class="mg-empty">No teams yet</li>';
   mb.innerHTML = `
     <div class="mg-sec"><h3>Divisions &amp; departments</h3>${divs}
       <div class="mg-add mg-add-top"><input id="mgNewDiv" placeholder="Add a division"><button class="mg-btn" id="mgAddDiv">Add division</button></div>
@@ -1203,14 +1206,26 @@ function renderManage(){
     const dv=b.getAttribute("data-adddept-btn");
     orgAdd({kind:"department", name:mb.querySelector(`[data-adddept="${dv}"]`).value, division:dv});
   }));
+  mb.querySelectorAll("[data-deldiv]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-deldiv"); orgDelete({kind:"division", name:n}, `the division “${n}” and its departments`); }));
+  mb.querySelectorAll("[data-deldept]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-deldept"); orgDelete({kind:"department", name:n, division:b.getAttribute("data-div")}, `the department “${n}”`); }));
+  mb.querySelectorAll("[data-delteam]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-delteam"); orgDelete({kind:"team", name:n}, `the team “${n}”`); }));
 }
 async function orgAdd(payload){
   const msg = $("mgMsg");
   if(!payload.name || !payload.name.trim()){ if(msg){ msg.className="mg-msg err"; msg.textContent="Enter a name."; } return; }
   if(msg){ msg.className="mg-msg"; msg.textContent="Saving…"; }
+  await orgSend({action:"orgAdd", ...payload});
+}
+async function orgDelete(payload, label){
+  if(!window.confirm(`Delete ${label}?\n\nPeople already tagged keep the value until you re-tag them.`)) return;
+  const msg = $("mgMsg"); if(msg){ msg.className="mg-msg"; msg.textContent="Deleting…"; }
+  await orgSend({action:"orgDelete", ...payload});
+}
+async function orgSend(payload){
+  const msg = $("mgMsg");
   try{
     const res = await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"orgAdd", login:AUTH.login, password:AUTH.password, ...payload})});
+      body:JSON.stringify({ login:AUTH.login, password:AUTH.password, ...payload })});
     const data = await res.json();
     if(!res.ok || !data.ok) throw new Error(data.error||"Couldn't save.");
     ORG = data.org; renderManage();
