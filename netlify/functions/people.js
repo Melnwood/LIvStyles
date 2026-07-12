@@ -15,9 +15,46 @@ const FIELDS = [
   "WG Geniuses", "WG Competencies", "WG Frustrations",
   "CS 1", "CS 2", "CS 3", "CS 4", "CS 5",
   "SG 1", "SG 2", "SG 3",
-  "Key Thread",
+  "Key Thread", "Motion From", "Motion To",
   "Leadership Set",
+  // LivStyle traits — used by Role Fit scoring
+  "Processing Blueprint: Intuitive", "Processing Blueprint: Concrete",
+  "Processing Blueprint: Heart", "Processing Blueprint: Orderly",
+  "Motivation Why: Activity", "Motivation Why: Affiliation", "Motivation Why: Power",
+  "Motivation Why: Attainment",
+  "Motivation How: Ideas", "Motivation How: Freedom", "Motivation How: Consistency",
+  "Motivation How: Self-Affirmed", "Motivation How: Task Completion", "Motivation How: Prefers Process",
+  "Conflict Mngmt: Collaborating", "Conflict Mngmt: Competing",
+  "C.A.R.E. Mindset: Creative", "C.A.R.E. Mindset: Refining", "C.A.R.E. Mindset: Engaging",
 ];
+
+// Airtable percent fields can come back as 0-1 or 0-100 depending on how they were
+// imported. Normalise everything to 0-100.
+const pct = (v) => {
+  if (typeof v !== "number") return null;
+  return v <= 1 ? Math.round(v * 100) : Math.round(v);
+};
+const TRAITS = {
+  Intuitive: "Processing Blueprint: Intuitive",
+  Concrete: "Processing Blueprint: Concrete",
+  Heart: "Processing Blueprint: Heart",
+  Orderly: "Processing Blueprint: Orderly",
+  Activity: "Motivation Why: Activity",
+  Affiliation: "Motivation Why: Affiliation",
+  Power: "Motivation Why: Power",
+  Attainment: "Motivation Why: Attainment",
+  Ideas: "Motivation How: Ideas",
+  Freedom: "Motivation How: Freedom",
+  Consistency: "Motivation How: Consistency",
+  "Self-Affirmed": "Motivation How: Self-Affirmed",
+  "Task Completion": "Motivation How: Task Completion",
+  "Prefers Process": "Motivation How: Prefers Process",
+  Collaborating: "Conflict Mngmt: Collaborating",
+  Competing: "Conflict Mngmt: Competing",
+  Creative: "C.A.R.E. Mindset: Creative",
+  Refining: "C.A.R.E. Mindset: Refining",
+  Engaging: "C.A.R.E. Mindset: Engaging",
+};
 
 const asArray = (v) => (Array.isArray(v) ? v : v ? [v] : []);
 
@@ -104,6 +141,9 @@ exports.handler = async (event) => {
           cs: ["CS 1", "CS 2", "CS 3", "CS 4", "CS 5"].map((k) => x[k]).filter(Boolean),
           sg: ["SG 1", "SG 2", "SG 3"].map((k) => x[k]).filter(Boolean),
           kt: x["Key Thread"] || "",
+          mf: x["Motion From"] || "",
+          mt: x["Motion To"] || "",
+          tr: Object.fromEntries(Object.entries(TRAITS).map(([k, f]) => [k, pct(x[f])]).filter(e => e[1] !== null)),
         });
       });
       offset = data.offset;

@@ -111,29 +111,101 @@
   .go:disabled{opacity:.4;cursor:not-allowed}
   .disclaim{font-size:11.5px;color:#9aa6a2;margin-top:14px;line-height:1.5}
   .hint{font-size:13px;color:var(--soft);padding:30px 0}
-  .scrim{position:fixed;inset:0;background:rgba(20,30,29,.4);opacity:0;pointer-events:none;transition:.2s;z-index:20}
-  .scrim.show{opacity:1;pointer-events:auto}
-  .panel{position:fixed;top:0;right:0;bottom:0;width:min(580px,95vw);background:var(--paper);box-shadow:-10px 0 40px rgba(0,0,0,.15);transform:translateX(100%);transition:.26s cubic-bezier(.3,0,.2,1);z-index:21;overflow-y:auto}
-  .panel.show{transform:translateX(0)}
-  .ph{padding:28px 30px 8px}
-  .ph h2{font-family:"Newsreader",serif;font-size:30px;font-weight:500}.ph .grp{font-size:13px;color:var(--soft);margin-top:3px}
-  .close{position:absolute;top:26px;right:26px;width:32px;height:32px;border:1px solid var(--line);background:var(--card);border-radius:9px;cursor:pointer;font-size:16px;color:var(--soft)}
-  .pbody{padding:0 30px 50px}
-  .thread{background:var(--ink);color:#fff;border-radius:14px;padding:22px 24px;margin:8px 0 20px;position:relative;overflow:hidden}
-  .thread::before{content:"";position:absolute;top:0;left:0;bottom:0;width:4px;background:linear-gradient(var(--liv),var(--p16),var(--cs),var(--wg),var(--sg))}
-  .thread .lbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#9fb3b0;font-weight:700;margin-bottom:9px}
-  .thread p{font-family:"Newsreader",serif;font-size:19px;line-height:1.4;font-weight:400}
-  .thread .why{margin-top:12px;font-family:"Inter";font-size:13px;color:#b9c7c4;border-top:1px solid rgba(255,255,255,.13);padding-top:11px;line-height:1.5}
+  .back{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--soft);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer;margin-bottom:20px}
+  .back:hover{color:var(--ink);border-color:var(--ink)}
+  .detail{padding-bottom:70px}
+  .dhead{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .dhead h2{font-family:"Newsreader",serif;font-size:38px;font-weight:500;line-height:1.1}
+  .dhead .grp{font-size:14px;color:var(--soft);padding-bottom:5px}
+  .thread{background:var(--ink);color:#fff;border-radius:16px;padding:30px 34px;margin-bottom:22px;position:relative;overflow:hidden}
+  .thread::before{content:"";position:absolute;top:0;left:0;bottom:0;width:5px;background:linear-gradient(var(--liv),var(--p16),var(--cs),var(--wg),var(--sg))}
+  .thread .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9fb3b0;font-weight:700;margin-bottom:11px}
+  .thread p{font-family:"Newsreader",serif;font-size:27px;line-height:1.34;font-weight:400;max-width:52ch}
+  .thread .why{margin-top:16px;font-family:"Inter";font-size:14px;color:#b9c7c4;border-top:1px solid rgba(255,255,255,.13);padding-top:14px;line-height:1.6;max-width:80ch}
   .thread.empty{background:#eef1ee;color:#8a968f}
   .thread.empty::before{opacity:.35}
-  .thread.empty p{font-family:"Inter";font-size:14px}
-  .frameworks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
-  .fw{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative}
-  .fw::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+  .thread.empty p{font-family:"Inter";font-size:16px}
+  .cols{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+  .synth{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 26px 22px;margin-bottom:18px}
+  .sec{padding:18px 0;border-bottom:1px solid var(--line)}.sec:last-child{border-bottom:none}
+  .sec h4{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .sec h4 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+  .sec p{font-size:15px;line-height:1.65}.sec.nut p{font-size:17px;font-family:"Newsreader",serif;line-height:1.5}
+  .sec ul{margin:0;padding-left:2px;list-style:none}
+  .sec li{font-size:14.5px;line-height:1.6;padding:4px 0 4px 18px;position:relative}
+  .sec li::before{content:"\2039";position:absolute;left:2px;color:var(--accent);font-weight:700}
+  .frameworks{display:grid;grid-template-columns:1fr;gap:12px}
+  .fw{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px 18px;position:relative}
+  .fw::before{content:"";position:absolute;left:0;top:15px;bottom:15px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
   .fw .t{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--soft);font-weight:600;margin-bottom:6px}
-  .fw .v{font-family:"Newsreader",serif;font-size:17px;line-height:1.25}
-  .fw .v small{font-family:"Inter";font-size:12.5px;color:var(--soft);display:block;margin-top:3px;font-weight:400}
-  .fw.full{grid-column:1/-1}
+  .fw .v{font-family:"Newsreader",serif;font-size:19px;line-height:1.3}
+  .fw .v small{font-family:"Inter";font-size:13px;color:var(--soft);display:block;margin-top:4px;font-weight:400}
+  .wggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
+  @media(max-width:760px){.wggrid{grid-template-columns:1fr}}
+  .wgcell{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--paper)}
+  .wgcell.gap{border-color:var(--wg);background:#fdf3f1}
+  .wgcell.thin{border-color:var(--cs);background:#fdf8ef}
+  .wgcell .thintag{font-size:10px;font-weight:700;color:var(--cs);text-transform:uppercase;letter-spacing:.06em}
+  .wgcell .g{font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .wgcell .who{font-size:13px;color:var(--soft);margin-top:6px;line-height:1.5}
+  .wgcell .gaptag{font-size:10px;font-weight:700;color:var(--wg);text-transform:uppercase;letter-spacing:.06em}
+  .wgcell .covtag{font-size:10px;font-weight:700;color:var(--sg);text-transform:uppercase;letter-spacing:.06em}
+  ul.roll li,ul.shift li{padding:6px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+  ul.roll li:last-child,ul.shift li:last-child{border-bottom:none}
+  ul.roll li::before,ul.shift li::before{content:none}
+  ul.roll li,ul.shift li{padding-left:0}
+  .dombar{margin:11px 0}
+  .dombar .top2{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;gap:10px}
+  .dombar .top2 .lean{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--cs)}
+  .track{height:9px;background:#eef1ee;border-radius:5px;overflow:hidden}
+  .fill{height:100%;background:var(--cs);border-radius:5px}
+  .split{height:9px;background:var(--p16);border-radius:5px;overflow:hidden;opacity:.25}
+  .split .sa{height:100%;background:var(--p16);opacity:1;border-radius:5px}
+  .gchips{display:flex;flex-wrap:wrap;gap:7px}
+  .gchip{font-size:12.5px;font-weight:600;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+  .motion{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:999px;padding:6px 14px;margin-top:16px}
+  .motion .ar{opacity:.55;font-weight:400}
+  .mchip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+  .mchip .ar{color:var(--soft);font-weight:400}
+  .flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin:6px 0 2px}
+  .flowcol h5{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft);font-weight:700;margin-bottom:9px}
+  .frow{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+  .frow .bar{height:7px;border-radius:4px;background:var(--accent);flex:none}
+  .frow .lb{flex:1}
+  .frow .ct2{color:var(--soft);font-weight:600;font-size:12px}
+  .frow.none .lb{color:var(--wg);font-weight:600}
+  .arrowmid{font-size:22px;color:var(--soft);opacity:.5}
+  .collective{background:var(--ink);color:#fff;border-radius:16px;padding:26px 30px;margin-bottom:18px;position:relative;overflow:hidden}
+  .collective::before{content:"";position:absolute;top:0;left:0;bottom:0;width:5px;background:linear-gradient(var(--liv),var(--p16),var(--cs),var(--wg),var(--sg))}
+  .collective .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9fb3b0;font-weight:700;margin-bottom:11px}
+  .collective p{font-family:"Newsreader",serif;font-size:23px;line-height:1.4;max-width:60ch}
+  .rfgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  @media(max-width:820px){.rfgrid{grid-template-columns:1fr}}
+  .dial{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 17px}
+  .dial .dl{font-size:14px;font-weight:700;margin-bottom:3px}
+  .dial .dq{font-size:12.5px;color:var(--soft);line-height:1.5;margin-bottom:10px}
+  .lv{display:flex;gap:5px}
+  .lv button{flex:1;font-family:inherit;font-size:12px;font-weight:600;color:var(--soft);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:7px 4px;cursor:pointer}
+  .lv button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .helpq{font-size:12px;color:var(--soft);margin-top:9px;line-height:1.55;border-top:1px dashed var(--line);padding-top:9px;display:none}
+  .dial.open .helpq{display:block}
+  .helpq b{color:var(--ink)}
+  .hlink{font-size:11.5px;font-weight:600;color:var(--liv);cursor:pointer;margin-top:8px;display:inline-block}
+  .rfbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .rfbar select{font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);min-width:240px}
+  .match{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:9px;cursor:pointer;display:flex;gap:14px;align-items:center;transition:.12s}
+  .match:hover{transform:translateX(2px);box-shadow:var(--shadow)}
+  .match .pctb{font-family:"Newsreader",serif;font-size:25px;font-weight:500;min-width:56px;text-align:right}
+  .match .mid{flex:1}
+  .match .nm{font-family:"Newsreader",serif;font-size:19px}
+  .match .why{font-size:12.5px;color:var(--soft);margin-top:3px;line-height:1.5}
+  .match .warn{font-size:12px;color:var(--wg);font-weight:600;margin-top:4px}
+  .match.top{border-color:var(--sg);box-shadow:0 0 0 1px var(--sg)}
+  .fitbar{height:6px;background:#eef1ee;border-radius:4px;overflow:hidden;margin-top:6px}
+  .fitbar div{height:100%;background:var(--sg);border-radius:4px}
+  .collective .sub{margin-top:14px;font-family:"Inter";font-size:13.5px;color:#b9c7c4;border-top:1px solid rgba(255,255,255,.13);padding-top:12px;line-height:1.6}
+  .disclaim{font-size:12px;color:#9aa6a2;margin-top:16px;line-height:1.6}
   .loading{padding:70px 0;text-align:center;color:var(--soft);font-size:14px}
 </style>
 </head>
@@ -170,14 +242,13 @@
     <button class="mode active" data-m="people" onclick="setMode('people')">People</button>
     <button class="mode" data-m="compare" onclick="setMode('compare')">Compare two</button>
     <button class="mode" data-m="team" onclick="setMode('team')">Build a team</button>
+    <button class="mode" data-m="threads" onclick="setMode('threads')">Threads</button>
+    <button class="mode" data-m="role" onclick="setMode('role')">Role fit</button>
    </div>
   </div>
   <div id="view"></div>
  </div>
 </div>
-
-<div class="scrim" id="scrim" onclick="closePanel()"></div>
-<aside class="panel" id="panel"></aside>
 
 <script>
 let P=[];
@@ -187,6 +258,12 @@ const WGdesc={Wonder:"asking the big questions and spotting needs",Invention:"ge
 const WGgap={Wonder:"no one instinctively steps back to ask whether you're solving the right problem",Invention:"few original solutions in the room — the team may keep recycling old ones",Discernment:"ideas go unfiltered; weak gut-check on what's actually good",Galvanizing:"no natural rallier — initiatives may lack momentum and buy-in",Enablement:"people don't instinctively jump in to help; support gaps appear",Tenacity:"things get started but stall before the finish line"};
 const DOM={Executing:["Achiever","Arranger","Belief","Consistency","Deliberative","Discipline","Focus","Responsibility","Restorative"],Influencing:["Activator","Command","Communication","Competition","Maximizer","Self-Assurance","Significance","Woo"],"Relationship Building":["Adaptability","Connectedness","Developer","Empathy","Harmony","Includer","Individualization","Positivity","Relator"],"Strategic Thinking":["Analytical","Context","Futuristic","Ideation","Input","Intellection","Learner","Strategic"]};
 const DOMdesc={Executing:"making things happen and following through",Influencing:"speaking up, selling ideas and moving others","Relationship Building":"building trust and holding teams together","Strategic Thinking":"taking in information and thinking ahead"};
+const SPARKS=["Conviction","Curiosity","Insight","Vision","Ideas","People","Order","Service"];
+const LANDINGS=["Ownership","Completion","Understanding","Momentum","Growth in People","Direction","Improvement","Care","Possibility"];
+const SPARKDESC={Conviction:"what they believe is right",Curiosity:"an open question",Insight:"what they perceive",Vision:"what could be",Ideas:"something new they generate",People:"the person in front of them",Order:"structure and system",Service:"a need they notice"};
+const LANDDESC={Ownership:"someone personally carrying it",Completion:"the thing finished",Understanding:"clarity others can use",Momentum:"people moving",'Growth in People':"a person grown",Direction:"a clear course",Improvement:"something made better",Care:"someone sustained",Possibility:"a door opened"};
+const motion=p=>(p.mf&&p.mt)?p.mf+" \u2192 "+p.mt:"";
+const hasMotion=p=>!!(p.mf&&p.mt);
 const wgStage=g=>["Wonder","Invention"].includes(g)?"early":["Discernment","Galvanizing"].includes(g)?"mid":"late";
 function domainsOf(cs){const c={Executing:0,Influencing:0,"Relationship Building":0,"Strategic Thinking":0};cs.forEach(s=>{for(const d in DOM)if(DOM[d].includes(s))c[d]++;});return Object.entries(c).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);}
 function threadParts(kt){if(!kt)return null;const i=kt.indexOf('Thread:');if(i<0)return {head:kt,why:''};let head=kt.slice(i+7).trim().replace(/\.$/,'');head=head.charAt(0).toUpperCase()+head.slice(1);return {head:head,why:kt.slice(0,i).trim()};}
@@ -230,6 +307,43 @@ function boot(data){
 })();
 
 /* ---------- synthesis ---------- */
+function motionRead(list){
+ const M=list.filter(hasMotion), N=M.length;
+ const sp={},ld={};
+ M.forEach(p=>{sp[p.mf]=(sp[p.mf]||0)+1;ld[p.mt]=(ld[p.mt]||0)+1;});
+ const spSorted=SPARKS.map(k=>[k,sp[k]||0]).sort((a,b)=>b[1]-a[1]);
+ const ldSorted=LANDINGS.map(k=>[k,ld[k]||0]).sort((a,b)=>b[1]-a[1]);
+ const missingSpark=SPARKS.filter(k=>!sp[k]);
+ const missingLand=LANDINGS.filter(k=>!ld[k]);
+ const rareSpark=spSorted.filter(e=>e[1]>0&&e[1]/N<=0.08).map(e=>e[0]);
+ const rareLand=ldSorted.filter(e=>e[1]>0&&e[1]/N<=0.08).map(e=>e[0]);
+ // echoes: identical motion, different people
+ const byMotion={};
+ M.forEach(p=>{const k=motion(p);(byMotion[k]=byMotion[k]||[]).push(p);});
+ const echoes=Object.entries(byMotion).filter(e=>e[1].length>1).sort((a,b)=>b[1].length-a[1].length);
+ // chains: A's landing is B's spark
+ const chains=[];
+ M.forEach(a=>M.forEach(b=>{if(a!==b&&a.mt===b.mf)chains.push([a,b]);}));
+ return {M,N,sp,ld,spSorted,ldSorted,missingSpark,missingLand,rareSpark,rareLand,echoes,chains};
+}
+function collectiveSentence(r){
+ if(!r.N)return null;
+ const s1=r.spSorted[0],s2=r.spSorted[1],l1=r.ldSorted[0],l2=r.ldSorted[1];
+ const sparkPart=(s2&&s2[1]&&s2[1]>=s1[1]*0.6)?(s1[0].toLowerCase()+" and "+s2[0].toLowerCase()):s1[0].toLowerCase();
+ const landPart=(l2&&l2[1]&&l2[1]>=l1[1]*0.6)?(l1[0].toLowerCase()+" and "+l2[0].toLowerCase()):l1[0].toLowerCase();
+ return "This group turns <b>"+sparkPart+"</b> into <b>"+landPart+"</b>.";
+}
+function motionFlow(r){
+ const mx=Math.max(1,...r.spSorted.map(e=>e[1]),...r.ldSorted.map(e=>e[1]));
+ const col=(items,accent)=>items.map(function(e){
+   const w=Math.round(e[1]/mx*100);
+   return '<div class="frow '+(e[1]?'':'none')+'" style="--accent:'+accent+'"><span class="lb">'+e[0]+'</span>'
+     +(e[1]?'<span class="bar" style="width:'+Math.max(6,w*0.55)+'px"></span><span class="ct2">'+e[1]+'</span>':'<span class="ct2">none</span>')+'</div>';
+ }).join('');
+ return '<div class="flow"><div class="flowcol"><h5>Where energy starts</h5>'+col(r.spSorted,'var(--liv)')+'</div>'
+  +'<div class="arrowmid">\u2192</div>'
+  +'<div class="flowcol"><h5>Where it lands</h5>'+col(r.ldSorted,'var(--sg)')+'</div></div>';
+}
 function synth(p){const out={};const dom=domainsOf(p.cs);
  let work=[];const dn=dom.map(d=>d[0]);
  if(p.t&&T16[p.t])work.push(T16[p.t][1].charAt(0).toUpperCase()+T16[p.t][1].slice(1)+".");
@@ -248,6 +362,7 @@ function synth(p){const out={};const dom=domainsOf(p.cs);
  if(!w.length)w.push("Fill in remaining assessments to sharpen this read.");out.watch=w;
  return out;}
 
+let page="list",cur=null;
 let mode="people",scope="lead",filter={type:null,grp:null,q:""},cmpA=0,cmpB=1,team=[];
 const V=()=>document.getElementById('view');
 // "Active" = Status is Active, or blank (the base currently leaves current staff blank).
@@ -262,7 +377,9 @@ function renderScope(){
  document.getElementById('scopebar').innerHTML=SCOPES.map(function(x){
   return '<button class="'+(scope===x[0]?'on':'')+'" onclick="setScope(\''+x[0]+'\')">'+x[1]+' <span class="ct">'+scopeCount(x[0])+'</span></button>';
  }).join('');}
-function setMode(m){mode=m;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.m===m));document.body.classList.toggle('pick',m==='team');render();}
+function setMode(m){mode=m;page="list";cur=null;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.m===m));document.body.classList.toggle('pick',m==='team');render();}
+function backToList(){page="list";cur=null;render();window.scrollTo(0,0);}
+function chrome(show){document.querySelector('.modes').style.display=show?'flex':'none';document.getElementById('scopebar').style.display=show?'inline-flex':'none';}
 
 const tileDefs=[{k:"all",l:"In view",a:"var(--ink)",c:()=>SC().length},{k:"kt",l:"With Key Thread",a:"var(--ink)",c:()=>SC().filter(p=>p.kt).length},{k:"wg",l:"With Wk. Genius",a:"var(--wg)",c:()=>SC().filter(p=>p.wg.length).length},{k:"cs",l:"With Strengths",a:"var(--cs)",c:()=>SC().filter(p=>p.cs.length).length},{k:"sg",l:"With Sp. Gifts",a:"var(--sg)",c:()=>SC().filter(p=>p.sg.length).length}];
 function pmatch(p){if(!inScope(p))return false;if(filter.type==='kt'&&!p.kt)return false;if(filter.type==='wg'&&!p.wg.length)return false;if(filter.type==='cs'&&!p.cs.length)return false;if(filter.type==='sg'&&!p.sg.length)return false;if(filter.grp&&p.g!==filter.grp)return false;if(filter.q&&!p.n.toLowerCase().includes(filter.q.toLowerCase()))return false;return true;}
@@ -271,8 +388,8 @@ function peopleView(){
  +'<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
  +'<div class="grid">'+cardList(P.filter(pmatch),false)+'</div>';}
 function cardList(list,pick){return list.map(p=>{const i=P.indexOf(p);const tp=threadParts(p.kt);
- return '<div class="person '+(team.includes(i)?"sel":"")+'" onclick="'+(pick?"toggleTeam("+i+")":"openPanel("+i+")")+'"><span class="tick">\u2713</span><h3>'+p.n+(scope!=='lead'&&p.lead?'<span class="star" title="Leadership set">\u2605</span>':'')+(scope==='inactive'?'<span class="inact">inactive</span>':'')+'</h3><div class="grp">'+p.g+'</div>'
- +(tp?'<div class="ktline">'+tp.head+'.</div>':'')
+ return '<div class="person '+(team.includes(i)?"sel":"")+'" onclick="'+(pick?"toggleTeam("+i+")":"openPerson("+i+")")+'"><span class="tick">\u2713</span><h3>'+p.n+(scope!=='lead'&&p.lead?'<span class="star" title="Leadership set">\u2605</span>':'')+(scope==='inactive'?'<span class="inact">inactive</span>':'')+'</h3><div class="grp">'+p.g+'</div>'
+ +(tp?'<div class="ktline">'+tp.head+'.</div>':'')+(hasMotion(p)?'<div style="margin:-4px 0 10px"><span class="mchip" style="font-size:11px;padding:3px 9px">'+p.mf+' <span class="ar">\u2192</span> '+p.mt+'</span></div>':'')
  +'<div class="badges">'+(p.lp?'<span class="b liv">'+p.lp+'</span>':'<span class="b empty">LivStyle</span>')+(p.t?'<span class="b p16">'+p.t+(p.id16?"-"+p.id16:"")+'</span>':'<span class="b empty">16 Types</span>')+(p.wg.length?'<span class="b wg">'+p.wg.join(" · ")+'</span>':'<span class="b empty">Wk. Genius</span>')+(p.sg.length?'<span class="b sg">'+p.sg[0]+'…</span>':'<span class="b empty">Sp. Gifts</span>')+'</div></div>';}).join('')||'<div class="hint">No one matches those filters.</div>';}
 function setType(k){filter.type=(k==='all')?null:(filter.type===k?null:k);render();}
 function setGrp(g){filter.grp=filter.grp===g?null:g;render();}
@@ -301,18 +418,204 @@ function cmpSynth(a,b){
  if(a.t&&b.t&&((fast(a.t)&&refl(b.t))||(fast(b.t)&&refl(a.t))))fr.push("One decides fast out loud, the other processes internally — pace and airtime are the thing to watch. Build in a beat for the reflective one.");
  if(wgA.length&&wgB.length&&[...aS,...bS].every(s=>s!=="late"))fr.push("Neither is wired to finish — together they'll generate and evaluate well, but someone needs to own the finish line.");
  if(!fr.length)fr.push("No obvious friction in the data — the usual: name expectations and how each likes to communicate.");
- return '<div class="synth"><div class="sec nut" style="--accent:var(--ink)"><h4><span class="dot"></span>Working together</h4><p>'+a.n.split(" ")[0]+' and '+b.n.split(" ")[0]+': '+comp[0]+'</p></div>'
+ // ---- thread motion read ----
+ let mo='';
+ if(hasMotion(a)&&hasMotion(b)){
+   const A=a.n.split(" ")[0],B=b.n.split(" ")[0];
+   let verdict='',detail='';
+   if(a.mf===b.mf&&a.mt===b.mt){
+     verdict="Same motion.";
+     detail="Both run <b>"+a.mf.toLowerCase()+" \u2192 "+a.mt.toLowerCase()+"</b>. Whatever their assessments say, these two <b>do the same thing</b> — they reinforce each other and share the same blind spot. Pairing them doubles the force, not the range.";
+   } else if(a.mt===b.mf){
+     verdict="They chain.";
+     detail="<b>"+A+"</b> lands in <b>"+a.mt.toLowerCase()+"</b> — exactly where <b>"+B+"</b> starts. Hand work from "+A+" to "+B+" and it keeps moving. This is a sequence, not just a pairing.";
+   } else if(b.mt===a.mf){
+     verdict="They chain.";
+     detail="<b>"+B+"</b> lands in <b>"+b.mt.toLowerCase()+"</b> — exactly where <b>"+A+"</b> starts. Hand work from "+B+" to "+A+" and it keeps moving. A natural sequence.";
+   } else if(a.mt===b.mt){
+     verdict="Different starts, same landing.";
+     detail="They reach <b>"+a.mt.toLowerCase()+"</b> from different places ("+a.mf.toLowerCase()+" vs "+b.mf.toLowerCase()+"). They'll agree on <i>where</i> to land and argue about <i>why</i> — usually a productive argument.";
+   } else if(a.mf===b.mf){
+     verdict="Same spark, different landing.";
+     detail="Both fire from <b>"+a.mf.toLowerCase()+"</b> but carry it somewhere different ("+a.mt.toLowerCase()+" vs "+b.mt.toLowerCase()+"). They'll recognise each other instantly, then pull apart — that tension is the value.";
+   } else {
+     verdict="Fully distinct motions.";
+     detail="<b>"+A+"</b> runs "+a.mf.toLowerCase()+" → "+a.mt.toLowerCase()+"; <b>"+B+"</b> runs "+b.mf.toLowerCase()+" → "+b.mt.toLowerCase()+". Real range between them — but nothing hands off automatically. Someone has to build the bridge.";
+   }
+   mo='<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Thread motion — what the assessments can\u2019t show</h4>'
+     +'<p style="margin-bottom:12px"><span class="mchip">'+a.mf+' <span class="ar">\u2192</span> '+a.mt+'</span> <span style="color:#9aa6a2;font-size:12px">'+A+'</span><br><span class="mchip" style="margin-top:8px">'+b.mf+' <span class="ar">\u2192</span> '+b.mt+'</span> <span style="color:#9aa6a2;font-size:12px">'+B+'</span></p>'
+     +'<p><b>'+verdict+'</b> '+detail+'</p></div>';
+ }
+ return '<div class="synth">'+mo+'<div class="sec nut" style="--accent:var(--ink)"><h4><span class="dot"></span>Working together</h4><p>'+a.n.split(" ")[0]+' and '+b.n.split(" ")[0]+': '+comp[0]+'</p></div>'
   +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>Where they complement</h4><ul>'+comp.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
   +'<div class="sec" style="--accent:var(--p16)"><h4><span class="dot"></span>Where they overlap</h4><ul>'+ov.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
   +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Possible friction</h4><ul>'+fr.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
   +'<p class="disclaim">Based on self-reported assessments and partial data — a prompt for how to pair them, not a prediction.</p></div>';}
 
+
+/* ================= ROLE FIT =================
+   Describe the role, score everyone against it. Deterministic — no API key.
+   Scores LivStyle traits (as before) PLUS Working Genius fit and thread landing. */
+const RF_DIMS=[
+ {k:"drive",label:"Drive & decisiveness",tr:["Power","Competing","Attainment"],
+  q:"How much does this role depend on someone taking charge, making the call, and pushing for results?",
+  hi:"It's the heart of the job — they set direction and drive outcomes.",
+  me:"They'll make some calls, but it's shared or occasional.",
+  lo:"The role carries out direction rather than setting it."},
+ {k:"people",label:"People & relational care",tr:["Heart","Affiliation","Engaging","Collaborating"],
+  q:"How much of the job is done through relationship — caring, persuading, holding people together?",
+  hi:"The relationship IS the work.",me:"Relational, but the task comes first.",lo:"Largely independent or task-focused work."},
+ {k:"structure",label:"Structure & consistency",tr:["Orderly","Consistency","Prefers Process"],
+  q:"Does this role need someone who builds and holds a reliable process?",
+  hi:"Process, order and follow-through are the job.",me:"Some structure needed, but flexibility matters too.",lo:"The role is fluid; rigid process would get in the way."},
+ {k:"detail",label:"Detail & precision",tr:["Concrete","Refining"],
+  q:"How costly is a small mistake in this role?",
+  hi:"Errors are expensive — accuracy is critical.",me:"Care matters, but perfection isn't required.",lo:"Speed and direction matter more than precision."},
+ {k:"vision",label:"Vision & new ideas",tr:["Intuitive","Ideas","Creative"],
+  q:"Is this role inventing something new, or running something that exists?",
+  hi:"They must see what isn't there yet and create it.",me:"Some fresh thinking within an existing frame.",lo:"The path is known; the job is to walk it well."},
+ {k:"execution",label:"Drive to execute & finish",tr:["Engaging","Task Completion","Activity"],
+  q:"Does this role live or die on things actually getting finished?",
+  hi:"Nothing counts until it ships. Closing is the job.",me:"They finish their own work reliably.",lo:"Others carry things to completion."},
+ {k:"autonomy",label:"Autonomy / self-direction",tr:["Freedom","Self-Affirmed"],
+  q:"How alone will this person be? Can they run without affirmation or oversight?",
+  hi:"Often isolated — they must self-start and self-affirm.",me:"Some independence, with regular contact.",lo:"Close team, frequent feedback and support."}];
+const RF_LEVEL={low:25,med:55,high:82};
+const RF_PRESETS={
+ leader:{label:"Team leader / driver",d:{drive:"high",execution:"high",structure:"med",people:"med",vision:"med",detail:"low",autonomy:"high"},wg:["Galvanizing","Tenacity"],land:"Direction"},
+ ops:{label:"Operations / administrator / steward",d:{structure:"high",detail:"high",execution:"med",drive:"low",people:"med",vision:"low",autonomy:"low"},wg:["Enablement","Tenacity"],land:"Completion"},
+ disciple:{label:"Relational / discipleship",d:{people:"high",autonomy:"med",drive:"low",structure:"low",detail:"low",vision:"med",execution:"med"},wg:["Enablement","Discernment"],land:"Growth in People"},
+ planter:{label:"Innovator / church planter",d:{vision:"high",autonomy:"high",drive:"high",people:"med",execution:"med",structure:"low",detail:"low"},wg:["Wonder","Invention"],land:"Possibility"},
+ finisher:{label:"Quality / finisher",d:{detail:"high",execution:"high",structure:"high",drive:"med",people:"low",vision:"low",autonomy:"med"},wg:["Tenacity","Discernment"],land:"Completion"},
+ connector:{label:"Connector / recruiter",d:{people:"high",drive:"med",vision:"med",execution:"med",autonomy:"med",structure:"low",detail:"low"},wg:["Galvanizing","Invention"],land:"Momentum"},
+ custom:{label:"Custom — set the dials yourself",d:{},wg:[],land:""}};
+let RF={preset:"leader",d:Object.assign({},RF_PRESETS.leader.d),wg:RF_PRESETS.leader.wg.slice(),land:RF_PRESETS.leader.land,open:null};
+
+function rfSetPreset(k){RF.preset=k;const p=RF_PRESETS[k];RF.d=Object.assign({},p.d);RF.wg=p.wg.slice();RF.land=p.land;render();}
+function rfSet(dim,lv){RF.d[dim]=RF.d[dim]===lv?undefined:lv;RF.preset="custom";render();}
+function rfHelp(dim){RF.open=RF.open===dim?null:dim;render();}
+function rfWG(g){const i=RF.wg.indexOf(g);if(i>-1)RF.wg.splice(i,1);else RF.wg.push(g);RF.preset="custom";render();}
+function rfLand(v){RF.land=RF.land===v?"":v;RF.preset="custom";render();}
+
+function rfScore(p){
+ let parts=[],hits=[],misses=[],warn=[];
+ // 1. LivStyle dials
+ let dimScores=[];
+ RF_DIMS.forEach(function(D){
+   const want=RF.d[D.k];if(!want)return;
+   const vals=D.tr.map(t=>p.tr&&typeof p.tr[t]==="number"?p.tr[t]:null).filter(v=>v!==null);
+   if(!vals.length)return;
+   const got=vals.reduce((a,b)=>a+b,0)/vals.length;
+   const target=RF_LEVEL[want];
+   const gap=Math.abs(got-target);
+   const sc=Math.max(0,100-gap*1.4);
+   dimScores.push(sc);
+   if(want==="high"&&got>=target-8)hits.push("strong on "+D.label.split(" ")[0].toLowerCase());
+   if(want==="high"&&got<target-20)misses.push("light on "+D.label.split(" ")[0].toLowerCase());
+   if(want==="low"&&got>target+20)misses.push("runs high on "+D.label.split(" ")[0].toLowerCase()+" (role doesn't need it)");
+ });
+ const livScore=dimScores.length?dimScores.reduce((a,b)=>a+b,0)/dimScores.length:null;
+ if(livScore!==null)parts.push([livScore,3]);
+ // 2. Working Genius
+ if(RF.wg.length&&p.wg.length){
+   let g=0;
+   RF.wg.forEach(function(need){
+     if(p.wg.includes(need)){g+=100;hits.push(need+" is a genius");}
+     else if(p.wgf.includes(need)){g+=0;warn.push("This role needs "+need+" — that DRAINS them.");}
+     else g+=50;
+   });
+   parts.push([g/RF.wg.length,2]);
+ }
+ // 3. Thread landing
+ if(RF.land&&p.mt){
+   if(p.mt===RF.land){parts.push([100,1.5]);hits.push("their thread lands in "+RF.land.toLowerCase());}
+   else parts.push([45,1.5]);
+ }
+ if(!parts.length)return null;
+ const tot=parts.reduce((a,b)=>a+b[1],0);
+ const score=Math.round(parts.reduce((a,b)=>a+b[0]*b[1],0)/tot);
+ return {score,hits,misses,warn};
+}
+
+function roleView(){
+ const p=RF_PRESETS;
+ const presetOpts=Object.keys(p).map(k=>'<option value="'+k+'" '+(RF.preset===k?"selected":"")+'>'+p[k].label+'</option>').join('');
+ const dials=RF_DIMS.map(function(D){
+   const cur=RF.d[D.k];
+   const lvls=[["high","High"],["med","Medium"],["low","Low"]];
+   return '<div class="dial '+(RF.open===D.k?"open":"")+'"><div class="dl">'+D.label+'</div>'
+    +'<div class="dq">'+D.q+'</div>'
+    +'<div class="lv">'+lvls.map(l=>'<button class="'+(cur===l[0]?"on":"")+'" onclick="rfSet(\''+D.k+'\',\''+l[0]+'\')">'+l[1]+'</button>').join('')+'</div>'
+    +'<span class="hlink" onclick="rfHelp(\''+D.k+'\')">'+(RF.open===D.k?"Hide":"Help me decide")+'</span>'
+    +'<div class="helpq"><b>High:</b> '+D.hi+'<br><b>Medium:</b> '+D.me+'<br><b>Low:</b> '+D.lo+'</div></div>';
+ }).join('');
+ const wgChips=WGorder.map(g=>'<button class="chip '+(RF.wg.includes(g)?"active":"")+'" onclick="rfWG(\''+g+'\')">'+g+'</button>').join('');
+ const landChips=LANDINGS.map(l=>'<button class="chip '+(RF.land===l?"active":"")+'" onclick="rfLand(\''+l+'\')">'+l+'</button>').join('');
+
+ const set=RF_DIMS.filter(D=>RF.d[D.k]);
+ const wants=set.filter(D=>RF.d[D.k]==="high").map(D=>D.label.toLowerCase());
+ const notNeeded=set.filter(D=>RF.d[D.k]==="low").map(D=>D.label.toLowerCase());
+ let ideal='<div class="collective"><div class="lbl">The profile this role is asking for</div>'
+  +'<p>'+(wants.length?'Someone whose energy runs to <b>'+wants.join("</b>, <b>")+'</b>':'Set the dials to describe the role.')
+  +(RF.land?', whose instinct lands in <b>'+RF.land.toLowerCase()+'</b>':'')+'.</p>'
+  +'<div class="sub">'
+  +(RF.wg.length?'<b>Working Genius wanted:</b> '+RF.wg.join(", ")+'. ':'')
+  +(notNeeded.length?'<b>Not what the role needs:</b> '+notNeeded.join(", ")+'. ':'')
+  +'Scored across LivStyle traits, Working Genius, and thread motion \u2014 not one lens.</div></div>';
+
+ const scored=SC().map(function(x){const r=rfScore(x);return r?Object.assign({p:x},r):null;})
+   .filter(Boolean).sort((a,b)=>b.score-a.score);
+ const rows=scored.length?scored.slice(0,25).map(function(m,i){
+   const why=[].concat(m.hits.slice(0,3)).join(" \u00b7 ")||"partial data";
+   return '<div class="match '+(i===0?"top":"")+'" onclick="openPerson('+P.indexOf(m.p)+')">'
+     +'<div class="pctb">'+m.score+'%</div>'
+     +'<div class="mid"><div class="nm">'+m.p.n+'</div>'
+     +'<div class="why">'+why+(m.misses.length?' <span style="color:#b9a06a">\u00b7 '+m.misses.slice(0,2).join(" \u00b7 ")+'</span>':'')+'</div>'
+     +(m.warn.length?'<div class="warn">\u26a0 '+m.warn.join(" ")+'</div>':'')
+     +'<div class="fitbar"><div style="width:'+m.score+'%"></div></div></div></div>';
+ }).join(''):'<div class="hint">Nobody in this scope has enough data to score. Try the Leadership set.</div>';
+
+ return '<div class="rfbar"><label style="font-size:13px;font-weight:600;color:var(--soft)">Start from a template</label>'
+  +'<select onchange="rfSetPreset(this.value)">'+presetOpts+'</select>'
+  +'<span style="font-size:12.5px;color:#9aa6a2">Change any dial and it becomes Custom.</span></div>'
+  +'<div class="rfgrid">'+dials+'</div>'
+  +'<div class="synth"><div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Working Genius this role needs</h4><div class="bar" style="margin:0">'+wgChips+'</div>'
+  +'<p style="font-size:12.5px;color:var(--soft);margin-top:9px">If a required genius is someone\u2019s <b>frustration</b>, they get flagged \u2014 that pairing burns people out.</p></div>'
+  +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>Where the work should land</h4><div class="bar" style="margin:0">'+landChips+'</div>'
+  +'<p style="font-size:12.5px;color:var(--soft);margin-top:9px">Matches against each person\u2019s thread motion \u2014 what they instinctively drive work toward.</p></div></div>'
+  +ideal
+  +'<h3 style="font-family:Newsreader,serif;font-size:22px;font-weight:500;margin:22px 0 12px">Best matches <span style="font-size:13px;color:var(--soft);font-family:Inter">\u00b7 '+scored.length+' scored</span></h3>'
+  +rows
+  +'<p class="disclaim">A shortlist, not a decision. Fit scores read self-reported assessments \u2014 they cannot see character, calling, season of life, or track record. Use this to widen who you consider, then judge the person.</p>';
+}
+
+function threadsView(){
+ const list=SC(), R=motionRead(list);
+ if(!R.N)return '<div class="hint">No Key Thread motions on file for this group yet.</div>';
+ const sent=collectiveSentence(R);
+ const scopeName=scope==='lead'?'the leadership set':scope==='active'?'active staff':'inactive staff';
+ let flags=[];
+ if(R.missingSpark.length)flags.push('<li><b>Nobody starts from '+R.missingSpark.join(", ").toLowerCase()+'.</b> Those are doors this group never opens on its own.</li>');
+ if(R.rareSpark.length)flags.push('<li><b>Almost nobody starts from '+R.rareSpark.join(", ").toLowerCase()+'</b> \u2014 present, but so thin it won\u2019t shape a decision.</li>');
+ if(R.missingLand.length)flags.push('<li><b>Nothing lands in '+R.missingLand.join(", ").toLowerCase()+'.</b> Work here doesn\u2019t naturally end there.</li>');
+ if(R.rareLand.length)flags.push('<li><b>Almost nothing lands in '+R.rareLand.join(", ").toLowerCase()+'</b> \u2014 one or two people carry it for everyone.</li>');
+ const top=R.echoes.slice(0,6).map(e=>'<li><b>'+e[0]+'</b> \u2014 '+e[1].map(x=>x.n.split(" ")[0]).join(", ")+' <span style="color:#9aa6a2">('+e[1].length+' people, same instinct)</span></li>').join('');
+ return '<div class="detail">'
+  +'<div class="collective"><div class="lbl">The collective thread \u00b7 '+scopeName+' \u00b7 '+R.N+' people</div><p>'+sent+'</p>'
+  +'<div class="sub">This is the synthesis the individual assessments cannot produce. Each person\u2019s thread is a <i>motion</i> \u2014 where their energy starts and where it lands. Read together, the motions show what this group, as a body, is built to do \u2014 and what it structurally cannot.</div></div>'
+  +'<div class="synth">'
+  +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>The motion map</h4>'+motionFlow(R)+'</div>'
+  +(flags.length?'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>What is missing \u2014 and would never show up on an assessment</h4><ul>'+flags.join("")+'</ul></div>':'')
+  +(top?'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Shared motions \u2014 people who do the same thing differently</h4><ul>'+top+'</ul><p style="font-size:12.5px;color:var(--soft);margin-top:10px">These people may have different types, geniuses and strengths \u2014 and still make the same essential move. On paper they look complementary. In a room they echo.</p></div>':'')
+  +'</div>'
+  +'<p class="disclaim">The motion is my synthesis of each person\u2019s Key Thread \u2014 one interpretive step beyond the raw assessments. It is a claim to test in the room, not a measurement. Stored on each record as Motion From / Motion To, so you can disagree with any of it in Airtable.</p></div>';
+}
 function toggleTeam(i){const x=team.indexOf(i);if(x>-1)team.splice(x,1);else{if(team.length>=10)return;team.push(i);}render();}
 function teamView(){
  return '<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
  +'<div class="grid">'+cardList(P.filter(pmatch),true)+'</div>'
- +'<div class="tray"><div class="traychips">'+(team.length?team.map(i=>'<span class="tc">'+P[i].n.split(" ")[0]+' <b onclick="toggleTeam('+i+')">\u2715</b></span>').join(''):'<span class="hint" style="padding:0">Tap people to add them — up to 10.</span>')+'</div><button class="go" '+(team.length<2?"disabled":"")+' onclick="teamPanel()">Analyse team ('+team.length+')</button></div>';}
-function teamPanel(){
+ +'<div class="tray"><div class="traychips">'+(team.length?team.map(i=>'<span class="tc">'+P[i].n.split(" ")[0]+' <b onclick="toggleTeam('+i+')">\u2715</b></span>').join(''):'<span class="hint" style="padding:0">Tap people to add them — up to 10.</span>')+'</div><button class="go" '+(team.length<2?"disabled":"")+' onclick="openTeam()">Analyse team ('+team.length+')</button></div>';}
+function teamHTML(){
  const m=team.map(i=>P[i]);
  const N=m.length, fn=x=>x.n.split(" ")[0];
  const PHASES=[["Ideation",["Wonder","Invention"],"asking the right questions and generating answers"],
@@ -419,8 +722,31 @@ function teamPanel(){
 
  const dataNote=(wgKnown<N||csKnown<N||tKnown<N)?'<p class="disclaim" style="margin:0 0 14px">Data on file: Working Genius '+wgKnown+'/'+N+' · Strengths '+csKnown+'/'+N+' · 16 Types '+tKnown+'/'+N+'. Gaps below may reflect missing assessments rather than missing people.</p>':'';
 
- document.getElementById('panel').innerHTML='<div class="ph"><button class="close" onclick="closePanel()">\u2715</button><h2>Team read</h2><div class="grp">'+N+' people · '+m.map(fn).join(", ")+'</div></div><div class="pbody">'
-  +dataNote
+ // ---- collective thread ----
+ const R=motionRead(m);
+ let coll='';
+ if(R.N>=2){
+   const sent=collectiveSentence(R);
+   let subs=[];
+   if(R.echoes.length){
+     const e=R.echoes[0];
+     subs.push("<b>Hidden echo:</b> "+e[1].map(fn).join(" and ")+" run the identical motion ("+e[0].toLowerCase()+"). Their assessments differ; their instinct doesn\u2019t.");
+   }
+   if(R.chains.length){
+     const c=R.chains[0];
+     subs.push("<b>Natural handoff:</b> "+fn(c[0])+" lands where "+fn(c[1])+" starts ("+c[0].mt.toLowerCase()+"). Sequence them.");
+   }
+   if(R.missingLand.length)subs.push("<b>Nothing here lands in "+R.missingLand.slice(0,3).join(", ").toLowerCase()+".</b> Whatever this team produces, it won\u2019t naturally end there.");
+   if(R.missingSpark.length)subs.push("<b>Nobody starts from "+R.missingSpark.slice(0,3).join(", ").toLowerCase()+".</b> That door doesn\u2019t get opened unless someone opens it on purpose.");
+   coll='<div class="collective"><div class="lbl">The collective thread \u00b7 what these people do together</div><p>'+sent+'</p>'
+     +(subs.length?'<div class="sub">'+subs.join("<br>")+'</div>':'')+'</div>'
+     +'<div class="synth"><div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>The motion map</h4>'+motionFlow(R)
+     +'<p style="font-size:12.5px;color:var(--soft);margin-top:12px">Read left to right: the sparks this group fires from, and where those motions land. A blank on either side is a motion nobody here makes.</p></div></div>';
+ }
+ return '<div class="detail"><button class="back" onclick="backToList()">\u2190 Back to team builder</button>'
+  +'<div class="dhead"><h2>Team read</h2><div class="grp">'+N+' people \u00b7 '+m.map(fn).join(", ")+'</div></div>'
+  +dataNote+coll
+
   +'<div class="synth">'
   +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Who\u2019s in the room</h4><ul class="roll">'+roll+'</ul></div>'
   +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>The arc of work \u2014 where this team is strong and where it stalls</h4><div class="wggrid">'+arcRows+'</div></div>'
@@ -432,17 +758,23 @@ function teamPanel(){
   +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Risks worth naming</h4><ul>'+risks.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
   +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>How to run this team</h4><ul>'+how.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
   +'</div><p class="disclaim">Built from partial, self-reported assessments. This is a planning aid for composing and running a team \u2014 a set of questions to take into the room, not a scorecard on the people in it.</p></div>';
- document.getElementById('panel').classList.add('show');document.getElementById('scrim').classList.add('show');}
+}
 
-function openPanel(i){const p=P[i],s=synth(p),dom=domainsOf(p.cs),tp=threadParts(p.kt);
+function openPerson(i){cur=i;page="person";render();window.scrollTo(0,0);}
+function openTeam(){page="team";render();window.scrollTo(0,0);}
+function personHTML(i){const p=P[i],s=synth(p),dom=domainsOf(p.cs),tp=threadParts(p.kt);
  const hero=tp?'<div class="thread"><div class="lbl">Key Thread · the through-line across every lens</div><p>'+tp.head+'.</p>'+(tp.why?'<div class="why">'+tp.why+'</div>':'')+'</div>'
    :'<div class="thread empty"><div class="lbl">Key Thread</div><p>Emerges once more of this person\u2019s assessments are on file.</p></div>';
- document.getElementById('panel').innerHTML='<div class="ph"><button class="close" onclick="closePanel()">\u2715</button><h2>'+p.n+'</h2><div class="grp">'+p.g+'</div></div><div class="pbody">'
+ return '<div class="detail"><button class="back" onclick="backToList()">\u2190 Back</button>'
+  +'<div class="dhead"><h2>'+p.n+'</h2><div class="grp">'+p.g+(p.st==='Inactive'?' \u00b7 inactive':'')+'</div></div>'
   +hero
+  +'<div class="cols"><div>'
+
   +'<div class="synth">'
   +'<div class="sec" style="--accent:var(--p16)"><h4><span class="dot"></span>How to work with them</h4><ul>'+s.work.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
   +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Where they thrive</h4><p>'+s.thrive+'</p></div>'
   +'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Watch-fors &amp; how to support</h4><ul>'+s.watch.map(x=>"<li>"+x+"</li>").join("")+'</ul></div></div>'
+  +'</div><div>'
   +'<div class="frameworks">'
   +'<div class="fw" style="--accent:var(--liv)"><div class="t">LivStyle</div><div class="v">'+(p.lp||"—")+'<small>Under pressure: '+(p.lu||"—")+'</small></div></div>'
   +'<div class="fw" style="--accent:var(--p16)"><div class="t">16 Personalities</div><div class="v">'+(p.t?p.t+(p.id16?"-"+p.id16:""):"—")+'</div></div>'
@@ -450,9 +782,13 @@ function openPanel(i){const p=P[i],s=synth(p),dom=domainsOf(p.cs),tp=threadParts
   +'<div class="fw" style="--accent:var(--sg)"><div class="t">Spiritual Gifts</div><div class="v">'+(p.sg.length?p.sg.join(" · "):'<small>Not on file yet</small>')+'</div></div>'
   +'<div class="fw full" style="--accent:var(--cs)"><div class="t">CliftonStrengths — top 5</div><div class="v">'+(p.cs.length?p.cs.map((c,i)=>(i+1)+". "+c).join("&nbsp;&nbsp; "):'<small>Not on file yet</small>')+(dom.length?'<small>Leans: '+dom.map(d=>d[0]).join(", ")+'</small>':'')+'</div></div>'
   +'</div><p class="disclaim">The Key Thread and reads below are a synthesis across self-reported assessments — a conversation-starter held up against the actual person, not a verdict.</p></div>';
- document.getElementById('panel').classList.add('show');document.getElementById('scrim').classList.add('show');}
-function closePanel(){document.getElementById('panel').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
-function render(){V().innerHTML=mode==='people'?peopleView():mode==='compare'?compareView():teamView();}
+}
+function render(){
+ chrome(page==='list');
+ if(page==='person'){V().innerHTML=personHTML(cur);return;}
+ if(page==='team'){V().innerHTML=teamHTML();return;}
+ V().innerHTML=mode==='people'?peopleView():mode==='compare'?compareView():mode==='threads'?threadsView():mode==='role'?roleView():teamView();
+}
 </script>
 </body>
 </html>
