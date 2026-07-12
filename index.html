@@ -204,6 +204,9 @@
   .match.top{border-color:var(--sg);box-shadow:0 0 0 1px var(--sg)}
   .fitbar{height:6px;background:#eef1ee;border-radius:4px;overflow:hidden;margin-top:6px}
   .fitbar div{height:100%;background:var(--sg);border-radius:4px}
+  .fl{display:block;font-size:12px;font-weight:600;color:var(--soft);margin:10px 0 5px}
+  .fi{width:100%;font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
+  textarea.fi{resize:vertical;line-height:1.5}
   .collective .sub{margin-top:14px;font-family:"Inter";font-size:13.5px;color:#b9c7c4;border-top:1px solid rgba(255,255,255,.13);padding-top:12px;line-height:1.6}
   .disclaim{font-size:12px;color:#9aa6a2;margin-top:16px;line-height:1.6}
   .loading{padding:70px 0;text-align:center;color:var(--soft);font-size:14px}
@@ -244,6 +247,7 @@
     <button class="mode" data-m="team" onclick="setMode('team')">Build a team</button>
     <button class="mode" data-m="threads" onclick="setMode('threads')">Threads</button>
     <button class="mode" data-m="role" onclick="setMode('role')">Role fit</button>
+    <button class="mode" data-m="manage" onclick="setMode('manage')" style="display:none">Manage profiles</button>
    </div>
   </div>
   <div id="view"></div>
@@ -282,6 +286,7 @@ async function signIn(){
   btn.disabled=true;btn.textContent='Opening…';err.textContent='';
   try{
     const data=await load(lg,pw);
+    CRED={l:lg,p:pw};
     sessionStorage.setItem('etk',JSON.stringify({l:lg,p:pw}));
     boot(data);
   }catch(e){
@@ -289,8 +294,11 @@ async function signIn(){
   }
 }
 function signOut(){sessionStorage.removeItem('etk');location.reload();}
+let CAP={exec:false,admin:false}, CRED={l:"",p:""};
 function boot(data){
   P=data.people;
+  if(data.who){CAP.exec=!!data.who.exec;CAP.admin=!!data.who.admin;}
+  applyCaps();
   document.getElementById('gate').style.display='none';
   document.getElementById('app').style.display='block';
   const d=new Date(data.fetched);
@@ -303,7 +311,7 @@ function boot(data){
 (async function(){
   const saved=sessionStorage.getItem('etk');
   if(!saved)return;
-  try{const c=JSON.parse(saved);boot(await load(c.l,c.p));}catch(e){sessionStorage.removeItem('etk');}
+  try{const c=JSON.parse(saved);CRED={l:c.l,p:c.p};boot(await load(c.l,c.p));}catch(e){sessionStorage.removeItem('etk');}
 })();
 
 /* ---------- synthesis ---------- */
@@ -367,24 +375,47 @@ let mode="people",scope="lead",filter={type:null,grp:null,q:""},cmpA=0,cmpB=1,te
 const V=()=>document.getElementById('view');
 // "Active" = Status is Active, or blank (the base currently leaves current staff blank).
 const isActive=p=>p.st!=='Inactive';
-const inScope=p=>scope==='lead'?p.lead:scope==='active'?isActive(p):!isActive(p);
+// Leadership set is always ALSO active — someone marked Inactive drops out of the 45
+// automatically, without anyone having to remember to untick the box.
+const inScope=p=>scope==='lead'?(p.lead&&isActive(p)):scope==='active'?isActive(p):!isActive(p);
 const SC=()=>P.filter(inScope);
 const groups=()=>[...new Set(SC().map(p=>p.g))].sort();
 const SCOPES=[["lead","Leadership set"],["active","Active staff"],["inactive","Inactive"]];
 function setScope(s){if(scope===s)return;scope=s;filter={type:null,grp:null,q:""};team=[];const L=SC();cmpA=L.length?P.indexOf(L[0]):0;cmpB=L.length>1?P.indexOf(L[1]):cmpA;renderScope();render();}
-function scopeCount(s){return P.filter(p=>s==='lead'?p.lead:s==='active'?isActive(p):!isActive(p)).length;}
+function scopeCount(s){return P.filter(p=>s==='lead'?(p.lead&&isActive(p)):s==='active'?isActive(p):!isActive(p)).length;}
+// Anyone flagged for the leadership set who has since gone inactive.
+const droppedLeaders=()=>P.filter(p=>p.lead&&!isActive(p));
 function renderScope(){
  document.getElementById('scopebar').innerHTML=SCOPES.map(function(x){
   return '<button class="'+(scope===x[0]?'on':'')+'" onclick="setScope(\''+x[0]+'\')">'+x[1]+' <span class="ct">'+scopeCount(x[0])+'</span></button>';
  }).join('');}
 function setMode(m){mode=m;page="list";cur=null;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.m===m));document.body.classList.toggle('pick',m==='team');render();}
+function applyCaps(){
+  document.querySelectorAll('.mode').forEach(function(b){
+    const m=b.dataset.m;
+    if(m==='manage')b.style.display=CAP.admin?'block':'none';
+    else b.style.display=CAP.exec?'block':'none';
+  });
+  if(!CAP.exec&&CAP.admin){ // data admin only — edit page is all they get
+    mode='manage';
+    document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.m==='manage'));
+    const n=document.querySelector('.note');
+    if(n)n.innerHTML='You have access to <b>add and edit profiles</b>. The insight views (threads, team reads, role fit) are limited to the Executive Team.';
+    document.getElementById('scopebar').style.display='none';
+  }
+}
 function backToList(){page="list";cur=null;render();window.scrollTo(0,0);}
 function chrome(show){document.querySelector('.modes').style.display=show?'flex':'none';document.getElementById('scopebar').style.display=show?'inline-flex':'none';}
 
 const tileDefs=[{k:"all",l:"In view",a:"var(--ink)",c:()=>SC().length},{k:"kt",l:"With Key Thread",a:"var(--ink)",c:()=>SC().filter(p=>p.kt).length},{k:"wg",l:"With Wk. Genius",a:"var(--wg)",c:()=>SC().filter(p=>p.wg.length).length},{k:"cs",l:"With Strengths",a:"var(--cs)",c:()=>SC().filter(p=>p.cs.length).length},{k:"sg",l:"With Sp. Gifts",a:"var(--sg)",c:()=>SC().filter(p=>p.sg.length).length}];
 function pmatch(p){if(!inScope(p))return false;if(filter.type==='kt'&&!p.kt)return false;if(filter.type==='wg'&&!p.wg.length)return false;if(filter.type==='cs'&&!p.cs.length)return false;if(filter.type==='sg'&&!p.sg.length)return false;if(filter.grp&&p.g!==filter.grp)return false;if(filter.q&&!p.n.toLowerCase().includes(filter.q.toLowerCase()))return false;return true;}
 function peopleView(){
- return '<div class="tiles">'+tileDefs.map(t=>'<button class="tile '+((filter.type===t.k||(t.k==="all"&&!filter.type))?"active":"")+'" style="--accent:'+t.a+'" onclick="setType(\''+t.k+'\')"><div class="n">'+t.c()+'</div><div class="l">'+t.l+'</div></button>').join('')+'</div>'
+ const dropped=scope==='lead'?droppedLeaders():[];
+ const droppedNote=dropped.length?'<div class="note" style="margin-bottom:14px">'
+   +'<b>'+dropped.length+' '+(dropped.length===1?'person is':'people are')+' flagged for the leadership set but marked inactive</b> — '
+   +dropped.map(p=>p.n).join(", ")+'. They\u2019ve been left out of this view. '
+   +'<span style="cursor:pointer;text-decoration:underline" onclick="setScope(\'inactive\')">See inactive</span></div>':'';
+ return droppedNote+'<div class="tiles">'+tileDefs.map(t=>'<button class="tile '+((filter.type===t.k||(t.k==="all"&&!filter.type))?"active":"")+'" style="--accent:'+t.a+'" onclick="setType(\''+t.k+'\')"><div class="n">'+t.c()+'</div><div class="l">'+t.l+'</div></button>').join('')+'</div>'
  +'<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
  +'<div class="grid">'+cardList(P.filter(pmatch),false)+'</div>';}
 function cardList(list,pick){return list.map(p=>{const i=P.indexOf(p);const tp=threadParts(p.kt);
@@ -610,6 +641,137 @@ function threadsView(){
   +'</div>'
   +'<p class="disclaim">The motion is my synthesis of each person\u2019s Key Thread \u2014 one interpretive step beyond the raw assessments. It is a claim to test in the room, not a measurement. Stored on each record as Motion From / Motion To, so you can disagree with any of it in Airtable.</p></div>';
 }
+
+/* ================= MANAGE PROFILES (Data Admin only) ================= */
+const CS_ALL=[].concat(DOM.Executing,DOM.Influencing,DOM["Relationship Building"],DOM["Strategic Thinking"]).sort();
+const SG_ALL=["Administration","Apostleship","Discernment","Encouragement","Evangelism","Faith","Giving","Knowledge","Leadership","Mercy","Prophecy","Serving","Shepherding","Teaching","Wisdom"];
+const T16_ALL=Object.keys(T16).sort();
+let ED=null, EDstatus="";
+
+function uniq(f){return [...new Set(P.map(f).filter(Boolean))].sort();}
+function blankPerson(){return {id:null,n:"",g:"",co:"",st:"",lp:"",lu:"",t:"",id16:"",wg:[],wgc:[],wgf:[],cs:[],sg:[],sgt:"",kt:"",mf:"",mt:"",lead:false};}
+function editPerson(i){ED=JSON.parse(JSON.stringify(P[i]));ED.sgt=ED.sgt||"";EDstatus="";render();window.scrollTo(0,0);}
+function newPerson(){ED=blankPerson();EDstatus="";render();window.scrollTo(0,0);}
+function cancelEdit(){ED=null;EDstatus="";render();}
+function edSet(k,v){ED[k]=v;}
+function edToggle(k,v,max){const a=ED[k];const i=a.indexOf(v);if(i>-1)a.splice(i,1);else{if(max&&a.length>=max)return;a.push(v);}render();}
+function edCS(i,v){ED.cs[i]=v;ED.cs=ED.cs.filter((x,j)=>j<5);render();}
+function edSG(i,v){ED.sg[i]=v;render();}
+
+async function saveProfile(){
+  const btn=document.getElementById('savebtn');
+  if(!ED.n.trim()){EDstatus='<span style="color:#b4453a">A name is required.</span>';render();return;}
+  btn.disabled=true;btn.textContent='Saving…';
+  const fields={
+    "Full Name":ED.n.trim(),
+    "Status":ED.st||"",
+    "Primary Personality":ED.lp||"",
+    "Personality Under Pressure":ED.lu||"",
+    "16P Type":ED.t||"",
+    "16P Identity":ED.id16||"",
+    "WG Geniuses":ED.wg,
+    "WG Competencies":ED.wgc,
+    "WG Frustrations":ED.wgf,
+    "CS 1":ED.cs[0]||"","CS 2":ED.cs[1]||"","CS 3":ED.cs[2]||"","CS 4":ED.cs[3]||"","CS 5":ED.cs[4]||"",
+    "SG 1":ED.sg[0]||"","SG 2":ED.sg[1]||"","SG 3":ED.sg[2]||"",
+    "SG Test":ED.sgt||"",
+    "Key Thread":ED.kt||"",
+    "Motion From":ED.mf||"",
+    "Motion To":ED.mt||"",
+    "Leadership Set":!!ED.lead
+  };
+  if(ED.email!==undefined)fields["Email"]=ED.email||"";
+  if(ED.g)fields["Division"]=ED.g;
+  try{
+    const res=await fetch('/.netlify/functions/save',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({login:CRED.l,password:CRED.p,recordId:ED.id,fields:fields})});
+    const d=await res.json();
+    if(!res.ok)throw new Error(d.error||'Save failed');
+    // refresh from the base so we're never showing stale data
+    const fresh=await load(CRED.l,CRED.p);
+    P=fresh.people;
+    EDstatus='<span style="color:#2f7a4d">Saved. ✓</span>';
+    ED=null;
+    render();
+  }catch(e){
+    EDstatus='<span style="color:#b4453a">'+e.message+'</span>';
+    btn.disabled=false;btn.textContent='Save profile';
+    render();
+  }
+}
+
+function sel(label,key,opts,cur,allowFree){
+  return '<label class="fl">'+label+'</label><select class="fi" onchange="edSet(\''+key+'\',this.value)">'
+    +'<option value="">—</option>'
+    +opts.map(o=>'<option value="'+o.replace(/"/g,'&quot;')+'" '+(cur===o?'selected':'')+'>'+o+'</option>').join('')
+    +'</select>';
+}
+
+function manageView(){
+  if(ED){
+    const isNew=!ED.id;
+    const pickN=(arr,n,cur,fn2)=>Array.from({length:n}).map((_,i)=>
+      '<select class="fi" style="margin-bottom:6px" onchange="'+fn2+'('+i+',this.value)"><option value="">'+(i+1)+'. —</option>'
+      +arr.map(o=>'<option value="'+o+'" '+(cur[i]===o?'selected':'')+'>'+(i+1)+'. '+o+'</option>').join('')+'</select>').join('');
+    const chips=(arr,key,max)=>arr.map(g=>'<button class="chip '+(ED[key].includes(g)?'active':'')+'" onclick="edToggle(\''+key+'\',\''+g+'\','+(max||0)+')">'+g+'</button>').join('');
+    return '<div class="detail"><button class="back" onclick="cancelEdit()">← Back to list</button>'
+     +'<div class="dhead"><h2>'+(isNew?'Add a person':ED.n)+'</h2><div class="grp">'+(isNew?'New profile':'Editing profile')+'</div></div>'
+     +'<div class="cols"><div>'
+     +'<div class="synth">'
+     +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Person</h4>'
+       +'<label class="fl">Full name</label><input class="fi" value="'+(ED.n||'').replace(/"/g,'&quot;')+'" oninput="edSet(\'n\',this.value)">'
+       +sel('Division','g',uniq(p=>p.g),ED.g)
+       +sel('Status','st',["Active","Inactive"],ED.st)
+       +'<label class="fl" style="margin-top:12px"><input type="checkbox" '+(ED.lead?'checked':'')+' onchange="edSet(\'lead\',this.checked)"> In the leadership set (the 45)</label>'
+     +'</div>'
+     +'<div class="sec" style="--accent:var(--liv)"><h4><span class="dot"></span>LivStyle</h4>'
+       +sel('Primary personality','lp',uniq(p=>p.lp),ED.lp)
+       +sel('Under pressure','lu',uniq(p=>p.lu),ED.lu)
+     +'</div>'
+     +'<div class="sec" style="--accent:var(--p16)"><h4><span class="dot"></span>16 Personalities</h4>'
+       +sel('Type','t',T16_ALL,ED.t)
+       +sel('Identity','id16',["A","T"],ED.id16)
+     +'</div>'
+     +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Working Genius</h4>'
+       +'<label class="fl">Geniuses — energise them (pick 2)</label><div class="bar" style="margin:0 0 10px">'+chips(WGorder,'wg',2)+'</div>'
+       +'<label class="fl">Competencies — fine in doses (pick 2)</label><div class="bar" style="margin:0 0 10px">'+chips(WGorder,'wgc',2)+'</div>'
+       +'<label class="fl">Frustrations — drain them (pick 2)</label><div class="bar" style="margin:0">'+chips(WGorder,'wgf',2)+'</div>'
+     +'</div>'
+     +'</div></div><div>'
+     +'<div class="synth">'
+     +'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>CliftonStrengths — top 5</h4>'+pickN(CS_ALL,5,ED.cs,'edCS')+'</div>'
+     +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>Spiritual gifts — top 3</h4>'+pickN(SG_ALL,3,ED.sg,'edSG')
+       +'<label class="fl">Which test</label><input class="fi" value="'+(ED.sgt||'').replace(/"/g,'&quot;')+'" oninput="edSet(\'sgt\',this.value)" placeholder="e.g. Spiritual Gifts Test">'
+     +'</div>'
+     +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Key Thread</h4>'
+       +'<label class="fl">The thread — write it as: evidence. Thread: the essence.</label>'
+       +'<textarea class="fi" rows="5" oninput="edSet(\'kt\',this.value)" placeholder="Wonder + Tenacity bracket a mind that gathers everything… Thread: curiosity carried all the way to a finished, teachable answer.">'+(ED.kt||'')+'</textarea>'
+       +sel('Motion — where their energy starts','mf',SPARKS,ED.mf)
+       +sel('Motion — where it lands','mt',LANDINGS,ED.mt)
+       +'<p style="font-size:12px;color:var(--soft);margin-top:8px">Leave the thread blank if you\u2019re not sure. An empty thread is better than a guessed one.</p>'
+     +'</div>'
+     +'</div></div></div>'
+     +'<div style="display:flex;gap:10px;align-items:center;margin-top:6px">'
+     +'<button class="go" id="savebtn" onclick="saveProfile()">Save profile</button>'
+     +'<button class="chip" onclick="cancelEdit()">Cancel</button>'
+     +'<span style="font-size:13px">'+EDstatus+'</span></div>'
+     +'</div>';
+  }
+  const list=P.filter(p=>!filter.q||p.n.toLowerCase().includes(filter.q.toLowerCase()));
+  const rows=list.slice(0,60).map(function(p){const i=P.indexOf(p);
+    const done=[p.lp&&'LivStyle',p.t&&'16P',p.wg.length&&'WG',p.cs.length&&'CS',p.sg.length&&'SG'].filter(Boolean);
+    return '<div class="match" onclick="editPerson('+i+')"><div class="mid"><div class="nm">'+p.n
+      +(p.lead?' <span style="color:var(--cs)">★</span>':'')+(p.st==='Inactive'?' <span class="inact">inactive</span>':'')+'</div>'
+      +'<div class="why">'+p.g+' · '+(done.length?done.join(", ")+' on file':'<span style="color:var(--wg)">no assessments yet</span>')+'</div></div>'
+      +'<div style="font-size:12.5px;color:var(--soft);font-weight:600">Edit →</div></div>';
+  }).join('')||'<div class="hint">No one matches.</div>';
+  return '<div class="rfbar"><button class="go" onclick="newPerson()">+ Add a person</button>'
+   +'<input class="search" style="margin-left:0" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'">'
+   +'<span style="font-size:12.5px;color:#9aa6a2;margin-left:auto">'+list.length+' people'+(list.length>60?' · showing first 60':'')+'</span></div>'
+   +(EDstatus?'<div class="note" style="margin-bottom:14px">'+EDstatus+'</div>':'')
+   +rows;
+}
+
 function toggleTeam(i){const x=team.indexOf(i);if(x>-1)team.splice(x,1);else{if(team.length>=10)return;team.push(i);}render();}
 function teamView(){
  return '<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
@@ -787,7 +949,7 @@ function render(){
  chrome(page==='list');
  if(page==='person'){V().innerHTML=personHTML(cur);return;}
  if(page==='team'){V().innerHTML=teamHTML();return;}
- V().innerHTML=mode==='people'?peopleView():mode==='compare'?compareView():mode==='threads'?threadsView():mode==='role'?roleView():teamView();
+ V().innerHTML=mode==='people'?peopleView():mode==='compare'?compareView():mode==='threads'?threadsView():mode==='role'?roleView():mode==='manage'?manageView():teamView();
 }
 </script>
 </body>

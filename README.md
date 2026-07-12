@@ -30,25 +30,51 @@ A login-gated dashboard for the Josiah Venture Executive Team, reading live from
 
 ## Who can log in
 
-Login is checked against the **`Leaders`** table. To open the dashboard, a person needs:
+Login is checked against the **`Leaders`** table. Everyone needs `Login`, `Password` and
+`Active` — then **one of two capabilities** decides what they see:
 
-| Field | Requirement |
+| Capability | What they get |
 |---|---|
-| `Login` | what they type as their name (e.g. `mel`) — not case-sensitive |
-| `Password` | what they type as their password — they choose it; you type it into this cell |
-| `Active` | ticked |
-| `Executive` | ticked ← **the new one** |
+| **`Executive`** | The full insight dashboard — people, compare, team reads, threads, role fit |
+| **`Data Admin`** | The **Manage profiles** page — add and edit people's assessments |
 
-Currently ticked as Executive: **Dave Patty**, **Mel Ellenwood**, **Ben Williams**.
+They're independent. Tick both and you get both tabs.
 
-Anyone in `Leaders` without `Executive` ticked — country leaders, admins — can still use your
-other dashboards but is refused here, with a clear message.
+- **Executive:** Dave Patty, Mel Ellenwood, Ben Williams
+- **Data Admin:** Mel Ellenwood, and a row called **Executive Assistant** (login `assistant`,
+  password `CHANGE-ME` — **change this before sharing it**)
 
-### Adding or removing an executive
-Tick / untick `Executive` in Airtable. Takes effect immediately, no redeploy.
+**Someone with Data Admin but NOT Executive sees only the edit page.** No threads, no team
+reads, no role fit. Your assistant can do all the data entry without reading the interpretive
+synthesis about people.
+
+Anyone in `Leaders` with neither capability — country leaders using your other dashboards —
+is refused here with a clear message.
+
+### Changing who has access
+Tick / untick `Executive` or `Data Admin` in Airtable. Immediate, no redeploy.
 
 ### Setting someone's password
 Type it into their `Password` cell. That *is* the password. To change it, change the cell.
+
+---
+
+## Manage profiles (Data Admin)
+
+The **Manage profiles** tab lists everyone with a summary of which assessments are on file
+(and flags anyone with none). Click a person to edit; or **+ Add a person** for someone new.
+
+The form covers: name, division, status, leadership-set flag, LivStyle primary and
+under-pressure, 16 Personalities, Working Genius (geniuses / competencies / frustrations),
+CliftonStrengths top 5, Spiritual Gifts top 3, the Key Thread, and the thread motion.
+
+Writes go through `save.js`, which **re-authenticates on every save** and refuses anyone
+without `Data Admin`. It can only write the assessment fields listed in its whitelist — a
+tampered browser cannot reach the rest of the base.
+
+> **The Airtable token needs write access for this.** When you create the token, add the
+> `data.records:write` scope alongside `data.records:read`. Read-only will load the dashboard
+> fine and then fail on save.
 
 ---
 

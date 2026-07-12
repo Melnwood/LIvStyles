@@ -93,7 +93,7 @@ exports.handler = async (event) => {
     // ---- 1. Authenticate against the Leaders table ----
     const leaders = await at(LEADERS, {
       pageSize: 100,
-      "fields[]": ["Name", "Login", "Password", "Active", "Executive", "Role"],
+      "fields[]": ["Name", "Login", "Password", "Active", "Executive", "Data Admin", "Role"],
     }, TOKEN);
 
     const me = leaders.records.find((r) => {
@@ -112,7 +112,9 @@ exports.handler = async (event) => {
     if (f["Active"] !== true) {
       return { statusCode: 403, body: JSON.stringify({ error: "This account is not active." }) };
     }
-    if (f["Executive"] !== true) {
+    const isExec = f["Executive"] === true;
+    const isAdmin = f["Data Admin"] === true;
+    if (!isExec && !isAdmin) {
       return { statusCode: 403, body: JSON.stringify({ error: "This dashboard is limited to the Executive Team." }) };
     }
 
@@ -156,7 +158,7 @@ exports.handler = async (event) => {
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       body: JSON.stringify({
         people,
-        who: { name: f["Name"] || login, role: f["Role"] || "" },
+        who: { name: f["Name"] || login, role: f["Role"] || "", exec: isExec, admin: isAdmin },
         fetched: new Date().toISOString(),
       }),
     };
