@@ -1,2072 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LivStyle — Assessment Directory</title>
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/manifest.webmanifest" />
-<meta name="theme-color" content="#1f4d3f" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="LivStyle" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Team Insight Dashboard — Josiah Venture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --paper:#f6f4ef; --surface:#ffffff; --ink:#17201c; --muted:#6d6b62;
-    --line:#e4ded2; --line-soft:#efeade;
-    --green:#1f4d3f; --green-soft:#35705b; --green-wash:#eef2ee;
-    --ochre:#a9702a; --ochre-wash:#f6efe1;
-    --radius:14px; --shadow:0 1px 2px rgba(23,32,28,.04), 0 8px 24px rgba(23,32,28,.06);
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0}
-  body{
-    background:var(--paper); color:var(--ink);
-    font-family:Inter,system-ui,sans-serif; font-size:15px; line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wm{font-family:Fraunces,Georgia,serif; font-weight:500; letter-spacing:-.01em}
-  .num{font-variant-numeric:tabular-nums}
-  button{font-family:inherit; cursor:pointer}
-  a{color:var(--green)}
-
-  /* ---------- Login ---------- */
-  #loginView{padding:56px 22px 48px}
-  .card{
-    max-width:390px; width:100%; margin:0 auto; background:var(--surface); border:1px solid var(--line);
-    border-radius:var(--radius); box-shadow:var(--shadow); padding:34px 32px;
-  }
-  .brandmark{display:flex; align-items:baseline; gap:10px; margin-bottom:4px}
-  .brandmark .dot{width:9px; height:9px; border-radius:50%; background:var(--green); transform:translateY(-2px)}
-  .brandmark h1{font-family:Fraunces,serif; font-weight:600; font-size:30px; margin:0; letter-spacing:-.02em}
-  .card .sub{color:var(--muted); font-size:13.5px; margin:0 0 24px}
-  label{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin:0 0 6px}
-  .field{margin-bottom:16px}
-  input{
-    display:block; width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:10px;
-    background:#fcfbf8; font-family:inherit; font-size:15px; line-height:1.3; color:var(--ink); transition:border-color .15s, box-shadow .15s;
-  }
-  .card input{height:44px; padding:0 13px}
-  input:focus{outline:none; border-color:var(--green-soft); box-shadow:0 0 0 3px rgba(53,112,91,.14)}
-  .btn{
-    width:100%; padding:12px; border:none; border-radius:10px; background:var(--green); color:#fff;
-    font-weight:600; font-size:15px; transition:background .15s, transform .05s;
-  }
-  .btn:hover{background:#183c31}
-  .btn:active{transform:translateY(1px)}
-  .btn[disabled]{opacity:.65; cursor:default}
-  .msg{font-size:13px; margin-top:14px; min-height:18px}
-  .msg.err{color:#9a2f24}
-  .hint{margin-top:18px; padding-top:16px; border-top:1px solid var(--line-soft); font-size:12px; color:var(--muted)}
-
-  /* ---------- App shell ---------- */
-  #app{display:none}
-  header.bar{
-    position:sticky; top:0; z-index:20; background:rgba(246,244,239,.86); backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--line); padding:14px 22px; display:flex; align-items:center; gap:16px;
-  }
-  header.bar .brandmark h1{font-size:21px}
-  header.bar .who{margin-left:auto; text-align:right; line-height:1.25}
-  header.bar .who .n{font-weight:600; font-size:14px}
-  header.bar .who .r{font-size:12px; color:var(--muted)}
-  .signout{background:none; border:1px solid var(--line); color:var(--ink); padding:8px 12px; border-radius:9px; font-size:13px; font-weight:500}
-  .signout:hover{background:#fff}
-  main{max-width:1080px; margin:0 auto; padding:26px 22px 80px}
-
-  .scopebar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px}
-  .scopebar .eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
-  select{
-    font-family:inherit; font-size:14px; padding:8px 30px 8px 12px; border:1px solid var(--line);
-    border-radius:9px; background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%236d6b62' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 10px center;
-    -webkit-appearance:none; appearance:none; color:var(--ink); cursor:pointer;
-  }
-  select:focus{outline:none; border-color:var(--green-soft); box-shadow:0 0 0 3px rgba(53,112,91,.14)}
-
-  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px}
-  .stat{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px}
-  .stat.clickable{cursor:pointer; transition:border-color .12s, background .12s}
-  .stat.clickable:hover{border-color:var(--green-soft)}
-  .stat.clickable.on{border-color:var(--green); background:var(--green-wash)}
-  .stat .k{font-family:Fraunces,serif; font-weight:600; font-size:34px; line-height:1; letter-spacing:-.02em}
-  .stat .l{font-size:12.5px; color:var(--muted); margin-top:7px}
-
-  .grid{display:grid; grid-template-columns:1.05fr 1.35fr; gap:20px; align-items:start}
-  .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
-  .panel > h2{font-family:Fraunces,serif; font-weight:600; font-size:16.5px; margin:0; padding:17px 20px 13px; border-bottom:1px solid var(--line-soft); letter-spacing:-.01em}
-  .panel .body{padding:16px 20px 20px}
-
-  /* distribution */
-  .dist{display:flex; flex-direction:column; gap:9px}
-  .dist .row{display:grid; grid-template-columns:118px 1fr 30px; align-items:center; gap:10px; font-size:13px; padding:3px 6px; margin:0 -6px; border-radius:7px; cursor:pointer}
-  .dist .row:hover{background:#faf8f3}
-  .dist .row.active{background:var(--green-wash)}
-  .dist .row:focus-visible{outline:2px solid var(--green-soft); outline-offset:1px}
-  .tfbar{display:inline-flex; align-items:center; gap:7px; margin-left:10px; font-size:12.5px; color:var(--green); background:var(--green-wash); border:1px solid #dbe6df; padding:5px 6px 5px 11px; border-radius:20px; white-space:nowrap}
-  .tfbar button{background:none; border:none; color:var(--green); font-size:15px; line-height:1; cursor:pointer; padding:0 4px; border-radius:50%}
-  .tfbar button:hover{background:#d6e5dd}
-
-  /* status control */
-  .statusseg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-left:10px}
-  .statusseg button{background:#fff; border:none; padding:6px 12px; font-size:12.5px; color:var(--muted); border-right:1px solid var(--line)}
-  .statusseg button:last-child{border-right:none}
-  .statusseg button:hover{background:#faf8f3}
-  .statusseg button.on{background:var(--green); color:#fff}
-  tr.inactive td{opacity:.5}
-  .bulk-toggle{background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:12.5px; color:var(--muted); margin-left:10px}
-  .bulk-toggle:hover{border-color:var(--green-soft); color:var(--ink)}
-  .bulk-toggle.on{background:var(--green); color:#fff; border-color:var(--green)}
-  .bulk-bar{display:flex; flex-direction:column; gap:10px; background:var(--green-wash); border:1px solid #dbe6df; border-radius:10px; padding:10px 12px; margin-bottom:12px}
-  .bulk-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-  .place-panel{border-top:1px solid #cddbd2; padding-top:12px}
-  .pl-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-  .pl-f{display:flex; flex-direction:column}
-  .pl-f label{font-size:12px; font-weight:500; color:var(--muted); margin-bottom:5px}
-  .pl-f select{padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; font-size:13px}
-  .pl-teams{margin-top:10px}
-  .pl-actions{display:flex; align-items:center; gap:14px; margin-top:12px}
-  .pl-apply{width:auto; padding:9px 18px}
-  @media (max-width:720px){ .pl-grid{grid-template-columns:1fr 1fr} }
-  @media (max-width:480px){ .pl-grid{grid-template-columns:1fr} }
-  .bulk-n{font-size:13px}
-  .bulk-act{border:none; border-radius:7px; padding:7px 13px; font-size:12.5px; font-weight:600; color:#fff}
-  .bulk-act.on-green{background:var(--green)} .bulk-act.on-green:hover{background:#183c31}
-  .bulk-act.on-gray{background:#8a8880} .bulk-act.on-gray:hover{background:#6d6b62}
-  .bulk-sep{width:1px; height:20px; background:#cddbd2}
-  .bulk-lite{background:none; border:1px solid var(--line); border-radius:7px; padding:6px 11px; font-size:12px; color:var(--ink)}
-  .bulk-lite:hover{border-color:var(--green-soft)}
-  .bulk-msg{font-size:12.5px; color:var(--muted)}
-  .bulk-msg.ok{color:var(--green)} .bulk-msg.err{color:#9a2f24}
-  tbody tr.sel{background:var(--green-wash)}
-  .rowcheck{display:inline-block; width:16px; color:var(--green); font-weight:700}
-  tr.inactive td:first-child::after{content:"inactive"; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 5px; margin-left:8px; opacity:1}
-  .dstatus{margin:10px 0 4px}
-  .statbtn{border:1px solid var(--line); background:#fff; border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:500; display:inline-flex; align-items:center; gap:8px}
-  .statbtn .dotp{width:8px; height:8px; border-radius:50%}
-  .statbtn.active .dotp{background:var(--green)}
-  .statbtn.inactive .dotp{background:#b0aca3}
-  .statbtn:hover{border-color:var(--green-soft)}
-  .statbtn small{color:var(--muted); font-weight:400}
-  .statbadge{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted)}
-  .statbadge .dotp{width:8px; height:8px; border-radius:50%}
-  .statbadge.active .dotp{background:var(--green)}
-  .statbadge.inactive .dotp{background:#b0aca3}
-  .editbtn{border:1px solid var(--line); background:#fff; border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:500; color:var(--green); margin-left:6px}
-  .editbtn:hover{border-color:var(--green-soft); background:var(--green-wash)}
-  .add-mode{font-size:13px; color:var(--muted); margin-bottom:14px}
-  .add-mode b{color:var(--ink)}
-  .linklike{background:none; border:none; color:var(--green); font-size:13px; text-decoration:underline; cursor:pointer; padding:0}
-  .team-checks{display:flex; flex-wrap:wrap; gap:8px 16px}
-  .team-chk{display:inline-flex; align-items:center; gap:7px; font-size:13.5px}
-  .team-chk .tc-c{font-size:11px; color:var(--muted)}
-  .scopestatus{margin-left:14px}
-  @media (max-width:560px){ .scopestatus{margin-left:0; margin-top:6px} .scopebar{flex-wrap:wrap} }
-  .subtabs{display:inline-flex; gap:4px; background:#f1efe9; border-radius:10px; padding:4px; margin-bottom:20px}
-  .subtabs button{background:none; border:none; padding:7px 16px; font-size:13.5px; font-weight:500; color:var(--muted); border-radius:7px}
-  .subtabs button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(23,32,28,.08)}
-  .subtabs button{background:none; border:none; padding:7px 16px; font-size:13.5px; font-weight:500; color:var(--muted); border-radius:7px}
-  .subtabs button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(23,32,28,.08)}
-  .mg-sec{margin-bottom:28px}
-  .mg-sec h3{font-family:Fraunces,serif; font-weight:600; font-size:18px; margin:0 0 12px}
-  .mg-div{border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#fcfbf8}
-  .mg-div-h{font-weight:600; font-size:14.5px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px}
-  .mg-del{background:none; border:none; color:#b0aca3; font-size:16px; line-height:1; cursor:pointer; padding:0 4px; border-radius:4px}
-  .mg-del:hover{color:#9a2f24; background:#f6e3df}
-  .mg-depts li, .mg-teams li{display:flex; align-items:center; justify-content:space-between; gap:8px}
-  .mg-depts{margin:0 0 10px; padding-left:20px}
-  .mg-depts li{font-size:13.5px; margin-bottom:4px}
-  .mg-empty{color:var(--muted); font-style:italic; list-style:none; margin-left:-20px}
-  .mg-teams{margin:0 0 12px; padding-left:20px}
-  .mg-teams li{font-size:13.5px; margin-bottom:4px}
-  .mg-teams .tc-c{color:var(--muted)}
-  .mg-add{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-  .mg-add-top{margin-top:6px}
-  .mg-add input{flex:1; min-width:160px; padding:8px 11px; border:1px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; font-size:13.5px}
-  .mg-btn{background:var(--green); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:500}
-  .mg-btn:hover{background:#183c31}
-  .mg-msg{font-size:13px; margin-top:10px; min-height:16px}
-  .mg-msg.ok{color:var(--green)} .mg-msg.err{color:#9a2f24}
-  .dist .row .name{display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .swatch{width:9px; height:9px; border-radius:2px; flex:none}
-  .track{height:8px; background:var(--line-soft); border-radius:5px; overflow:hidden}
-  .fill{display:block; height:100%; border-radius:5px}
-  .dist .row .c{text-align:right; color:var(--muted); font-variant-numeric:tabular-nums}
-
-  /* table */
-  .tablewrap{overflow:auto}
-  .searchrow{padding:14px 20px; border-bottom:1px solid var(--line-soft)}
-  .searchrow input{padding:9px 12px}
-  table{width:100%; border-collapse:collapse; font-size:13.5px}
-  th{
-    text-align:left; font-weight:500; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em;
-    color:var(--muted); padding:11px 20px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:var(--surface);
-    cursor:pointer; white-space:nowrap;
-  }
-  th .arrow{opacity:.45; font-size:10px}
-  td{padding:11px 20px; border-bottom:1px solid var(--line-soft); vertical-align:middle}
-  tbody tr{cursor:pointer}
-  tbody tr:hover{background:#faf8f3}
-  tbody tr.active{background:var(--green-wash)}
-  td .pri{display:inline-flex; align-items:center; gap:7px}
-  .chip{display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:500; white-space:nowrap}
-  .acc{font-variant-numeric:tabular-nums; color:var(--muted)}
-  .empty{padding:40px 20px; text-align:center; color:var(--muted); font-size:14px}
-
-  /* detail drawer */
-  .scrim{position:fixed; inset:0; background:rgba(23,32,28,.34); opacity:0; pointer-events:none; transition:opacity .2s; z-index:30}
-  .scrim.open{opacity:1; pointer-events:auto}
-  .drawer{
-    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.98);
-    width:min(1000px,94vw); max-height:92vh; background:var(--paper);
-    border:1px solid var(--line); border-radius:16px; box-shadow:0 24px 70px rgba(23,32,28,.28);
-    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s cubic-bezier(.4,0,.2,1);
-    z-index:31; overflow-y:auto;
-  }
-  .drawer.open{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
-  @media (max-width:640px){
-    .drawer{ width:100vw; max-width:none; height:100%; max-height:none; top:0; left:0; border-radius:0; border:none; transform:translateY(100%); }
-    .drawer.open{ transform:translateY(0); }
-  }
-  .drawer .dhead{position:sticky; top:0; background:var(--paper); padding:22px 24px 16px; border-bottom:1px solid var(--line); z-index:2}
-  .drawer .dhead .close{position:absolute; top:18px; right:18px; background:none; border:1px solid var(--line); width:32px; height:32px; border-radius:8px; font-size:16px; color:var(--muted); line-height:1}
-  .drawer .dhead .close:hover{background:#fff; color:var(--ink)}
-  .drawer h3{font-family:Fraunces,serif; font-weight:600; font-size:24px; margin:0 40px 4px 0; letter-spacing:-.02em}
-  .drawer .meta{font-size:13px; color:var(--muted)}
-  .twin{display:flex; gap:22px; margin-top:16px; flex-wrap:wrap}
-  .twin .t{font-size:12px; color:var(--muted)}
-  .twin .t .v{display:block; margin-top:5px}
-  .dbody{padding:22px 28px 48px; max-width:880px; margin:0 auto}
-  .grp{margin-bottom:22px}
-  .grp h4{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); margin:0 0 12px; font-weight:600}
-  .trait{margin-bottom:11px}
-  .trait .tl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px}
-  .trait .tl .val{color:var(--muted); font-variant-numeric:tabular-nums}
-  .bar{height:7px; background:var(--line-soft); border-radius:5px; overflow:hidden}
-  .bar > i{display:block; height:100%; background:var(--green-soft); border-radius:5px}
-  /* bipolar */
-  .bip{margin-bottom:13px}
-  .bip .lbls{display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; color:var(--muted)}
-  .bip .lbls b{color:var(--ink); font-weight:500}
-  .bipbar{position:relative; height:8px; background:var(--line-soft); border-radius:5px}
-  .bipbar .mid{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--line)}
-  .bipbar .dotv{position:absolute; top:50%; width:12px; height:12px; border-radius:50%; background:var(--green); transform:translate(-50%,-50%); box-shadow:0 0 0 3px #fff}
-  .dm{background:var(--ochre-wash); border:1px solid #ecdcc0; border-radius:10px; padding:12px 14px; font-size:13px}
-  .dm .k{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ochre); font-weight:600; margin-bottom:4px}
-
-  /* guidance block */
-  .guide{background:var(--green-wash); border:1px solid #dbe6df; border-radius:12px; padding:18px 20px; margin-bottom:22px}
-  .ghead{display:flex; align-items:center; gap:9px; font-family:Fraunces,serif; font-weight:600; font-size:17px; color:var(--green); margin-bottom:6px; letter-spacing:-.01em}
-  .ghead .gdot{width:8px; height:8px; border-radius:50%; background:var(--green)}
-  .gcap{font-size:12.5px; color:var(--muted); margin:0 0 4px; font-style:italic}
-  .gsec{margin-top:14px}
-  .gsec h5{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--green-soft); margin:0 0 7px; font-weight:600}
-  .gsec ul{margin:0; padding-left:18px}
-  .gsec li{font-size:13.5px; margin-bottom:6px; line-height:1.45}
-  .grf{font-size:13.5px; margin:0 0 6px}
-  .grf b{color:var(--green)}
-  .gnote{font-size:12.5px; color:var(--muted); margin:8px 0 0; font-style:italic; line-height:1.45}
-  .profhead{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 16px; padding-bottom:8px; border-bottom:1px solid var(--line)}
-
-  /* tabs */
-  .tabs{display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid var(--line)}
-  .tabs button{background:none; border:none; padding:10px 16px; font-size:14px; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px}
-  .tabs button:hover{color:var(--ink)}
-  .tabs button.active{color:var(--green); border-bottom-color:var(--green)}
-
-  /* corner chip */
-  .corner{display:inline-block; padding:2px 9px; border-radius:6px; font-size:11.5px; font-weight:600; letter-spacing:.02em}
-  .corner.Power{background:#f6e3df; color:#a3442f}
-  .corner.Promotion{background:#f6efd6; color:#8a6b1e}
-  .corner.Peace{background:#e2efe6; color:#2f6d4f}
-  .corner.Process{background:#e0e9f2; color:#356088}
-  .corner.Balanced{background:#eceae4; color:#6d6b62}
-
-  /* compare */
-  .cmp-pick{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px}
-  .cmp-pick select{flex:1; min-width:160px}
-  .cmp-and{color:var(--muted); font-size:13px}
-  .cmp-head{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0}
-  .cmp-person{border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fcfbf8}
-  .cmp-person .nm{font-family:Fraunces,serif; font-weight:600; font-size:17px; letter-spacing:-.01em}
-  .cmp-person .mt{font-size:12.5px; color:var(--muted); margin-top:3px}
-  .cmp-person .cn{margin-top:8px}
-  .cmp-bridge{background:var(--green-wash); border:1px solid #dbe6df; border-radius:12px; padding:14px 16px; margin-bottom:18px}
-  .cmp-bridge h5{margin:0 0 6px; font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); font-weight:600}
-  .cmp-bridge p{margin:0; font-size:14px}
-  .cmp-dir{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-  .cmp-col h5{font-size:13px; margin:0 0 8px; font-weight:600}
-  .cmp-col ul{margin:0 0 10px; padding-left:18px}
-  .cmp-col li{font-size:13px; margin-bottom:6px; line-height:1.45}
-  .cmp-msg{font-size:12.5px; font-style:italic; color:var(--muted)}
-  @media (max-width:720px){ .cmp-head,.cmp-dir{grid-template-columns:1fr} }
-
-  /* conflict comparison */
-  .cf-head,.cf-row{display:grid; grid-template-columns:118px 1fr 1fr; gap:12px; align-items:center}
-  .cf-head{margin-bottom:8px}
-  .cf-nm{font-weight:600; font-size:12.5px}
-  .cf-row{margin-bottom:8px; font-size:12.5px}
-  .cf-l{color:var(--ink)}
-  .cf-bar{display:flex; align-items:center; gap:8px}
-  .cf-bar .track{flex:1}
-  .cf-bar b{font-variant-numeric:tabular-nums; font-weight:400; color:var(--muted); min-width:34px; text-align:right; font-size:12px}
-
-  .pill{display:inline-block; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:5px; margin-right:8px; vertical-align:middle}
-  .pill.differ{background:#f6e3df; color:#a3442f}
-  .pill.aligned{background:#e2efe6; color:#2f6d4f}
-  .pill.mixed{background:#eceae4; color:#6d6b62}
-  .fitline{font-size:13.5px; line-height:1.5; margin:8px 0}
-  .flags{margin-bottom:16px}
-  .flagline{font-size:13px; margin:6px 0; line-height:1.5}
-
-  /* team */
-  .team-help{font-size:13.5px; color:var(--muted); margin:0 0 14px}
-  .team-count{font-size:12.5px; color:var(--muted); margin-bottom:8px}
-  .team-controls{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap}
-  .team-controls .statusseg{margin-left:0}
-  .team-controls .team-count{margin-bottom:0}
-  .team-picker{display:flex; flex-wrap:wrap; gap:8px; max-height:340px; overflow-y:auto; padding:2px; margin-bottom:16px}
-  .team-pick-count{flex-basis:100%; font-size:11.5px; color:var(--muted); position:sticky; top:0; background:var(--surface); padding:2px 0 6px}
-  .team-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; background:#fff; user-select:none}
-  .team-chip:hover{border-color:var(--green-soft)}
-  .team-chip.on{background:var(--green); color:#fff; border-color:var(--green)}
-  .team-chip.on .tc-c{color:rgba(255,255,255,.8)}
-  .team-chip .tc-c{font-size:11px; color:var(--muted)}
-  .team-chip[aria-disabled="true"]{opacity:.4; cursor:default}
-  .team-btn{width:auto; padding:10px 20px}
-  .team-btn[disabled]{opacity:.5}
-  .rep-sec{margin-top:24px}
-  .rep-sec h3{font-family:Fraunces,serif; font-weight:600; font-size:18px; margin:0 0 4px; letter-spacing:-.01em}
-  .rep-sec .rsub{font-size:12.5px; color:var(--muted); margin:0 0 12px}
-  .rep-bal{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px}
-  .rep-bar{display:flex; height:30px; border-radius:8px; overflow:hidden; border:1px solid var(--line); margin-bottom:10px}
-  .rep-bar > span{display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff; min-width:34px}
-  .rep-note{font-size:13.5px; line-height:1.5; margin:6px 0}
-  .role-row{display:grid; grid-template-columns:172px 1fr; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-soft); align-items:start}
-  .role-row .rl{font-weight:600; font-size:13.5px}
-  .role-row .rl small{display:block; font-weight:400; color:var(--muted); font-size:12px; margin-top:2px}
-  .role-row .rp{font-size:13.5px}
-  .role-row .rp .who{font-weight:500}
-  .role-gap{color:#9a2f24; font-weight:500}
-  .friction{border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; font-size:13.5px}
-  .friction .fpair{font-weight:600; margin-bottom:4px}
-  .watch{background:var(--ochre-wash); border:1px solid #ecdcc0; border-radius:10px; padding:12px 14px; font-size:13.5px; margin-top:8px}
-
-  /* conversation guide */
-  .cg-copy{background:none; border:1px solid var(--line); border-radius:6px; padding:3px 10px; font-size:11.5px; color:var(--green); margin-left:8px; cursor:pointer}
-  .cg-copy:hover{background:var(--green-wash); border-color:var(--green-soft)}
-  .cg-block{margin:14px 0 4px}
-  .cg-block h5{font-size:12.5px; font-weight:600; color:var(--green); margin:0 0 6px}
-  .cg-list{margin:0 0 10px; padding-left:22px}
-  .cg-list li{font-size:14px; line-height:1.55; margin-bottom:10px; padding-left:4px}
-  @media print{ .tabs,.scopebar,.drawer,.scrim{display:none!important} .cg-copy{display:none} }
-  @media (max-width:720px){ .role-row{grid-template-columns:1fr; gap:2px} }
-
-  /* role fit */
-  .rf-preset{margin-bottom:18px}
-  .rf-preset label{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin-bottom:6px}
-  .rf-preset select{min-width:280px; max-width:100%}
-  .rf-dims{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin-bottom:20px}
-  .rf-dim label{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin-bottom:6px}
-  .rf-dim select{width:100%}
-  .rf-help{margin-top:7px}
-  .rf-help summary{font-size:12px; color:var(--green); cursor:pointer; list-style:none; display:inline-flex; align-items:center; gap:5px}
-  .rf-help summary::-webkit-details-marker{display:none}
-  .rf-help summary::before{content:"?"; display:inline-grid; place-items:center; width:15px; height:15px; border:1px solid var(--green-soft); border-radius:50%; font-size:10px; font-weight:600}
-  .rf-help[open] summary{margin-bottom:8px}
-  .rf-q{font-size:13px; color:var(--ink); margin:0 0 8px; font-style:italic}
-  .rf-opt{display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:9px; padding:8px 11px; margin-bottom:6px; cursor:pointer; font-size:12.5px; line-height:1.4}
-  .rf-opt:hover{border-color:var(--green-soft)}
-  .rf-opt.on{border-color:var(--green); background:var(--green-wash)}
-  .rf-opt b{display:inline-block; min-width:60px; color:var(--green)}
-  .rf-opt span{color:var(--muted)}
-  .rf-opt.on span{color:var(--ink)}
-  .rf-target{background:var(--green-wash); border:1px solid #dbe6df; border-radius:12px; padding:14px 18px; margin-bottom:20px}
-  .rf-target h5{margin:0 0 8px; font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); font-weight:600}
-  .rf-target p{margin:5px 0; font-size:13.5px}
-  .rf-list-head{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 8px}
-  .rf-row{display:grid; grid-template-columns:1fr 96px; gap:14px; align-items:center; padding:11px 8px; margin:0 -8px; border-bottom:1px solid var(--line-soft); border-radius:8px; cursor:pointer}
-  .rf-row:hover{background:#faf8f3}
-  .rf-nm{font-weight:500; font-size:14px}
-  .rf-meta{font-size:12px; color:var(--muted); margin-top:2px}
-  .rf-why{font-size:12.5px; color:var(--green-soft); margin-top:3px}
-  .rf-score{text-align:right}
-  .rf-score b{font-variant-numeric:tabular-nums; font-size:15px}
-  .rf-mbar{height:7px; background:var(--line-soft); border-radius:5px; overflow:hidden; margin-top:4px}
-  .rf-mbar > i{display:block; height:100%; background:var(--green-soft); border-radius:5px}
-  @media (max-width:640px){ .rf-dims{grid-template-columns:1fr} }
-
-  /* add a person */
-  .add-grp{margin-bottom:22px}
-  .add-grp h4{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--green); margin:0 0 12px; font-weight:600; padding-bottom:6px; border-bottom:1px solid var(--line-soft)}
-  .add-fields{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px}
-  .add-f{display:flex; flex-direction:column}
-  .add-f.full{grid-column:1 / -1}
-  .add-f label{font-size:12.5px; font-weight:500; color:var(--muted); margin-bottom:6px}
-  .add-f input[type=text], .add-f input[type=date], .add-f input[type=number], .add-f select{
-    width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:9px; background:#fcfbf8; font-family:inherit; font-size:14px; color:var(--ink)}
-  .add-f input:focus, .add-f select:focus{outline:none; border-color:var(--green-soft); box-shadow:0 0 0 3px rgba(53,112,91,.14)}
-  .add-check{flex-direction:row; align-items:center; gap:8px}
-  .add-check input{width:16px; height:16px}
-  .add-check label{margin:0}
-  /* bipolar slider */
-  .bip-f{grid-column:1 / -1; margin-bottom:4px}
-  .bip-f .bl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px}
-  .bip-f .bl .lname{font-weight:500}
-  .bip-f .bl .lval{color:var(--muted); font-variant-numeric:tabular-nums}
-  .bip-f input[type=range]{width:100%; accent-color:var(--green)}
-  .sum-note{grid-column:1 / -1; font-size:12px; color:var(--muted); margin-top:2px}
-  .sum-note b{color:var(--ink)}
-  .sum-note.warn b{color:#9a2f24}
-  .add-actions{display:flex; align-items:center; gap:16px; margin-top:8px; padding-top:16px; border-top:1px solid var(--line)}
-  .add-save{width:auto; padding:11px 22px}
-  .add-msg{font-size:13.5px}
-  .add-msg.ok{color:var(--green)}
-  .add-msg.err{color:#9a2f24}
-  @media (max-width:640px){ .add-fields{grid-template-columns:1fr} }
-
-  .loading{padding:60px 20px; text-align:center; color:var(--muted)}
-  .spin{width:22px; height:22px; border:2.5px solid var(--line); border-top-color:var(--green); border-radius:50%; margin:0 auto 12px; animation:sp .8s linear infinite}
-  @keyframes sp{to{transform:rotate(360deg)}}
-
-  @media (max-width:860px){
-    .grid{grid-template-columns:1fr}
-    main{padding:20px 16px 70px}
-  }
-  @media (max-width:560px){
-    .stats{gap:8px}
-    .stat{padding:12px 10px}
-    .stat .k{font-size:24px}
-    .stat .l{font-size:11px; margin-top:4px}
-  }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+  :root{--paper:#f4f6f4;--card:#fff;--ink:#1f2d2c;--soft:#5a6b69;--line:#e2e6e0;--liv:#1c7c74;--p16:#5b5bd6;--cs:#c08a2b;--wg:#c0645a;--sg:#5d8a5a;--shadow:0 1px 2px rgba(30,45,44,.05),0 10px 30px rgba(30,45,44,.07);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 30px}
+  /* ---- gate ---- */
+  .gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px}
+  .gatebox{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px 32px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .gatebox::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--liv),var(--p16),var(--cs),var(--wg),var(--sg))}
+  .gatebox .eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--soft);font-weight:600;margin-bottom:9px}
+  .gatebox h1{font-family:"Newsreader",serif;font-weight:500;font-size:27px;line-height:1.2;margin-bottom:8px}
+  .gatebox p{font-size:13.5px;color:var(--soft);margin-bottom:20px}
+  .gatebox input{width:100%;font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);margin-bottom:11px}
+  .gatebox button{width:100%;font-family:inherit;font-size:14.5px;font-weight:600;color:#fff;background:var(--ink);border:none;border-radius:10px;padding:13px;cursor:pointer}
+  .gatebox button:disabled{opacity:.55;cursor:wait}
+  .err{font-size:13px;color:#b4453a;margin-top:11px;min-height:18px}
+  .confid{font-size:11.5px;color:#9aa6a2;margin-top:16px;line-height:1.5;border-top:1px solid var(--line);padding-top:14px}
+  /* ---- app ---- */
+  .top{padding:34px 0 14px}
+  .eyebrow{font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--soft);font-weight:600;margin-bottom:10px}
+  h1{font-family:"Newsreader",serif;font-weight:500;font-size:34px;letter-spacing:-.01em}
+  .headrow{display:flex;align-items:flex-start;gap:16px}
+  .signout{margin-left:auto;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--soft);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap}
+  .note{margin-top:12px;font-size:12.5px;color:var(--soft);background:#eef2ee;border:1px solid var(--line);border-radius:9px;padding:9px 13px}
+  .scope{display:inline-flex;background:#e7ebe6;border-radius:11px;padding:3px;margin-top:16px;gap:2px}
+  .scope button{font-family:inherit;font-size:13px;font-weight:600;color:var(--soft);background:none;border:none;padding:8px 15px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .scope button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(30,45,44,.1)}
+  .scope .ct{font-size:11px;font-weight:700;background:#dfe4de;color:var(--soft);border-radius:999px;padding:1px 7px}
+  .scope button.on .ct{background:var(--ink);color:#fff}
+  .modes{display:flex;gap:6px;margin:14px 0 6px;border-bottom:1px solid var(--line)}
+  .mode{font-family:inherit;font-size:14px;font-weight:600;color:var(--soft);background:none;border:none;padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .mode.active{color:var(--ink);border-bottom-color:var(--ink)}
+  .tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0 14px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 16px;cursor:pointer;transition:.12s;position:relative;text-align:left}
+  .tile:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+  .tile.active{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .tile .n{font-family:"Newsreader",serif;font-size:30px;font-weight:500}.tile .l{font-size:12px;color:var(--soft);margin-top:2px}
+  .tile::before{content:"";position:absolute;top:0;left:16px;right:16px;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+  @media(max-width:820px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .chip{font-size:12.5px;font-weight:500;color:var(--soft);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .search{margin-left:auto;font-family:inherit;font-size:13.5px;padding:8px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);min-width:200px}
+  .grid{padding:0 0 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .person{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 18px;cursor:pointer;transition:.12s;position:relative}
+  .person:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .person.sel{border-color:var(--wg);box-shadow:0 0 0 1px var(--wg)}
+  .person h3{font-family:"Newsreader",serif;font-size:20px;font-weight:500}
+  .person .grp{font-size:12px;color:var(--soft);margin-bottom:10px}
+  .person h3 .star{color:var(--cs);font-size:13px;vertical-align:middle;margin-left:5px}
+  .person .ktline{font-size:12.5px;color:var(--ink);font-style:italic;margin:0 0 11px;line-height:1.4;opacity:.82}
+  .badges{display:flex;flex-wrap:wrap;gap:6px}
+  .b{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#fff}
+  .b.liv{background:var(--liv)}.b.p16{background:var(--p16)}.b.cs{background:var(--cs)}.b.wg{background:var(--wg)}.b.sg{background:var(--sg)}.b.empty{background:#eef1ee;color:#9aa6a2}
+  .tick{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);display:none;align-items:center;justify-content:center;color:#fff;font-size:13px}
+  body.pick .tick{display:flex}.person.sel .tick{background:var(--wg);border-color:var(--wg)}
+  .selrow{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .selrow .field{flex:1;min-width:220px}
+  .selrow label{display:block;font-size:12px;font-weight:600;color:var(--soft);margin-bottom:6px}
+  select.big{width:100%;font-family:inherit;font-size:15px;padding:12px 13px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+  @media(max-width:720px){.cmp{grid-template-columns:1fr}}
+  .col{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .col h3{font-family:"Newsreader",serif;font-size:22px;font-weight:500}
+  .col .kt{font-size:13px;font-style:italic;color:var(--soft);margin:6px 0 12px;line-height:1.4}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .row:last-child{border-bottom:none}.row .k{color:var(--soft);font-weight:600}.row .val{text-align:right}
+  .synth{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 22px 20px;margin-bottom:18px}
+  .sec{padding:16px 0;border-bottom:1px solid var(--line)}.sec:last-child{border-bottom:none}
+  .sec h4{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .sec h4 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .sec p{font-size:14.5px;line-height:1.6}.sec.nut p{font-size:16px;font-family:"Newsreader",serif;line-height:1.5}
+  .sec ul{margin:0;padding-left:2px;list-style:none}
+  .sec li{font-size:14px;line-height:1.55;padding:3px 0 3px 18px;position:relative}
+  .sec li::before{content:"\2039";position:absolute;left:2px;color:var(--accent);font-weight:700}
+  .wggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+  @media(max-width:620px){.wggrid{grid-template-columns:1fr}}
+  .wgcell{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--paper)}
+  .wgcell.gap{border-color:var(--wg);background:#fdf3f1}
+  .wgcell .g{font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .wgcell .who{font-size:12px;color:var(--soft);margin-top:5px;line-height:1.4}
+  .wgcell .gaptag{font-size:10px;font-weight:700;color:var(--wg);text-transform:uppercase;letter-spacing:.06em}
+  .wgcell .covtag{font-size:10px;font-weight:700;color:var(--sg);text-transform:uppercase;letter-spacing:.06em}
+  .dombar{margin:9px 0}
+  .dombar .top2{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px}
+  .track{height:8px;background:#eef1ee;border-radius:5px;overflow:hidden}
+  .fill{height:100%;background:var(--cs);border-radius:5px}
+  .tray{position:sticky;bottom:0;background:linear-gradient(to top,var(--paper) 70%,transparent);padding:14px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:5}
+  .traychips{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+  .tc{font-size:12.5px;font-weight:600;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px;display:flex;gap:6px;align-items:center}
+  .tc b{cursor:pointer;color:var(--soft)}
+  .go{font-family:inherit;font-size:14px;font-weight:600;color:#fff;background:var(--ink);border:none;border-radius:10px;padding:11px 20px;cursor:pointer}
+  .go:disabled{opacity:.4;cursor:not-allowed}
+  .disclaim{font-size:11.5px;color:#9aa6a2;margin-top:14px;line-height:1.5}
+  .hint{font-size:13px;color:var(--soft);padding:30px 0}
+  .scrim{position:fixed;inset:0;background:rgba(20,30,29,.4);opacity:0;pointer-events:none;transition:.2s;z-index:20}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .panel{position:fixed;top:0;right:0;bottom:0;width:min(580px,95vw);background:var(--paper);box-shadow:-10px 0 40px rgba(0,0,0,.15);transform:translateX(100%);transition:.26s cubic-bezier(.3,0,.2,1);z-index:21;overflow-y:auto}
+  .panel.show{transform:translateX(0)}
+  .ph{padding:28px 30px 8px}
+  .ph h2{font-family:"Newsreader",serif;font-size:30px;font-weight:500}.ph .grp{font-size:13px;color:var(--soft);margin-top:3px}
+  .close{position:absolute;top:26px;right:26px;width:32px;height:32px;border:1px solid var(--line);background:var(--card);border-radius:9px;cursor:pointer;font-size:16px;color:var(--soft)}
+  .pbody{padding:0 30px 50px}
+  .thread{background:var(--ink);color:#fff;border-radius:14px;padding:22px 24px;margin:8px 0 20px;position:relative;overflow:hidden}
+  .thread::before{content:"";position:absolute;top:0;left:0;bottom:0;width:4px;background:linear-gradient(var(--liv),var(--p16),var(--cs),var(--wg),var(--sg))}
+  .thread .lbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#9fb3b0;font-weight:700;margin-bottom:9px}
+  .thread p{font-family:"Newsreader",serif;font-size:19px;line-height:1.4;font-weight:400}
+  .thread .why{margin-top:12px;font-family:"Inter";font-size:13px;color:#b9c7c4;border-top:1px solid rgba(255,255,255,.13);padding-top:11px;line-height:1.5}
+  .thread.empty{background:#eef1ee;color:#8a968f}
+  .thread.empty::before{opacity:.35}
+  .thread.empty p{font-family:"Inter";font-size:14px}
+  .frameworks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+  .fw{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative}
+  .fw::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+  .fw .t{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--soft);font-weight:600;margin-bottom:6px}
+  .fw .v{font-family:"Newsreader",serif;font-size:17px;line-height:1.25}
+  .fw .v small{font-family:"Inter";font-size:12.5px;color:var(--soft);display:block;margin-top:3px;font-weight:400}
+  .fw.full{grid-column:1/-1}
+  .loading{padding:70px 0;text-align:center;color:var(--soft);font-size:14px}
 </style>
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
-<section id="loginView">
-  <form class="card" id="loginForm" autocomplete="on">
-    <div class="brandmark"><span class="dot"></span><h1>LivStyle</h1></div>
-    <p class="sub">Personality assessment directory · Josiah Venture</p>
-    <div class="field">
-      <label for="login">Login</label>
-      <input id="login" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" />
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" />
-    </div>
-    <button class="btn" id="loginBtn" type="submit">Sign in</button>
-    <div class="msg" id="loginMsg"></div>
-    <p class="hint">You'll see the people in the countries assigned to you. Questions about access go to the People &amp; Culture team.</p>
-  </form>
-</section>
-
-<!-- ================= APP ================= -->
-<div id="app">
-  <header class="bar">
-    <div class="brandmark"><span class="dot"></span><h1 class="wm">LivStyle</h1></div>
-    <div class="who">
-      <div class="n" id="whoName"></div>
-      <div class="r" id="whoRole"></div>
-    </div>
-    <button class="signout" id="signout">Sign out</button>
-  </header>
-
-  <main>
-    <div class="scopebar">
-      <span class="eyebrow">Showing</span>
-      <select id="countrySel"></select>
-      <div class="statusseg scopestatus" id="statusSeg">
-        <button data-s="Active" class="on">Active</button>
-        <button data-s="Inactive">Inactive</button>
-        <button data-s="All">All</button>
-      </div>
-    </div>
-
-    <nav class="tabs" id="tabs">
-      <button data-view="directory" class="active">Directory</button>
-      <button data-view="compare">Compare two</button>
-      <button data-view="team">Build a team</button>
-      <button data-view="role">Role fit</button>
-      <button data-view="manage" id="tabManage" style="display:none">Manage</button>
-    </nav>
-
-    <section id="viewDirectory">
-    <div class="stats">
-      <div class="stat clickable" data-status="Active"><div class="k num" id="sActive">0</div><div class="l">Active</div></div>
-      <div class="stat clickable" data-status="Inactive"><div class="k num" id="sInactive">0</div><div class="l">Inactive</div></div>
-      <div class="stat clickable" data-status="All"><div class="k num" id="sTotal">0</div><div class="l">Total assessments</div></div>
-    </div>
-
-    <div class="grid">
-      <div class="panel">
-        <h2>Primary personality mix</h2>
-        <div class="body"><div class="dist" id="dist"></div></div>
-      </div>
-
-      <div class="panel">
-        <h2>People</h2>
-        <div class="searchrow">
-          <input id="search" placeholder="Search by name…" autocomplete="off" />
-          <button class="bulk-toggle" id="bulkToggle" style="display:none">Bulk edit</button>
-          <span id="typeFilterBar" class="tfbar" style="display:none"></span>
-        </div>
-        <div class="bulk-bar" id="bulkBar" style="display:none"></div>
-        <div class="tablewrap">
-          <table>
-            <thead>
-              <tr>
-                <th data-k="Full Name">Name <span class="arrow"></span></th>
-                <th data-k="Country">Country <span class="arrow"></span></th>
-                <th data-k="Primary Personality">Primary <span class="arrow"></span></th>
-                <th data-k="Accuracy">Acc. <span class="arrow"></span></th>
-              </tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-          <div class="empty" id="tableEmpty" style="display:none">No one matches that search.</div>
-        </div>
-      </div>
-    </div>
-    </section>
-
-    <section id="viewCompare" style="display:none">
-      <div class="panel">
-        <h2>How these two work together</h2>
-        <div class="body">
-          <div class="cmp-pick">
-            <select id="cmpA"></select>
-            <span class="cmp-and">with</span>
-            <select id="cmpB"></select>
-          </div>
-          <div id="cmpResult"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="viewTeam" style="display:none">
-      <div class="panel">
-        <h2>Build a team</h2>
-        <div class="body">
-          <p class="team-help">Pick up to 10 people, then read how the team is wired — who should drive, who fills which role, and where friction is likely.</p>
-          <input id="teamSearch" placeholder="Search to add…" autocomplete="off" style="margin-bottom:12px" />
-          <div class="team-controls">
-            <div class="statusseg" id="teamStatusSeg">
-              <button data-s="Active" class="on">Active</button>
-              <button data-s="Inactive">Inactive</button>
-              <button data-s="All">All</button>
-            </div>
-            <span class="team-count"><span id="teamCount">0</span> of 10 selected</span>
-          </div>
-          <div id="teamPicker" class="team-picker"></div>
-          <button class="btn team-btn" id="teamAnalyze" disabled>Analyze team</button>
-          <div id="teamResult"></div>
-        </div>
-      </div>
-    </section>
-    <section id="viewRole" style="display:none">
-      <div class="panel">
-        <h2>Find the best fit for a role</h2>
-        <div class="body">
-          <p class="team-help">Describe what the position needs — pick a template or set the dials — and see who fits best. Scored against the same LivStyle traits, within your current country scope.</p>
-          <div class="rf-preset">
-            <label for="rfPreset">Start from a template</label>
-            <select id="rfPreset"></select>
-          </div>
-          <div id="rfDims" class="rf-dims"></div>
-          <div id="rfTarget"></div>
-          <div id="rfResults"></div>
-        </div>
-      </div>
-    </section>
-    <section id="viewManage" style="display:none">
-      <div class="panel">
-        <h2>Manage</h2>
-        <div class="body">
-          <nav class="subtabs" id="manageSubtabs">
-            <button data-m="add" id="subAdd" class="on">Add a person</button>
-            <button data-m="structure" id="subStructure">Structure</button>
-          </nav>
-          <div id="mgAddPane">
-            <p class="team-help">Enter a completed LivStyle assessment. The trait pairs are single sliders — set one side and the other fills automatically. Percentages are whole numbers (e.g. 70). Saves straight into the directory.</p>
-            <div id="addMode" class="add-mode"></div>
-            <div id="addForm"></div>
-            <div class="add-actions">
-              <button class="btn add-save" id="addSave">Save to directory</button>
-              <span class="add-msg" id="addMsg"></span>
-            </div>
-          </div>
-          <div id="mgStructurePane" style="display:none">
-            <p class="team-help">Your divisions and their departments, and your teams. Add new ones here — they become available when tagging people and granting leaders access.</p>
-            <div id="manageBody"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+<div class="gate" id="gate">
+  <div class="gatebox">
+    <div class="eyebrow">Josiah Venture · People &amp; Culture</div>
+    <h1>E-Team Insight Dashboard</h1>
+    <p>Confidential. For Executive Team use.</p>
+    <input type="password" id="pw" placeholder="Password" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')signIn()">
+    <button id="signin" onclick="signIn()">Open dashboard</button>
+    <div class="err" id="err"></div>
+    <div class="confid">These profiles contain personal assessment results shared in trust. Please don't forward, export or screenshot them outside the E-Team.</div>
+  </div>
 </div>
 
-<div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-label="Person detail"></aside>
+<div id="app" style="display:none">
+ <div class="wrap">
+  <div class="top">
+   <div class="headrow">
+    <div>
+     <div class="eyebrow">Josiah Venture · People &amp; Culture</div>
+     <h1>E-Team Insight Dashboard</h1>
+    </div>
+    <button class="signout" onclick="signOut()">Sign out</button>
+   </div>
+   <div class="note">Each person opens with their <b>Key Thread</b> — the through-line that recurs across every assessment. A starting point for placement and development conversations, held up against the real person, not a verdict. Switch between the <b>leadership set</b> (full profiles) and <b>everyone</b> at any time. <span id="stamp" style="opacity:.7"></span></div>
+   <div class="scope" id="scopebar"></div>
+   <div class="modes">
+    <button class="mode active" data-m="people" onclick="setMode('people')">People</button>
+    <button class="mode" data-m="compare" onclick="setMode('compare')">Compare two</button>
+    <button class="mode" data-m="team" onclick="setMode('team')">Build a team</button>
+   </div>
+  </div>
+  <div id="view"></div>
+ </div>
+</div>
+
+<div class="scrim" id="scrim" onclick="closePanel()"></div>
+<aside class="panel" id="panel"></aside>
 
 <script>
-const ENDPOINT = "/.netlify/functions/livstyle";
-let ALL = [];        // records visible to this leader
-let ALL_ALLACCESS = false;
-let VIEW = [];       // after country filter
-let sortKey = "Full Name", sortDir = 1;
-let activeId = null;
-let typeFilter = null;
-let statusFilter = "Active";
-let selectMode = false;
-let selected = new Set();
-let AUTH = null;
-let CAN_ADD = false;
-let CAN_EDIT = false;
-let EDIT_ID = null;
-let ORG = { divisions: [], teams: [] };
+let P=[];
+const T16={INTJ:["strategic and independent","give them the long-range 'why' and room to run"],INTP:["analytical and idea-driven","hand them the knotty problem, skip the micromanaging"],ENTJ:["decisive and driving","respect their competence and let them organize the plan"],ENTP:["fast and generative","give them space to debate possibilities out loud"],INFJ:["purpose-driven and insightful about people","connect the work to a deeper why and protect their focus"],INFP:["values-led and quietly principled","tie tasks to meaning and give gentle, honest feedback"],ENFJ:["a warm mobilizer of people","involve them in developing others"],ENFP:["an enthusiastic connector of ideas and people","give variety, affirmation and human contact"],ISTJ:["dependable and precise","give clear expectations and stable process"],ISFJ:["loyal, careful and service-minded","appreciate them specifically and concretely"],ESTJ:["an organizing driver","be clear and direct; respect their competence"],ESFJ:["a relational organizer who values harmony and follow-through","keep things warm, clear and appreciated"],ISTP:["a practical, hands-on problem-solver","give autonomy and real problems"],ISFP:["gentle, present and values-driven","keep pressure low and interactions authentic"],ESTP:["action-oriented and pragmatic","give real stakes and room to move"],ESFP:["energetic and people-warm","give interaction, momentum and encouragement"]};
+const WGorder=["Wonder","Invention","Discernment","Galvanizing","Enablement","Tenacity"];
+const WGdesc={Wonder:"asking the big questions and spotting needs",Invention:"generating fresh ideas and solutions",Discernment:"weighing ideas with good instinct",Galvanizing:"rallying and motivating people to act",Enablement:"jumping in to help and support",Tenacity:"driving work across the finish line"};
+const WGgap={Wonder:"no one instinctively steps back to ask whether you're solving the right problem",Invention:"few original solutions in the room — the team may keep recycling old ones",Discernment:"ideas go unfiltered; weak gut-check on what's actually good",Galvanizing:"no natural rallier — initiatives may lack momentum and buy-in",Enablement:"people don't instinctively jump in to help; support gaps appear",Tenacity:"things get started but stall before the finish line"};
+const DOM={Executing:["Achiever","Arranger","Belief","Consistency","Deliberative","Discipline","Focus","Responsibility","Restorative"],Influencing:["Activator","Command","Communication","Competition","Maximizer","Self-Assurance","Significance","Woo"],"Relationship Building":["Adaptability","Connectedness","Developer","Empathy","Harmony","Includer","Individualization","Positivity","Relator"],"Strategic Thinking":["Analytical","Context","Futuristic","Ideation","Input","Intellection","Learner","Strategic"]};
+const DOMdesc={Executing:"making things happen and following through",Influencing:"speaking up, selling ideas and moving others","Relationship Building":"building trust and holding teams together","Strategic Thinking":"taking in information and thinking ahead"};
+const wgStage=g=>["Wonder","Invention"].includes(g)?"early":["Discernment","Galvanizing"].includes(g)?"mid":"late";
+function domainsOf(cs){const c={Executing:0,Influencing:0,"Relationship Building":0,"Strategic Thinking":0};cs.forEach(s=>{for(const d in DOM)if(DOM[d].includes(s))c[d]++;});return Object.entries(c).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);}
+function threadParts(kt){if(!kt)return null;const i=kt.indexOf('Thread:');if(i<0)return {head:kt,why:''};let head=kt.slice(i+7).trim().replace(/\.$/,'');head=head.charAt(0).toUpperCase()+head.slice(1);return {head:head,why:kt.slice(0,i).trim()};}
 
-/* ---- personality palette (stable, cohesive muted set) ---- */
-const TYPES = ["Ambassador","Communicator","Designer","Discerner","Encourager","Examiner","Exhorter","Innovator","Instructor","Invalid","Motivator","Navigator","Pragmatist","Refiner","Researcher","Supporter","Visionary"];
-const PALETTE = ["#1f4d3f","#35705b","#5b8a6f","#7d7a3f","#a9702a","#c08a3e","#8a6d3b","#4a6d7c","#3f6d8a","#6b6a8f","#8a5f78","#a35d5d","#5f7a4a","#2f6d59","#7a8a5b","#9a8452","#587a6d"];
-const colorFor = (t) => { const i = TYPES.indexOf(t); return i >= 0 ? PALETTE[i % PALETTE.length] : "#8a8880"; };
-
-/* ---- trait groupings for the detail view ---- */
-const BIPOLAR = [
-  { g:"Processing blueprint", pairs:[
-    ["External","Internal"],["Intuitive","Concrete"],["Head","Heart"],["Spontaneous","Orderly"]
-  ]},
-];
-const WHY_PAIRS = { g:"Motivation · why (initiating vs responsive)", pairs:[
-  ["Activity","Affiliation"],["Power","Compliance"],["Attainment","Recognition"]
-]};
-const HOW_PAIRS = { g:"Motivation · how (initiating vs responsive)", pairs:[
-  ["Ideas","Direction"],["Freedom","Consistency"],["Self-Affirmed","Other-Affirmed"],["Task Completion","Prefers Process"]
-]};
-const SIMPLE = [
-  { g:"Fundamental needs", keys:["Significance","Control","Security"] },
-  { g:"Conflict management", keys:["Collaborating","Accommodating","Compromising","Avoiding","Competing"] },
-  { g:"C.A.R.E. mindset", keys:["Creative","Adaptive","Refining","Engaging"] },
-];
-const F = (r,k) => {
-  // fields arrive as full names; bipolar/simple use short labels that map to prefixed field names
-  const map = {
-    "External":"Processing Blueprint: External","Internal":"Processing Blueprint: Internal",
-    "Intuitive":"Processing Blueprint: Intuitive","Concrete":"Processing Blueprint: Concrete",
-    "Head":"Processing Blueprint: Head","Heart":"Processing Blueprint: Heart",
-    "Spontaneous":"Processing Blueprint: Spontaneous","Orderly":"Processing Blueprint: Orderly",
-    "Activity":"Motivation Why: Activity","Affiliation":"Motivation Why: Affiliation","Power":"Motivation Why: Power",
-    "Compliance":"Motivation Why: Compliance","Attainment":"Motivation Why: Attainment","Recognition":"Motivation Why: Recognition",
-    "Ideas":"Motivation How: Ideas","Direction":"Motivation How: Direction","Freedom":"Motivation How: Freedom",
-    "Consistency":"Motivation How: Consistency","Self-Affirmed":"Motivation How: Self-Affirmed","Other-Affirmed":"Motivation How: Other-Affirmed",
-    "Task Completion":"Motivation How: Task Completion","Prefers Process":"Motivation How: Prefers Process",
-    "Significance":"Fundamental Needs: Significance","Control":"Fundamental Needs: Control","Security":"Fundamental Needs: Security",
-    "Collaborating":"Conflict Mngmt: Collaborating","Accommodating":"Conflict Mngmt: Accommodating","Compromising":"Conflict Mngmt: Compromising",
-    "Avoiding":"Conflict Mngmt: Avoiding","Competing":"Conflict Mngmt: Competing",
-    "Creative":"C.A.R.E. Mindset: Creative","Adaptive":"C.A.R.E. Mindset: Adaptive","Refining":"C.A.R.E. Mindset: Refining","Engaging":"C.A.R.E. Mindset: Engaging",
-  };
-  const v = r[map[k] ?? k];
-  return typeof v === "number" ? v : null;
-};
-const pct = (v) => v == null ? "—" : Math.round(v * 100) + "%";
-
-/* ================= LOGIN ================= */
-const $ = (id) => document.getElementById(id);
-$("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const btn = $("loginBtn"), msg = $("loginMsg");
-  const login = $("login").value.trim(), password = $("password").value;
-  const fail = (m) => { msg.className = "msg err"; msg.textContent = m; btn.disabled = false; btn.textContent = "Sign in"; };
-  if (!login || !password) { fail("Enter your login and password."); return; }
-  btn.disabled = true; btn.textContent = "Signing in…"; msg.textContent = ""; msg.className = "msg";
-  let res;
-  try {
-    res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ login, password }) });
-  } catch (netErr) {
-    return fail("Couldn't reach the server. If you opened the file directly, it has to be deployed to Netlify first.");
-  }
-  if (res.status === 404) return fail("Login service not found (404). The Netlify function didn't deploy — index.html and the netlify/ folder must sit at the site root.");
-  let data = null, text = "";
-  try { text = await res.text(); data = JSON.parse(text); }
-  catch (parseErr) {
-    if (/<\/?html|page ?not ?found/i.test(text)) return fail("Login service not found — no function at /.netlify/functions/livstyle. Check the deploy structure.");
-    return fail("Unexpected response from the server (status " + res.status + "). Check the function logs in Netlify.");
-  }
-  if (res.status === 500) return fail(data.error || "Server error — most likely AIRTABLE_PAT isn't set. Add it in Netlify, then redeploy.");
-  if (!res.ok || !data.ok) return fail(data.error || "That login and password don't match, or the account is inactive.");
-  AUTH = { login, password };
-  startApp(data);
-});
-
-function startApp(data){
-  ALL = data.records;
-  $("whoName").textContent = data.name;
-  $("whoRole").textContent = data.role || (data.allAccess ? "All access" : "");
-  // country selector — only countries that currently have active people
-  ALL_ALLACCESS = data.allAccess === true;
-  const sel = $("countrySel");
-  rebuildCountrySelect();
-  sel.addEventListener("change", applyFilter);
-  $("search").addEventListener("input", renderTable);
-  $("bulkToggle").addEventListener("click", toggleBulk);
-  document.querySelectorAll(".stat.clickable").forEach(s => s.addEventListener("click", () => setStatus(s.dataset.status)));
-  $("statusSeg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.s)));
-  document.querySelectorAll("th[data-k]").forEach(th => th.addEventListener("click", () => {
-    const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
-    renderTable();
-  }));
-  $("signout").addEventListener("click", () => location.reload());
-  wireViews();
-  CAN_ADD = data.canAdd === true;
-  CAN_EDIT = data.canEdit === true;
-  ORG = data.org || { divisions: [], teams: [] };
-  $("tabManage").style.display = (CAN_ADD || CAN_EDIT) ? "" : "none";
-  $("bulkToggle").style.display = CAN_ADD ? "" : "none";
-  $("subAdd").style.display = CAN_ADD ? "" : "none";
-  $("subStructure").style.display = CAN_EDIT ? "" : "none";
-  $("manageSubtabs").style.display = (CAN_ADD && CAN_EDIT) ? "" : "none";
-  if (CAN_ADD || CAN_EDIT) buildAddForm();
-  $("login").value = ""; $("password").value = "";
-  applyFilter();
-  $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
-  document.getElementById("app").style.display = "block";
-  document.getElementById("loginView").style.display = "none";
+/* ---------- auth ---------- */
+async function load(pw){
+  const res=await fetch('/.netlify/functions/people',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+  if(res.status===401) throw new Error('Incorrect password.');
+  if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||'Could not reach the data.');}
+  return res.json();
 }
-
-function countriesForStatus(){
-  const ok = r => statusFilter==="All" ? true : statusOf(r)===statusFilter;
-  return [...new Set(ALL.filter(ok).map(r => r.Country).filter(Boolean))].sort();
-}
-function rebuildCountrySelect(){
-  const sel = $("countrySel"); const cur = sel.value;
-  const countries = countriesForStatus();
-  const showAll = ALL_ALLACCESS || countries.length > 1;
-  const opts = showAll ? ["All countries", ...countries] : countries;
-  sel.innerHTML = opts.map(c => `<option>${c}</option>`).join("");
-  sel.style.display = opts.length > 1 ? "" : "none";
-  const oldStrong = document.querySelector(".scopebar strong"); if (oldStrong) oldStrong.remove();
-  if (!showAll && countries.length === 1){
-    document.querySelector(".scopebar .eyebrow").textContent = "Showing";
-    sel.insertAdjacentHTML("beforebegin", `<strong style="font-size:15px">${countries[0]}</strong>`);
-  }
-  sel.value = opts.includes(cur) ? cur : (opts[0] || "");
-}
-function setStatus(s){
-  statusFilter = s;
-  $("statusSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.s === s));
-  applyFilter();
-}
-
-function applyFilter(){
-  const sel = $("countrySel");
-  rebuildCountrySelect();
-  const pick = sel.value || (sel.options[0] && sel.options[0].value);
-  VIEW = (!pick || pick === "All countries") ? ALL.slice() : ALL.filter(r => r.Country === pick);
-  typeFilter = null;
-  renderStats(); renderDist(); renderTable(); initViews();
-}
-
-function renderStats(){
-  const active = VIEW.filter(r => statusOf(r) === "Active").length;
-  $("sActive").textContent = active;
-  $("sInactive").textContent = VIEW.length - active;
-  $("sTotal").textContent = VIEW.length;
-  document.querySelectorAll(".stat.clickable").forEach(s => s.classList.toggle("on", s.dataset.status === statusFilter));
-}
-
-function renderDist(){
-  const counts = {};
-  VIEW.forEach(r => { const t = r["Primary Personality"]; if (t) counts[t] = (counts[t]||0)+1; });
-  const arr = Object.entries(counts).sort((a,b) => b[1]-a[1]);
-  const max = arr.length ? arr[0][1] : 1;
-  $("dist").innerHTML = arr.map(([t,c]) => `
-    <div class="row ${t===typeFilter?'active':''}" data-type="${t}" role="button" tabindex="0" aria-pressed="${t===typeFilter}" title="Show the ${c} ${t}${c===1?'':'s'}">
-      <span class="name"><span class="swatch" style="background:${colorFor(t)}"></span>${t}</span>
-      <span class="track"><span class="fill" style="width:${Math.max(6,(c/max)*100)}%;background:${colorFor(t)}"></span></span>
-      <span class="c num">${c}</span>
-    </div>`).join("") || `<div class="empty">No assessments in view.</div>`;
-  const pick = (t)=>{ typeFilter = (typeFilter===t) ? null : t; renderDist(); renderTable(); };
-  $("dist").querySelectorAll(".row").forEach(row => {
-    row.addEventListener("click", () => pick(row.dataset.type));
-    row.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(row.dataset.type); } });
-  });
-}
-
-function statusOf(r){ return r.Status === "Inactive" ? "Inactive" : "Active"; }
-
-function renderTable(){
-  const q = $("search").value.trim().toLowerCase();
-  let rows = VIEW.filter(r =>
-    (!q || (r["Full Name"]||"").toLowerCase().includes(q)) &&
-    (!typeFilter || r["Primary Personality"]===typeFilter) &&
-    (statusFilter==="All" || statusOf(r)===statusFilter));
-  rows.sort((a,b) => {
-    let x = a[sortKey], y = b[sortKey];
-    if (sortKey === "Accuracy"){ x = x ?? -1; y = y ?? -1; return (x-y)*sortDir; }
-    return String(x??"").localeCompare(String(y??""))*sortDir;
-  });
-  // active-filter chip
-  const bar = $("typeFilterBar");
-  if(typeFilter){ bar.style.display=""; bar.innerHTML = `Showing <b style="margin:0 2px">${typeFilter}</b> · ${rows.length} <button title="Clear filter" aria-label="Clear filter">×</button>`;
-    bar.querySelector("button").addEventListener("click", () => { typeFilter=null; renderDist(); renderTable(); }); }
-  else bar.style.display="none";
-  const tb = $("rows");
-  tb.innerHTML = rows.map(r => `
-    <tr data-id="${r.id}" class="${r.id===activeId?'active':''} ${statusOf(r)==='Inactive'?'inactive':''} ${selectMode&&selected.has(r.id)?'sel':''}">
-      <td>${selectMode?`<span class="rowcheck">${selected.has(r.id)?'✓':''}</span>`:''}${r["Full Name"]||"—"}</td>
-      <td>${r.Country||"—"}</td>
-      <td><span class="pri"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></td>
-      <td class="acc">${pct(r.Accuracy)}</td>
-    </tr>`).join("");
-  $("tableEmpty").style.display = rows.length ? "none" : "block";
-  tb.querySelectorAll("tr").forEach(tr => tr.addEventListener("click", () => {
-    const id = tr.dataset.id;
-    if (selectMode){ selected.has(id) ? selected.delete(id) : selected.add(id); renderTable(); renderBulkBar(); }
-    else openDrawer(id);
-  }));
-  document.querySelectorAll("th[data-k]").forEach(th => {
-    th.querySelector(".arrow").textContent = th.dataset.k === sortKey ? (sortDir>0?"↑":"↓") : "";
-  });
-  window._shownRows = rows; // for "select all shown"
-}
-
-let placeOpen = false;
-function renderBulkBar(){
-  const bar = $("bulkBar");
-  if (!selectMode){ bar.style.display = "none"; placeOpen = false; return; }
-  bar.style.display = "";
-  const shown = (window._shownRows||[]).length;
-  bar.innerHTML = `
-    <div class="bulk-row">
-      <span class="bulk-n"><b>${selected.size}</b> selected</span>
-      <button class="bulk-act on-green" data-a="Active">Mark Active</button>
-      <button class="bulk-act on-gray" data-a="Inactive">Mark Inactive</button>
-      ${CAN_EDIT?`<button class="bulk-lite ${placeOpen?'on':''}" data-a="place">Set placement…</button>`:""}
-      <span class="bulk-sep"></span>
-      <button class="bulk-lite" data-a="all">Select all shown (${shown})</button>
-      <button class="bulk-lite" data-a="clear">Clear</button>
-      <span class="bulk-msg" id="bulkMsg"></span>
-    </div>
-    ${placeOpen ? placePanelHTML() : ""}`;
-  bar.querySelector('[data-a="all"]').addEventListener("click", () => { (window._shownRows||[]).forEach(r=>selected.add(r.id)); renderTable(); renderBulkBar(); });
-  bar.querySelector('[data-a="clear"]').addEventListener("click", () => { selected.clear(); renderTable(); renderBulkBar(); });
-  bar.querySelector('[data-a="Active"]').addEventListener("click", () => applyBulkStatus("Active"));
-  bar.querySelector('[data-a="Inactive"]').addEventListener("click", () => applyBulkStatus("Inactive"));
-  const pb = bar.querySelector('[data-a="place"]'); if (pb) pb.addEventListener("click", () => { placeOpen = !placeOpen; renderBulkBar(); });
-  if (placeOpen){
-    const tm = $("plTeamMode");
-    if (tm) tm.addEventListener("change", () => { $("plTeams").style.display = (tm.value==="add"||tm.value==="replace") ? "" : "none"; });
-    $("plApply").addEventListener("click", applyPlacement);
-  }
-}
-
-function placePanelHTML(){
-  const countryList = (ORG.countries && ORG.countries.length) ? ORG.countries : ADD_COUNTRIES;
-  const leadClear = `<option value="__leave">— leave unchanged —</option><option value="__clear">(clear)</option>`;
-  const cOpts = leadClear + countryList.map(c=>`<option value="${c}">${c}</option>`).join("");
-  const dvOpts = leadClear + ORG.divisions.map(d=>`<option value="${d.name}">${d.name}</option>`).join("");
-  const deptOpts = leadClear + ORG.divisions.map(d=> d.departments.length?`<optgroup label="${d.name}">`+d.departments.map(x=>`<option value="${x}">${x}</option>`).join("")+`</optgroup>`:"").join("");
-  const teamChecks = ORG.teams.length ? ORG.teams.map(t=>`<label class="team-chk"><input type="checkbox" class="pl-team" data-team="${t.name}"> ${t.name}</label>`).join("") : '<span class="team-help">No teams defined.</span>';
-  return `<div class="place-panel">
-    <div class="pl-grid">
-      <div class="pl-f"><label>Country</label><select id="plCountry">${cOpts}</select></div>
-      <div class="pl-f"><label>Division</label><select id="plDivision">${dvOpts}</select></div>
-      <div class="pl-f"><label>Department</label><select id="plDepartment">${deptOpts}</select></div>
-      <div class="pl-f"><label>Teams</label><select id="plTeamMode"><option value="leave">— leave unchanged —</option><option value="add">Add selected</option><option value="replace">Replace with selected</option><option value="clear">Clear all</option></select></div>
-    </div>
-    <div class="pl-teams" id="plTeams" style="display:none"><div class="team-checks">${teamChecks}</div></div>
-    <div class="pl-actions"><button class="btn pl-apply" id="plApply">Apply to ${selected.size}</button><span class="bulk-msg" id="plMsg"></span></div>
-  </div>`;
-}
-
-async function applyPlacement(){
-  const ids = [...selected]; const msg = $("plMsg");
-  if (!ids.length){ if(msg){ msg.className="bulk-msg err"; msg.textContent="Select people first."; } return; }
-  const base = {};
-  const c = $("plCountry").value; if (c==="__clear") base.Country=null; else if (c!=="__leave") base.Country=c;
-  const dv = $("plDivision").value; if (dv==="__clear") base.Division=null; else if (dv!=="__leave") base.Division=dv;
-  const dp = $("plDepartment").value; if (dp==="__clear") base.Department=null; else if (dp!=="__leave") base.Department=dp;
-  const tm = $("plTeamMode").value;
-  const selTeams = [...document.querySelectorAll(".pl-team:checked")].map(x=>x.dataset.team);
-  if (!Object.keys(base).length && tm==="leave"){ if(msg){ msg.className="bulk-msg err"; msg.textContent="Nothing set to change."; } return; }
-  const updates = ids.map(id => {
-    const r = ALL.find(x=>x.id===id) || {}; const f = {...base};
-    if (tm==="replace") f.Team = selTeams;
-    else if (tm==="clear") f.Team = [];
-    else if (tm==="add"){ const cur = Array.isArray(r.Team)?r.Team:[]; f.Team = [...new Set([...cur, ...selTeams])]; }
-    return { id, fields:f };
-  });
-  const btn = $("plApply"); if(btn){ btn.disabled=true; btn.textContent="Applying…"; }
-  if (msg){ msg.className="bulk-msg"; msg.textContent=`Updating ${ids.length}…`; }
+async function signIn(){
+  const pw=document.getElementById('pw').value.trim();
+  const btn=document.getElementById('signin'),err=document.getElementById('err');
+  if(!pw){err.textContent='Enter the password.';return;}
+  btn.disabled=true;btn.textContent='Opening…';err.textContent='';
   try{
-    const res = await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ action:"placeBulk", login:AUTH.login, password:AUTH.password, updates })});
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error||"Couldn't update.");
-    updates.forEach(u => { const r=ALL.find(x=>x.id===u.id); if(r) Object.entries(u.fields).forEach(([k,v])=>{ if(v===null) delete r[k]; else r[k]=v; }); });
-    selected.clear(); placeOpen=false; applyFilter(); renderBulkBar();
-    const bm=$("bulkMsg"); if(bm){ bm.className="bulk-msg ok"; bm.textContent=`Updated placement for ${data.count}.`; }
-  }catch(err){ if(btn){ btn.disabled=false; btn.textContent="Apply"; } if(msg){ msg.className="bulk-msg err"; msg.textContent=err.message; } }
-}
-
-async function applyBulkStatus(status){
-  const ids = [...selected];
-  const msg = $("bulkMsg");
-  if (!ids.length){ if(msg){ msg.className="bulk-msg err"; msg.textContent="Select some people first."; } return; }
-  if (msg){ msg.className="bulk-msg"; msg.textContent=`Updating ${ids.length}…`; }
-  try {
-    const res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ action:"status", login:AUTH.login, password:AUTH.password, ids, status }) });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || "Couldn't update.");
-    ids.forEach(id => { const r = ALL.find(x=>x.id===id); if(r) r.Status = status; });
-    selected.clear();
-    applyFilter();
-    renderBulkBar();
-    if (msg){ msg.className="bulk-msg ok"; msg.textContent=`Marked ${data.count} ${status}.`; }
-  } catch(err){ if(msg){ msg.className="bulk-msg err"; msg.textContent=err.message; } }
-}
-
-function toggleBulk(){
-  selectMode = !selectMode;
-  selected.clear();
-  $("bulkToggle").classList.toggle("on", selectMode);
-  $("bulkToggle").textContent = selectMode ? "Done" : "Bulk edit";
-  if (selectMode) closeDrawer();
-  renderTable(); renderBulkBar();
-}
-
-/* ================= GUIDANCE ENGINE =================
-   Translates the numeric profile into plain-language notes, grounded in the
-   LivStyle training manual (Processing Blueprint, Motivation Why/How as
-   Initiating<->Responsive pairs, Fundamental Needs, Conflict, C.A.R.E.,
-   Decision-Making, and Counter-Intuitive "strength carried too far").
-   Deterministic: fast, free, consistent across everyone. */
-function firstName(r){ return (r["First Name"] || (r["Full Name"]||"").split(" ")[0] || "They"); }
-function topKeys(r, keys, n){ return keys.map(k=>[k,F(r,k)??0]).sort((p,q)=>q[1]-p[1]).slice(0,n); }
-// dominant pole of a bipolar pair; "bal" when within margin
-function dom(r,a,b,margin){ margin=margin??0.12; const A=F(r,a),B=F(r,b);
-  if(A==null&&B==null) return null; const x=A??0,y=B??0,gap=Math.abs(x-y);
-  return {side: gap<margin?"bal":(x>y?"a":"b"), a,b,A,B,gap, strong:gap>=0.4}; }
-
-function decisionRead(r){
-  const s=r["Decision Making"]||""; if(!s) return null;
-  const outward=/Outward/i.test(s), inward=/Inward/i.test(s);
-  const careful=/Careful/i.test(s), rapid=/Rapid/i.test(s);
-  const color=(s.match(/Green|Yellow|Orange|Red/i)||[])[0];
-  const parts=[];
-  if(outward&&inward) parts.push("weighs decisions both out loud and privately");
-  else if(outward) parts.push("thinks decisions through out loud, with others");
-  else if(inward) parts.push("works decisions out internally before saying much");
-  if(careful&&rapid) parts.push("can move deliberately or quickly as the moment needs");
-  else if(careful) parts.push("deliberate — wants time to weigh it");
-  else if(rapid) parts.push("decides quickly");
-  if(!parts.length) return null;
-  let flex="";
-  const c=(color||"").toLowerCase();
-  if(c==="green") flex=" The style is flexible, so they can adapt to the situation.";
-  else if(c==="yellow") flex=" Fairly defined — some flex, but a clear default.";
-  else if(c==="orange") flex=" A strongly defined style — expect little flexing.";
-  else if(c==="red") flex=" A very fixed style — they'll rarely move off it, so plan around it.";
-  return `Decides by ${parts.join(", ")}.${flex}`;
-}
-
-function advise(r){
-  const N = firstName(r);
-
-  // -- Snapshot: primary vs under-pressure --
-  const snap=[];
-  const pp=r["Primary Personality"], up=r["Personality Under Pressure"];
-  if(pp && up && up!==pp) snap.push(`Runs as <b>${pp}</b>, but under pressure shifts toward <b>${up}</b> — watch for that shift when ${N} is stretched.`);
-  else if(pp) snap.push(`<b>${pp}</b> — and holds that same style under pressure, so ${N} stays consistent when stretched.`);
-
-  // -- How to communicate & decide (Processing Blueprint) --
-  const comm=[];
-  const ei=dom(r,"External","Internal");
-  if(ei){ if(ei.side==="a") comm.push(`Energized by interaction and thinks out loud — give room to talk it through; first reactions aren't final answers.`);
-    else if(ei.side==="b") comm.push(`Energized by reflection and processes privately — send things ahead and leave space before asking for a call.`);
-    else comm.push(`Comfortable processing both out loud and on their own.`); }
-  const ic=dom(r,"Intuitive","Concrete");
-  if(ic){ if(ic.side==="a") comm.push(`Takes in the big picture first — open with the why and the vision, then the detail.`);
-    else if(ic.side==="b") comm.push(`Wants facts and specifics — bring concrete examples and proven detail.`); }
-  const hh=dom(r,"Head","Heart");
-  if(hh){ if(hh.side==="a") comm.push(`Decides by logic — make the reasoned, objective case.`);
-    else if(hh.side==="b") comm.push(`Decides by values and impact on people — name who it affects, not just the numbers.`); }
-  const so=dom(r,"Spontaneous","Orderly");
-  if(so){ if(so.side==="b") comm.push(`Wants structure and closure — bring an agenda and flag changes early.`);
-    else if(so.side==="a") comm.push(`Stays flexible and open — over-structuring can feel constraining.`); }
-  const dr=decisionRead(r); if(dr) comm.push(dr);
-
-  // -- What motivates them (Why + How pairs, Fundamental need) --
-  const mot=[];
-  const whyText={Activity:"a fast pace and momentum",Affiliation:"relationships and belonging",
-    Power:"influence and shaping direction",Compliance:"clear standards and doing it right",
-    Attainment:"reaching the goal itself",Recognition:"being appreciated for the effort"};
-  const drivers=[dom(r,"Activity","Affiliation"),dom(r,"Power","Compliance"),dom(r,"Attainment","Recognition")]
-    .filter(p=>p&&p.side!=="bal").map(p=>whyText[p.side==="a"?p.a:p.b]);
-  if(drivers.length) mot.push(`Driven most by ${drivers.join(", ")}.`);
-  const fc=dom(r,"Freedom","Consistency");
-  if(fc&&fc.side==="a") mot.push(`Needs room to operate — give the goal, not the method.`);
-  else if(fc&&fc.side==="b") mot.push(`Runs on stability and routine — change costs ${N}; give lead time.`);
-  const idr=dom(r,"Ideas","Direction");
-  if(idr&&idr.side==="a") mot.push(`Wants to help shape the idea — invite input early.`);
-  else if(idr&&idr.side==="b") mot.push(`Wants clear direction — ambiguity slows them down.`);
-  const aff=dom(r,"Self-Affirmed","Other-Affirmed");
-  if(aff&&aff.side==="b") mot.push(`Needs affirmation from others — specific encouragement keeps ${N} going.`);
-  else if(aff&&aff.side==="a"&&aff.strong) mot.push(`Internally anchored — won't need much external validation.`);
-  const tc=dom(r,"Task Completion","Prefers Process");
-  if(tc&&tc.side==="a") mot.push(`Driven to finish — protect ${N} from endless open loops.`);
-  else if(tc&&tc.side==="b") mot.push(`Values the process itself — don't rush past the work.`);
-  const need=topKeys(r,["Significance","Control","Security"],1)[0];
-  const needText={Significance:"their contribution clearly matters and is acknowledged",
-    Control:"they have clarity and a measure of control over their own work",
-    Security:"things feel stable and predictable"};
-  if(need&&need[1]>0.34) mot.push(`Feels most secure when ${needText[need[0]]}.`);
-
-  // -- In conflict + stress signal (manual's Special Note) --
-  const conf=[];
-  const cmap={Collaborating:`Works toward win-win and will engage directly — bring ${N} into hard conversations.`,
-    Accommodating:`Tends to yield to keep the peace and may go quiet — ask directly for their real view.`,
-    Compromising:`Looks for the middle ground — pragmatic, but check a quick settle is actually right.`,
-    Avoiding:`Tends to sidestep conflict — raise issues gently and privately, don't corner ${N} in a group.`,
-    Competing:`Meets conflict head-on — be direct and clear; ${N} respects a firm position.`};
-  const cf=topKeys(r,["Collaborating","Accommodating","Compromising","Avoiding","Competing"],1)[0];
-  if(cf&&cf[1]>0) conf.push(cmap[cf[0]]);
-  const needVals=["Significance","Control","Security"].map(k=>F(r,k)).filter(v=>v!=null);
-  const balanced = needVals.length===3 && needVals.every(v=>v>0) && (Math.max(...needVals)-Math.min(...needVals))<0.15;
-  if(balanced) conf.push(`<b>Stress check:</b> the three fundamental needs are running nearly equal — the pattern LivStyle links to elevated stress. Worth a gentle check-in on how ${N} is doing.`);
-
-  // -- Problem-solving (C.A.R.E.) --
-  const care=[];
-  const careMotto={Creative:"generating several ideas where others see one",Adaptive:"seeing potential early and finding a way to make it work",
-    Refining:"catching flaws and getting it right the first time",Engaging:"driving a concept through to completion"};
-  const cHi=topKeys(r,["Creative","Adaptive","Refining","Engaging"],1)[0];
-  const cLo=topKeys(r,["Creative","Adaptive","Refining","Engaging"],4).slice(-1)[0];
-  if(cHi&&cHi[1]>0) care.push(`Strongest problem-solving gift is <b>${cHi[0]}</b> — ${careMotto[cHi[0]]}.`);
-  const clashOpp={Refining:"Engaging",Engaging:"Refining",Creative:"Refining"};
-  if(cHi&&clashOpp[cHi[0]]) care.push(`May rub against strong <b>${clashOpp[cHi[0]]}</b> people — different tempo on when something's "ready."`);
-  if(cLo&&cHi&&cLo[0]!==cHi[0]) care.push(`Lowest is <b>${cLo[0]}</b> — ${N} will value a teammate who brings that.`);
-
-  // -- Growth edge (Counter-Intuitive Management: strength carried too far -> opposite-positive) --
-  const growthRules=[
-    ["Power",0.7,"takes charge naturally","overbearing or controlling","empowering others and sharing control"],
-    ["Competing",0.6,"direct and assertive","domineering or blunt","patience, collaboration, and gentleness"],
-    ["Orderly",0.7,"structured and precise","rigid or inflexible","flexibility and openness to new ideas"],
-    ["Refining",0.7,"sharp on detail and quality","critical or perfectionistic","valuing \u201cgood enough\u201d and the big picture"],
-    ["Concrete",0.72,"grounded in facts","closed to the big picture","openness to possibility and vision"],
-    ["Affiliation",0.72,"warm and relational","reluctant to deliver hard truths","being direct and forthright"],
-    ["Avoiding",0.55,"a peace-keeper","conflict-avoidant, so issues get buried","addressing issues and setting boundaries"],
-    ["Accommodating",0.5,"accommodating","passive or a push-over","assertiveness and holding their own view"],
-    ["Spontaneous",0.72,"flexible and high-energy","short on follow-through","order and bringing things to closure"],
-    ["External",0.75,"quick to think out loud","dominating the airtime","listening and leaving space for others"],
-    ["Engaging",0.72,"driven to execute","launching before it's fully ready","refining and planning first"],
-    ["Recognition",0.72,"energized by appreciation","needing the spotlight","internal validation"],
-  ];
-  const growth = growthRules.map(g=>[F(r,g[0]),g]).filter(x=>x[0]!=null&&x[0]>=x[1][1])
-    .sort((a,b)=>b[0]-a[0]).slice(0,2)
-    .map(x=>{const g=x[1]; return `Strength: <b>${g[2]}</b>. Carried too far it can read as <b>${g[3]}</b> — the growth edge is cultivating ${g[4]}.`;});
-
-  // -- Role-fit signals --
-  const clusters = {
-    "Execution & quality":["Orderly","Task Completion","Refining","Compliance"],
-    "Vision & innovation":["Intuitive","Ideas","Creative"],
-    "People & relationships":["External","Affiliation","Engaging","Heart"],
-    "Analysis & standards":["Head","Concrete","Compliance","Refining"],
-    "Drive & leadership":["Power","Attainment","Competing","Self-Affirmed"],
-    "Adaptability":["Adaptive","Spontaneous","Freedom"],
-  };
-  const clusterScore = Object.entries(clusters).map(([name,ks])=>{
-    const vals=ks.map(k=>F(r,k)).filter(v=>v!=null); const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
-    return [name,avg];
-  }).sort((a,b)=>b[1]-a[1]);
-  const strengths = clusterScore.slice(0,3).filter(c=>c[1]>=0.45).map(c=>c[0]);
-  const drainRules = [
-    ["Freedom",0.6,"micromanagement and rigid process"],["Consistency",0.6,"constant change and shifting priorities"],
-    ["Internal",0.6,"nonstop interaction with no quiet time"],["Orderly",0.6,"ambiguity and last-minute chaos"],
-    ["Affiliation",0.6,"isolation or purely transactional work"],["Ideas",0.6,"pure execution with no room to shape"],
-    ["Task Completion",0.6,"open-ended work that never closes"],["Concrete",0.65,"vague direction with no specifics"],
-  ];
-  const drains = drainRules.map(([k,t,txt])=>[F(r,k),t,txt]).filter(x=>x[0]!=null&&x[0]>=x[1])
-    .sort((a,b)=>b[0]-a[0]).slice(0,3).map(x=>x[2]);
-
-  return { N, snap, comm, mot, conf, care, growth, strengths, drains };
-}
-
-function guidanceBlock(r){
-  const a = advise(r);
-  const list = (arr) => arr.map(t=>`<li>${t}</li>`).join("");
-  const sec = (title, arr) => arr.length ? `<div class="gsec"><h5>${title}</h5><ul>${list(arr)}</ul></div>` : "";
-  return `
-    <div class="guide">
-      <div class="ghead"><span class="gdot"></span>Working with ${a.N}</div>
-      <p class="gcap">Practical read of the profile — how to engage ${a.N}, and where their role may fit or chafe.</p>
-      ${sec("At a glance", a.snap)}
-      ${sec("How to communicate & decide", a.comm)}
-      ${sec(`What motivates ${a.N}`, a.mot)}
-      ${sec("In conflict", a.conf)}
-      ${sec("Problem-solving (C.A.R.E.)", a.care)}
-      ${sec("Growth edge", a.growth)}
-      <div class="gsec">
-        <h5>Role-fit signals</h5>
-        ${a.strengths.length?`<p class="grf"><b>Natural strengths:</b> ${a.strengths.join(" · ")}</p>`:""}
-        ${a.drains.length?`<p class="grf"><b>Likely drains:</b> ${a.drains.join("; ")}</p>`:""}
-        <p class="gnote">Hold these against ${a.N}'s actual responsibilities. Broad overlap points to a good fit; if their day-to-day runs against these, that mismatch often shows up as friction or fatigue.</p>
-      </div>
-    </div>`;
-}
-
-/* ================= ADD A PERSON ================= */
-const ADD_COUNTRIES = ["A-team","Albania","Bulgaria","Croatia","Czech Republic","E-team","EGCC","Estonia","Former 1st Culture Staff","Former 2nd Culture Staff","Former Croatia Intern","Former Germany Intern","Former I-team Intern","Former Slovakia - Interns","Friess Group","Germany","Hotel Malenovice","Hungary","I-team","JV Board","JV Canada","JV USA","Latvia","Moldova","Montenegro","Pavel Schwarz","Poland","Romania","Serbia","Slovakia","Slovenia","Ukraine","United States"];
-const ADD_BIPOLAR = {
-  "Processing Blueprint": [["External","Internal"],["Intuitive","Concrete"],["Head","Heart"],["Spontaneous","Orderly"]],
-  "Motivation — Why": [["Activity","Affiliation"],["Power","Compliance"],["Attainment","Recognition"]],
-  "Motivation — How": [["Ideas","Direction"],["Freedom","Consistency"],["Self-Affirmed","Other-Affirmed"],["Task Completion","Prefers Process"]],
-};
-const ADD_PREFIX = { "Processing Blueprint":"Processing Blueprint: ", "Motivation — Why":"Motivation Why: ", "Motivation — How":"Motivation How: " };
-const ADD_MULTI = {
-  "Fundamental Needs": { prefix:"Fundamental Needs: ", keys:["Significance","Control","Security"], sum:true },
-  "Conflict Management": { prefix:"Conflict Mngmt: ", keys:["Collaborating","Accommodating","Compromising","Avoiding","Competing"], sum:true },
-  "C.A.R.E. Mindset": { prefix:"C.A.R.E. Mindset: ", keys:["Creative","Adaptive","Refining","Engaging"], sum:false },
-};
-
-function buildAddForm(record){
-  const typeOpts = ['<option value=""></option>', ...TYPES.map(t=>`<option>${t}</option>`)].join("");
-  const countryList = (ORG.countries && ORG.countries.length) ? ORG.countries : ADD_COUNTRIES;
-  const countryOpts = ['<option value=""></option>', ...countryList.map(c=>`<option>${c}</option>`)].join("");
-  let html = "";
-  html += `<div class="add-grp"><h4>Basics</h4><div class="add-fields">
-    <div class="add-f"><label>First name *</label><input type="text" data-k="First Name"></div>
-    <div class="add-f"><label>Last name *</label><input type="text" data-k="Last Name"></div>
-    <div class="add-f"><label>Country</label><select data-k="Country">${countryOpts}</select></div>
-    <div class="add-f"><label>Country representative</label><input type="text" data-k="Country Representative"></div>
-    <div class="add-f"><label>Assessment date</label><input type="date" data-k="Assessment Date"></div>
-    <div class="add-f"><label>Accuracy (%)</label><input type="number" min="0" max="100" data-k="Accuracy" data-pct="1"></div>
-    <div class="add-f add-check"><input type="checkbox" id="add-shared" data-k="Shared" data-bool="1"><label for="add-shared">Shared</label></div>
-  </div></div>`;
-  html += `<div class="add-grp"><h4>Personality</h4><div class="add-fields">
-    <div class="add-f"><label>Primary personality</label><select data-k="Primary Personality">${typeOpts}</select></div>
-    <div class="add-f"><label>PP# (optional)</label><input type="text" data-k="PP#"></div>
-    <div class="add-f"><label>Personality under pressure</label><select data-k="Personality Under Pressure">${typeOpts}</select></div>
-    <div class="add-f"><label>PUP# (optional)</label><input type="text" data-k="PUP#"></div>
-    <div class="add-f full"><label>Decision-making (e.g. "Careful Inward Red")</label><input type="text" data-k="Decision Making"></div>
-  </div></div>`;
-  const divOpts = ['<option value=""></option>', ...ORG.divisions.map(d=>`<option>${d.name}</option>`)].join("");
-  const deptOpts = ['<option value=""></option>', ...ORG.divisions.map(d=> d.departments.length?`<optgroup label="${d.name}">`+d.departments.map(x=>`<option>${x}</option>`).join("")+`</optgroup>`:"").join("")].join("");
-  const teamChecks = ORG.teams.length ? ORG.teams.map(t=>`<label class="team-chk"><input type="checkbox" class="teamcheck" data-team="${t.name}"> ${t.name}${t.country?` <span class="tc-c">${t.country}</span>`:""}</label>`).join("") : '<span class="team-help">No teams yet — add them in Manage.</span>';
-  html += `<div class="add-grp"><h4>Placement</h4><div class="add-fields">
-    <div class="add-f"><label>Division</label><select data-k="Division">${divOpts}</select></div>
-    <div class="add-f"><label>Department</label><select data-k="Department">${deptOpts}</select></div>
-    <div class="add-f full"><label>Teams</label><div class="team-checks">${teamChecks}</div></div>
-  </div></div>`;
-  for (const [grp, pairs] of Object.entries(ADD_BIPOLAR)) {
-    const pfx = ADD_PREFIX[grp];
-    html += `<div class="add-grp"><h4>${grp}</h4><div class="add-fields">` +
-      pairs.map((p)=>{
-        const id = `bip-${pfx}${p[0]}`.replace(/[^a-zA-Z0-9]/g,"");
-        return `<div class="bip-f">
-          <div class="bl"><span class="lname">${p[0]}</span><span class="lval"><b class="lv">50</b>% · <span class="rv">50</span>% <span class="lname" style="color:var(--ink)">${p[1]}</span></span></div>
-          <input type="range" min="0" max="100" value="50" id="${id}" data-left="${pfx}${p[0]}" data-right="${pfx}${p[1]}">
-        </div>`;
-      }).join("") + `</div></div>`;
-  }
-  for (const [grp, cfg] of Object.entries(ADD_MULTI)) {
-    html += `<div class="add-grp"><h4>${grp}</h4><div class="add-fields">` +
-      cfg.keys.map(k=>`<div class="add-f"><label>${k} (%)</label><input type="number" min="0" max="100" value="0" data-k="${cfg.prefix}${k}" data-pct="1" ${cfg.sum?`data-sum="${grp}"`:""}></div>`).join("") +
-      (cfg.sum?`<div class="sum-note" data-sumnote="${grp}">Total: <b>0</b>% (aim for 100%)</div>`:"") + `</div></div>`;
-  }
-  $("addForm").innerHTML = html;
-  $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{
-    const upd=()=>{ const v=+sl.value; const row=sl.closest(".bip-f"); row.querySelector(".lv").textContent=v; row.querySelector(".rv").textContent=100-v; };
-    sl.addEventListener("input", upd); upd();
-  });
-  $("addForm").querySelectorAll('input[data-sum]').forEach(inp=>inp.addEventListener("input", ()=>updateSum(inp.dataset.sum)));
-  $("addMsg").textContent=""; $("addMsg").className="add-msg";
-
-  const mode = $("addMode"), save = $("addSave");
-  if (record){
-    EDIT_ID = record.id;
-    $("addForm").querySelectorAll("[data-k]").forEach(el=>{
-      const key=el.dataset.k, v=record[key];
-      if(el.dataset.bool){ el.checked = v===true; return; }
-      if(v==null||v==="") return;
-      el.value = el.dataset.pct ? Math.round(v*100) : v;
-    });
-    $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{
-      const lv=record[sl.dataset.left];
-      if(lv!=null){ sl.value=Math.round(lv*100); sl.dispatchEvent(new Event("input")); }
-    });
-    $("addForm").querySelectorAll('input[data-sum]').forEach(inp=>updateSum(inp.dataset.sum));
-    if(Array.isArray(record.Team)) $("addForm").querySelectorAll(".teamcheck").forEach(cb=>{ cb.checked = record.Team.includes(cb.dataset.team); });
-    save.textContent = "Save changes";
-    mode.innerHTML = `Editing <b>${record["Full Name"]||"this person"}</b> · <button class="linklike" id="addNew">start a new person instead</button>`;
-    const nb=$("addNew"); if(nb) nb.addEventListener("click", ()=>buildAddForm());
-  } else {
-    EDIT_ID = null;
-    save.textContent = "Save to directory";
-    mode.textContent = "";
+    const data=await load(pw);
+    sessionStorage.setItem('etk',pw);
+    boot(data);
+  }catch(e){
+    err.textContent=e.message;btn.disabled=false;btn.textContent='Open dashboard';
   }
 }
-function updateSum(grp){
-  const inputs=[...$("addForm").querySelectorAll(`input[data-sum="${grp}"]`)];
-  const total=inputs.reduce((s,i)=>s+(parseFloat(i.value)||0),0);
-  const note=$("addForm").querySelector(`[data-sumnote="${grp}"]`);
-  if(note){ note.innerHTML=`Total: <b>${Math.round(total)}</b>% (aim for 100%)`; note.className="sum-note"+(Math.abs(total-100)>1?" warn":""); }
+function signOut(){sessionStorage.removeItem('etk');location.reload();}
+function boot(data){
+  P=data.people;
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='block';
+  const d=new Date(data.fetched);
+  document.getElementById('stamp').textContent='· Live from Airtable, '+d.toLocaleString();
+  const L=SC();if(L.length){cmpA=P.indexOf(L[0]);cmpB=P.indexOf(L[Math.min(1,L.length-1)]);}
+  renderScope();
+  render();
 }
-async function submitAdd(){
-  const msg=$("addMsg"), btn=$("addSave");
-  const F={};
-  $("addForm").querySelectorAll("[data-k]").forEach(el=>{
-    const key=el.dataset.k;
-    if(el.dataset.bool){ if(el.checked) F[key]=true; return; }
-    let v=el.value; if(v===""||v==null) return;
-    if(el.dataset.pct){ const n=parseFloat(v); if(!isNaN(n)) F[key]=Math.max(0,Math.min(100,n))/100; }
-    else F[key]=v;
-  });
-  $("addForm").querySelectorAll('input[type=range]').forEach(sl=>{ const v=+sl.value; F[sl.dataset.left]=v/100; F[sl.dataset.right]=(100-v)/100; });
-  const teams=[...$("addForm").querySelectorAll(".teamcheck:checked")].map(cb=>cb.dataset.team);
-  if(teams.length) F["Team"]=teams; else if(EDIT_ID) F["Team"]=[];
-  const first=(F["First Name"]||"").trim(), last=(F["Last Name"]||"").trim();
-  if(!first || !last){ msg.className="add-msg err"; msg.textContent="First and last name are required."; return; }
-  F["First Name"]=first; F["Last Name"]=last; F["Full Name"]=`${first} ${last}`;
-  const editing = !!EDIT_ID;
-  btn.disabled=true; btn.textContent=editing?"Saving…":"Saving…"; msg.className="add-msg"; msg.textContent="";
-  try{
-    const payload = editing
-      ? { action:"edit", login:AUTH.login, password:AUTH.password, id:EDIT_ID, fields:F }
-      : { action:"add",  login:AUTH.login, password:AUTH.password, fields:F };
-    const res=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
-    const data=await res.json();
-    if(!res.ok || !data.ok) throw new Error(data.error||"Couldn't save.");
-    if(editing){
-      const r=ALL.find(x=>x.id===EDIT_ID); if(r) Object.assign(r, F);
-      applyFilter();
-      msg.className="add-msg ok"; msg.textContent=`Saved changes to ${data.name}.`;
-    } else {
-      ALL.push({ id:data.id, ...F }); applyFilter(); buildAddForm();
-      msg.className="add-msg ok"; msg.textContent=`Saved ${data.name}. They're in the directory now.`;
-    }
-  }catch(err){ msg.className="add-msg err"; msg.textContent=err.message; }
-  btn.disabled=false; btn.textContent=editing?"Save changes":"Save to directory";
-}
+(async function(){
+  const saved=sessionStorage.getItem('etk');
+  if(!saved)return;
+  try{boot(await load(saved));}catch(e){sessionStorage.removeItem('etk');}
+})();
 
-/* ================= MANAGE STRUCTURE ================= */
-function renderManage(){
-  const mb = $("manageBody"); if(!mb) return;
-  const divs = ORG.divisions.map(d=>`
-    <div class="mg-div">
-      <div class="mg-div-h"><span>${d.name}</span><button class="mg-del" data-deldiv="${d.name}" title="Delete division">×</button></div>
-      <ul class="mg-depts">${d.departments.map(x=>`<li>${x} <button class="mg-del" data-deldept="${x}" data-div="${d.name}" title="Delete department">×</button></li>`).join("") || '<li class="mg-empty">No departments yet</li>'}</ul>
-      <div class="mg-add"><input placeholder="Add department…" data-adddept="${d.name}"><button class="mg-btn" data-adddept-btn="${d.name}">Add</button></div>
-    </div>`).join("") || '<p class="mg-empty">No divisions yet.</p>';
-  const teams = ORG.teams.map(t=>`<li>${t.name}${t.country?` · <span class="tc-c">${t.country}</span>`:""} <button class="mg-del" data-delteam="${t.name}" title="Delete team">×</button></li>`).join("") || '<li class="mg-empty">No teams yet</li>';
-  const countries = (ORG.countries||[]).map(c=>`<li>${c} <button class="mg-del" data-delcountry="${c}" title="Delete country">×</button></li>`).join("") || '<li class="mg-empty">No countries yet</li>';
-  mb.innerHTML = `
-    <div class="mg-sec"><h3>Countries</h3><ul class="mg-teams mg-countries">${countries}</ul>
-      <div class="mg-add mg-add-top"><input id="mgNewCountry" placeholder="Add a country"><button class="mg-btn" id="mgAddCountry">Add country</button></div>
-    </div>
-    <div class="mg-sec"><h3>Divisions &amp; departments</h3>${divs}
-      <div class="mg-add mg-add-top"><input id="mgNewDiv" placeholder="Add a division"><button class="mg-btn" id="mgAddDiv">Add division</button></div>
-    </div>
-    <div class="mg-sec"><h3>Teams</h3><ul class="mg-teams">${teams}</ul>
-      <div class="mg-add mg-add-top"><input id="mgNewTeam" placeholder="Team name"><input id="mgNewTeamCountry" placeholder="Country (optional)"><button class="mg-btn" id="mgAddTeam">Add team</button></div>
-    </div>
-    <div class="mg-msg" id="mgMsg"></div>`;
-  mb.querySelector("#mgAddCountry").addEventListener("click", ()=>orgAdd({kind:"country", name:$("mgNewCountry").value}));
-  mb.querySelector("#mgAddDiv").addEventListener("click", ()=>orgAdd({kind:"division", name:$("mgNewDiv").value}));
-  mb.querySelector("#mgAddTeam").addEventListener("click", ()=>orgAdd({kind:"team", name:$("mgNewTeam").value, country:$("mgNewTeamCountry").value}));
-  mb.querySelectorAll("[data-adddept-btn]").forEach(b=>b.addEventListener("click", ()=>{
-    const dv=b.getAttribute("data-adddept-btn");
-    orgAdd({kind:"department", name:mb.querySelector(`[data-adddept="${dv}"]`).value, division:dv});
-  }));
-  mb.querySelectorAll("[data-deldiv]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-deldiv"); orgDelete({kind:"division", name:n}, `the division “${n}” and its departments`); }));
-  mb.querySelectorAll("[data-deldept]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-deldept"); orgDelete({kind:"department", name:n, division:b.getAttribute("data-div")}, `the department “${n}”`); }));
-  mb.querySelectorAll("[data-delteam]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-delteam"); orgDelete({kind:"team", name:n}, `the team “${n}”`); }));
-  mb.querySelectorAll("[data-delcountry]").forEach(b=>b.addEventListener("click", ()=>{ const n=b.getAttribute("data-delcountry"); orgDelete({kind:"country", name:n}, `the country “${n}”`); }));
-}
-async function orgAdd(payload){
-  const msg = $("mgMsg");
-  if(!payload.name || !payload.name.trim()){ if(msg){ msg.className="mg-msg err"; msg.textContent="Enter a name."; } return; }
-  if(msg){ msg.className="mg-msg"; msg.textContent="Saving…"; }
-  await orgSend({action:"orgAdd", ...payload});
-}
-async function orgDelete(payload, label){
-  if(!window.confirm(`Delete ${label}?\n\nPeople already tagged keep the value until you re-tag them.`)) return;
-  const msg = $("mgMsg"); if(msg){ msg.className="mg-msg"; msg.textContent="Deleting…"; }
-  await orgSend({action:"orgDelete", ...payload});
-}
-async function orgSend(payload){
-  const msg = $("mgMsg");
-  try{
-    const res = await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ login:AUTH.login, password:AUTH.password, ...payload })});
-    const data = await res.json();
-    if(!res.ok || !data.ok) throw new Error(data.error||"Couldn't save.");
-    ORG = data.org; renderManage();
-    if(CAN_ADD || CAN_EDIT) buildAddForm();
-  }catch(err){ if(msg){ msg.className="mg-msg err"; msg.textContent=err.message; } }
-}
+/* ---------- synthesis ---------- */
+function synth(p){const out={};const dom=domainsOf(p.cs);
+ let work=[];const dn=dom.map(d=>d[0]);
+ if(p.t&&T16[p.t])work.push(T16[p.t][1].charAt(0).toUpperCase()+T16[p.t][1].slice(1)+".");
+ if(dn.includes("Relationship Building"))work.push("Trust and personal connection come before the task.");
+ if(dn.includes("Influencing"))work.push("Give them a voice in the room — they help move others.");
+ if(dn.includes("Executing")&&!dn.includes("Influencing"))work.push("Delivers reliably, often quietly rather than broadcasting it.");
+ if(dn.includes("Strategic Thinking"))work.push("Bring them in early, before decisions are set.");
+ if(!work.length)work.push("Limited data — ask how they most like to work.");out.work=work;
+ let thr=[];if(p.wg.length){if(p.wg.some(g=>wgStage(g)==="early"))thr.push("the front end — naming needs and dreaming what could be");if(p.wg.some(g=>wgStage(g)==="mid"))thr.push("the middle — judging ideas and rallying people");if(p.wg.some(g=>wgStage(g)==="late"))thr.push("the delivery end — supporting and finishing");}
+ if(dom.length)thr.push("work that draws on "+DOMdesc[dom[0][0]]);out.thrive=thr.length?("Tends to thrive in "+thr.join("; and ")+"."):"Not enough data to read where they thrive.";
+ let w=[];if(p.wg.length===2&&p.wg.every(g=>wgStage(g)!=="late"))w.push("Genius is early/mid — pair with a finisher so ideas don't stall.");
+ if(p.wg.length===2&&p.wg.every(g=>g==="Enablement"||g==="Tenacity"))w.push("Wired to help and finish — watch they don't get buried under others' unfinished work.");
+ if(dn.includes("Executing")&&!dn.includes("Influencing"))w.push("Reliable but understated — keep their contribution visible at placement time.");
+ if(p.t&&["INFP","ISFP","INFJ","ISFJ"].includes(p.t))w.push("More reflective — give space to process before expecting a read in the room.");
+ if(p.t&&["ESTJ","ENTJ","ESTP"].includes(p.t))w.push("Decides fast — pair with someone who slows things down for people impact.");
+ if(!w.length)w.push("Fill in remaining assessments to sharpen this read.");out.watch=w;
+ return out;}
 
-/* ================= FOUR-CORNER STYLE (derived from traits) =================
-   The manual's Personality Style square: Power / Promotion / Peace / Process.
-   Axis 1 people<->task (Heart<->Head family); Axis 2 fast<->steady.
-   Derived from trait data and labelled as such (no official 17-type->corner key). */
-function mean(arr){ const v=arr.filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; }
-function styleCorner(r){
-  const people = mean([F(r,"Heart"),F(r,"Affiliation"),F(r,"Recognition"),F(r,"Other-Affirmed"),F(r,"Accommodating"),F(r,"Engaging"),F(r,"Collaborating")]);
-  const task   = mean([F(r,"Head"),F(r,"Power"),F(r,"Attainment"),F(r,"Task Completion"),F(r,"Competing"),F(r,"Refining")]);
-  const fast   = mean([F(r,"Spontaneous"),F(r,"Activity"),F(r,"External"),F(r,"Competing"),F(r,"Ideas"),F(r,"Freedom"),F(r,"Creative"),F(r,"Engaging")]);
-  const steady = mean([F(r,"Orderly"),F(r,"Consistency"),F(r,"Internal"),F(r,"Avoiding"),F(r,"Concrete"),F(r,"Refining"),F(r,"Direction"),F(r,"Accommodating")]);
-  const peopleLean = people - task;      // >0 relational
-  const fastLean   = fast - steady;      // >0 fast/assertive
-  let corner;
-  if (Math.abs(peopleLean) < 0.06 && Math.abs(fastLean) < 0.06) corner = "Balanced";
-  else if (fastLean >= 0 && peopleLean < 0) corner = "Power";
-  else if (fastLean >= 0 && peopleLean >= 0) corner = "Promotion";
-  else if (fastLean < 0 && peopleLean >= 0) corner = "Peace";
-  else corner = "Process";
-  return { corner, peopleLean, fastLean, strength: Math.hypot(peopleLean, fastLean) };
-}
-const CORNER_TAG = { Power:"drive & results", Promotion:"people & energy", Peace:"harmony & steadiness", Process:"detail & quality", Balanced:"flexible / central" };
+let mode="people",scope="lead",filter={type:null,grp:null,q:""},cmpA=0,cmpB=1,team=[];
+const V=()=>document.getElementById('view');
+const inScope=p=>scope==='all'||p.lead;
+const SC=()=>P.filter(inScope);
+const groups=()=>[...new Set(SC().map(p=>p.g))].sort();
+function setScope(s){if(scope===s)return;scope=s;filter={type:null,grp:null,q:""};team=[];const L=SC();cmpA=0;cmpB=L.length>1?P.indexOf(L[1]):0;if(L.length)cmpA=P.indexOf(L[0]);renderScope();render();}
+function renderScope(){const nL=P.filter(p=>p.lead).length,nA=P.length;
+ document.getElementById('scopebar').innerHTML=
+  '<button class="'+(scope==='lead'?'on':'')+'" onclick="setScope(\'lead\')">Leadership set <span class="ct">'+nL+'</span></button>'
+ +'<button class="'+(scope==='all'?'on':'')+'" onclick="setScope(\'all\')">Everyone <span class="ct">'+nA+'</span></button>';}
+function setMode(m){mode=m;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.m===m));document.body.classList.toggle('pick',m==='team');render();}
 
-/* Condensed from the manual's "When Personalities Clash" (from -> with). */
-const CLASH = {
-  Power:{
-    Power:{b:["Get territorial and struggle over who's in control","Interrupt each other; both push hard"],m:"Hey, I can do it just as good as you can!"},
-    Promotion:{b:["Get turned off by too much talk and not enough results","See Promotion as too emotional / needing center stage","Forget to praise or have fun"],m:"I wish your walk would match your talk."},
-    Peace:{b:["See Peace as unassertive, indirect and slow to change","Get pushy and controlling","Miss how Peace actually feels or thinks"],m:"Don't take things so personally!"},
-    Process:{b:["Feel Process bogs things down with detail and nitpicking","See them as pessimistic and risk-intolerant","Feel a loss of control when perfectionism slows the pace"],m:"Take an Ex-lax so we can get the job done."},
-  },
-  Promotion:{
-    Power:{b:["Get offended when their opinion isn't considered","Compete over who's center stage","See Power as inflexible and quick to write off feelings"],m:"Have some fun, dude!"},
-    Promotion:{b:["Compete for attention and center stage","Overuse humor; talk big without backing it up"],m:"Hey, I can be charming too!"},
-    Peace:{b:["Read Peace as over-sensitive and 'pokey'","Move too fast for them","Keep things light where Peace wants depth"],m:"I'm just kidding; don't take things so hard!"},
-    Process:{b:["Get impatient with Process's analysis and caution","Charge ahead and leave Process the detail work","See them as rigid and legalistic"],m:"Lighten up! Have some fun!"},
-  },
-  Peace:{
-    Power:{b:["Go indirect or quiet, then build resentment","Soft-shoe to keep the peace, which only delays the conflict","Feel run over; too slow to change for Power"],m:"Just tone it down."},
-    Promotion:{b:["Move too slowly for Promotion's pace","Get worn out by the talk; seem nonchalant","Prefer routine over constant novelty"],m:"Excuse me, can I say something now?"},
-    Peace:{b:["Get along but accomplish little","Neither initiates; indecision creates delayed stress","May quietly hold hard feelings"],m:"I don't know — whatever you want to do."},
-    Process:{b:["Feel judged or looked down on for lower standards","Accommodate Process's preferences, then resent it","Show little concern for the details Process prizes"],m:"Give me a break; I'm not perfect."},
-  },
-  Process:{
-    Power:{b:["Are too risk-averse for Power's pace","See Power as a know-it-all who acts without counting the cost","Get frustrated by the expectation of quick decisions"],m:"Think about somebody besides yourself."},
-    Promotion:{b:["See Promotion as talk with little follow-through","Get annoyed by disorganization and exaggeration","Bristle at missed deadlines and loose details"],m:"The job isn't complete until the paperwork is done."},
-    Peace:{b:["Come across as task-first and short on feeling","Feel unsupported when Peace stays silent","Leave Peace feeling inferior with high standards"],m:"Make a to-do list so you can get something done."},
-    Process:{b:["Get into turf battles over who's right","Bog down decisions on competing details","Under-affirm each other; breed pessimism"],m:"Let's get it done right; I can't afford to be wrong."},
-  },
-};
-function bridgeKey(a,b){ return [a,b].sort().join("+"); }
-const BRIDGE = {
-  "Power+Power":"Two drivers. Define clear lanes and who owns the final call, or it becomes a turf war.",
-  "Power+Promotion":"Both fast-moving. Power wants results, Promotion wants energy and people — great on launches if Power makes room to celebrate and Promotion shows results.",
-  "Peace+Power":"Opposite tempo. Power should slow down and invite input; Peace should speak up early instead of soft-shoeing. Peace steadies Power.",
-  "Power+Process":"Complementary: Power drives, Process safeguards quality. Agree up front on pace vs. detail so neither feels blocked.",
-  "Promotion+Promotion":"Two energizers — strong on morale, but assign someone to own follow-through and the details.",
-  "Peace+Promotion":"Both relational and warm. Make sure decisions actually land and Peace isn't steamrolled by Promotion's pace.",
-  "Process+Promotion":"Idea-energy meets rigor. Promotion should respect the detail; Process shouldn't kill the spark. Powerful pairing once trust is there.",
-  "Peace+Peace":"Two harmonizers — very cooperative, but may dodge hard calls. Set explicit owners and deadlines.",
-  "Peace+Process":"Both careful and thorough, but can be slow and risk-averse together. Give them a firm decision deadline.",
-  "Process+Process":"Two detail-owners: high quality, but can bog down and battle over what's 'right.' Split scope so they aren't editing each other.",
-};
+const tileDefs=[{k:"all",l:"In view",a:"var(--ink)",c:()=>SC().length},{k:"kt",l:"With Key Thread",a:"var(--ink)",c:()=>SC().filter(p=>p.kt).length},{k:"wg",l:"With Wk. Genius",a:"var(--wg)",c:()=>SC().filter(p=>p.wg.length).length},{k:"cs",l:"With Strengths",a:"var(--cs)",c:()=>SC().filter(p=>p.cs.length).length},{k:"sg",l:"With Sp. Gifts",a:"var(--sg)",c:()=>SC().filter(p=>p.sg.length).length}];
+function pmatch(p){if(!inScope(p))return false;if(filter.type==='kt'&&!p.kt)return false;if(filter.type==='wg'&&!p.wg.length)return false;if(filter.type==='cs'&&!p.cs.length)return false;if(filter.type==='sg'&&!p.sg.length)return false;if(filter.grp&&p.g!==filter.grp)return false;if(filter.q&&!p.n.toLowerCase().includes(filter.q.toLowerCase()))return false;return true;}
+function peopleView(){
+ return '<div class="tiles">'+tileDefs.map(t=>'<button class="tile '+((filter.type===t.k||(t.k==="all"&&!filter.type))?"active":"")+'" style="--accent:'+t.a+'" onclick="setType(\''+t.k+'\')"><div class="n">'+t.c()+'</div><div class="l">'+t.l+'</div></button>').join('')+'</div>'
+ +'<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
+ +'<div class="grid">'+cardList(P.filter(pmatch),false)+'</div>';}
+function cardList(list,pick){return list.map(p=>{const i=P.indexOf(p);const tp=threadParts(p.kt);
+ return '<div class="person '+(team.includes(i)?"sel":"")+'" onclick="'+(pick?"toggleTeam("+i+")":"openPanel("+i+")")+'"><span class="tick">\u2713</span><h3>'+p.n+(scope==='all'&&p.lead?'<span class="star" title="Leadership set">\u2605</span>':'')+'</h3><div class="grp">'+p.g+'</div>'
+ +(tp?'<div class="ktline">'+tp.head+'.</div>':'')
+ +'<div class="badges">'+(p.lp?'<span class="b liv">'+p.lp+'</span>':'<span class="b empty">LivStyle</span>')+(p.t?'<span class="b p16">'+p.t+(p.id16?"-"+p.id16:"")+'</span>':'<span class="b empty">16 Types</span>')+(p.wg.length?'<span class="b wg">'+p.wg.join(" · ")+'</span>':'<span class="b empty">Wk. Genius</span>')+(p.sg.length?'<span class="b sg">'+p.sg[0]+'…</span>':'<span class="b empty">Sp. Gifts</span>')+'</div></div>';}).join('')||'<div class="hint">No one matches those filters.</div>';}
+function setType(k){filter.type=(k==='all')?null:(filter.type===k?null:k);render();}
+function setGrp(g){filter.grp=filter.grp===g?null:g;render();}
+function setQ(v){filter.q=v;render();}
 
-/* How two dominant conflict styles tend to interact (Thomas-Kilmann modes). */
-const CONFLICT_PAIR = {
-  "Competing+Competing":"Two who push to win — expect escalation and power struggles. Set ground rules and a neutral tiebreaker, and keep them aimed at the shared goal rather than winning.",
-  "Collaborating+Competing":"One drives to win, one seeks win-win. The collaborator can steer that drive toward a joint solution — but shouldn't get steamrolled. Name the shared objective up front.",
-  "Competing+Compromising":"The competer may push past the compromiser's middle ground. The compromiser should hold a clear floor; the competer should treat a compromise as progress, not defeat.",
-  "Avoiding+Competing":"The riskiest mix: one pushes hard, the other withdraws. Resentment builds silently while the competer assumes agreement. Build in structured space for the avoider to speak, and ask the competer to dial back.",
-  "Accommodating+Competing":"The accommodator yields, so conflict looks 'resolved' while the real issue is buried and they quietly burn out. Deliberately draw out the accommodator's true view before moving on.",
-  "Collaborating+Collaborating":"Both want win-win — the healthiest pairing for hard problems. Just guard against over-processing; give them a decision deadline.",
-  "Collaborating+Compromising":"Compatible. The compromiser may settle before the collaborator has explored the best joint answer — agree whether this issue deserves full collaboration or a quick trade.",
-  "Avoiding+Collaborating":"The collaborator wants to engage; the avoider wants distance. Go gently and privately, give prep time, and don't read the avoider's silence as agreement.",
-  "Accommodating+Collaborating":"Warm and low-heat, but the accommodator may defer rather than contribute. The collaborator should actively invite their real position.",
-  "Compromising+Compromising":"Two dealmakers — quick to find middle ground, but may settle for 'okay' over 'right.' Push them to check the fast compromise actually solves it.",
-  "Avoiding+Compromising":"One wants a deal, one wants out — issues get half-addressed or dropped. Name the issue explicitly and hold a clear decision point.",
-  "Accommodating+Compromising":"Low friction — both give ground, so the real problem can get smoothed over rather than solved. Make sure the core issue is actually named.",
-  "Avoiding+Avoiding":"Both sidestep — conflict goes underground and festers. Nothing surfaces unless someone forces a safe, structured conversation. Assign a facilitator.",
-  "Accommodating+Avoiding":"Very little overt conflict, but nothing resolves — one hides, one yields, and problems quietly accumulate. Create explicit, safe prompts for honest input.",
-  "Accommodating+Accommodating":"Two peace-keepers — pleasant but conflict-avoidant; each defers and decisions stall. Set clear owners and actively invite candid disagreement.",
-};
-function conflictCompare(A,B){
-  const styles=["Collaborating","Accommodating","Compromising","Avoiding","Competing"];
-  const dominant=(r)=>styles.map(s=>[s,F(r,s)??0]).sort((x,y)=>y[1]-x[1])[0][0];
-  const dA=dominant(A), dB=dominant(B);
-  const rows=styles.map(s=>{
-    const a=Math.round((F(A,s)??0)*100), b=Math.round((F(B,s)??0)*100);
-    const strong=(v,d)=>s===d?"font-weight:600;color:var(--ink)":"";
-    return `<div class="cf-row">
-      <span class="cf-l">${s}</span>
-      <span class="cf-bar"><span class="track"><span class="fill" style="width:${a}%;background:var(--green-soft)"></span></span><b style="${strong(a,dA)}">${a}%</b></span>
-      <span class="cf-bar"><span class="track"><span class="fill" style="width:${b}%;background:var(--ochre)"></span></span><b style="${strong(b,dB)}">${b}%</b></span>
-    </div>`;
-  }).join("");
-  const guide=CONFLICT_PAIR[[dA,dB].sort().join("+")]||"";
-  return `<div class="rep-sec">
-    <h3>In conflict, where they land</h3>
-    <p class="rsub">Dominant mode — ${firstName(A)}: <b>${dA}</b> · ${firstName(B)}: <b>${dB}</b></p>
-    <div class="cf-head"><span></span><span class="cf-nm" style="color:var(--green)">${firstName(A)}</span><span class="cf-nm" style="color:var(--ochre)">${firstName(B)}</span></div>
-    ${rows}
-    ${guide?`<div class="cmp-bridge" style="margin-top:14px"><h5>How conflict is likely to go</h5><p>${guide}</p></div>`:""}
-  </div>`;
-}
+function opts(sel){return SC().map(p=>{const i=P.indexOf(p);return '<option value="'+i+'" '+(i===sel?"selected":"")+'>'+p.n+' · '+p.g+'</option>';}).join('');}
+function compareView(){const a=P[cmpA],b=P[cmpB];if(!a||!b)return '<div class="hint">Not enough people.</div>';const ta=threadParts(a.kt),tb=threadParts(b.kt);
+ return '<div class="selrow"><div class="field"><label>Person A</label><select class="big" onchange="cmpA=+this.value;render()">'+opts(cmpA)+'</select></div><div class="field"><label>Person B</label><select class="big" onchange="cmpB=+this.value;render()">'+opts(cmpB)+'</select></div></div>'
+ +(cmpA===cmpB?'<div class="hint">Pick two different people.</div>':'<div class="cmp">'+[[a,ta],[b,tb]].map(function(x){var p=x[0],tp=x[1];return '<div class="col"><h3>'+p.n+'</h3>'+(tp?'<div class="kt">'+tp.head+'.</div>':'')
+  +'<div class="row"><span class="k">LivStyle</span><span class="val">'+(p.lp||"—")+' / '+(p.lu||"—")+'</span></div>'
+  +'<div class="row"><span class="k">16 Types</span><span class="val">'+(p.t?p.t+(p.id16?"-"+p.id16:""):"—")+'</span></div>'
+  +'<div class="row"><span class="k">Wk. Genius</span><span class="val">'+(p.wg.length?p.wg.join(" · "):"—")+'</span></div>'
+  +'<div class="row"><span class="k">Strengths</span><span class="val">'+(p.cs.length?p.cs.join(", "):"—")+'</span></div>'
+  +'<div class="row"><span class="k">Sp. Gifts</span><span class="val">'+(p.sg.length?p.sg.join(", "):"—")+'</span></div></div>';}).join('')+'</div>'+cmpSynth(a,b));}
+function cmpSynth(a,b){
+ const wgA=a.wg,wgB=b.wg;const aS=new Set(wgA.map(wgStage)),bS=new Set(wgB.map(wgStage));
+ let comp=[];if((aS.has("early")&&bS.has("late"))||(bS.has("early")&&aS.has("late")))comp.push("Genius-wise they span the arc of work: one brings the ideas at the front, the other helps carry things through — a naturally complementary pairing.");
+ const dA=domainsOf(a.cs).map(d=>d[0]),dB=domainsOf(b.cs).map(d=>d[0]);
+ if(dA.length&&dB.length&&dA[0]!==dB[0])comp.push("Their strengths pull from different places — "+a.n.split(" ")[0]+" leans "+dA[0].toLowerCase()+", "+b.n.split(" ")[0]+" leans "+dB[0].toLowerCase()+" — so between them they cover more ground.");
+ if(!comp.length)comp.push("Not enough distinct data to spot strong complementarity — worth comparing in person.");
+ let ov=[];const shared=wgA.filter(g=>wgB.includes(g));
+ if(shared.length)ov.push("Both are energised by "+shared.map(g=>WGdesc[g]).join(" and ")+" — reinforcing, but neither naturally covers the opposite end.");
+ if(dA.length&&dB.length&&dA[0]===dB[0])ov.push("Both lean "+dA[0].toLowerCase()+" — they'll click, with a shared blind spot in the areas neither favours.");
+ if(!ov.length)ov.push("Little overlap in the data — more of a complement than an echo.");
+ let fr=[];const fast=t=>["ESTJ","ENTJ","ESTP","ENTP"].includes(t),refl=t=>["INFP","ISFP","INFJ","ISFJ"].includes(t);
+ if(a.t&&b.t&&((fast(a.t)&&refl(b.t))||(fast(b.t)&&refl(a.t))))fr.push("One decides fast out loud, the other processes internally — pace and airtime are the thing to watch. Build in a beat for the reflective one.");
+ if(wgA.length&&wgB.length&&[...aS,...bS].every(s=>s!=="late"))fr.push("Neither is wired to finish — together they'll generate and evaluate well, but someone needs to own the finish line.");
+ if(!fr.length)fr.push("No obvious friction in the data — the usual: name expectations and how each likes to communicate.");
+ return '<div class="synth"><div class="sec nut" style="--accent:var(--ink)"><h4><span class="dot"></span>Working together</h4><p>'+a.n.split(" ")[0]+' and '+b.n.split(" ")[0]+': '+comp[0]+'</p></div>'
+  +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>Where they complement</h4><ul>'+comp.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--p16)"><h4><span class="dot"></span>Where they overlap</h4><ul>'+ov.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Possible friction</h4><ul>'+fr.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
+  +'<p class="disclaim">Based on self-reported assessments and partial data — a prompt for how to pair them, not a prediction.</p></div>';}
 
-/* ---------- Compare deep-dive helpers ---------- */
-function cmpSection(title,sub,body){ return `<div class="rep-sec"><h3>${title}</h3><p class="rsub">${sub}</p>${body}</div>`; }
-function sideOf(r,a,b){ const d=dom(r,a,b,0.1); return d?d.side:null; }
+function toggleTeam(i){const x=team.indexOf(i);if(x>-1)team.splice(x,1);else{if(team.length>=10)return;team.push(i);}render();}
+function teamView(){
+ return '<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
+ +'<div class="grid">'+cardList(P.filter(pmatch),true)+'</div>'
+ +'<div class="tray"><div class="traychips">'+(team.length?team.map(i=>'<span class="tc">'+P[i].n.split(" ")[0]+' <b onclick="toggleTeam('+i+')">\u2715</b></span>').join(''):'<span class="hint" style="padding:0">Tap people to add them — up to 10.</span>')+'</div><button class="go" '+(team.length<2?"disabled":"")+' onclick="teamPanel()">Analyse team ('+team.length+')</button></div>';}
+function teamPanel(){
+ const m=team.map(i=>P[i]);
+ const cover={};WGorder.forEach(g=>cover[g]=m.filter(x=>x.wg.includes(g)).map(x=>x.n.split(" ")[0]));
+ const gaps=WGorder.filter(g=>cover[g].length===0);const wgKnown=m.filter(x=>x.wg.length).length;
+ const dc={Executing:0,Influencing:0,"Relationship Building":0,"Strategic Thinking":0};
+ m.forEach(x=>x.cs.forEach(s=>{for(const d in DOM)if(DOM[d].includes(s))dc[d]++;}));
+ const dtot=Object.values(dc).reduce((a,b)=>a+b,0)||1;const ds=Object.entries(dc).sort((a,b)=>b[1]-a[1]);const csKnown=m.filter(x=>x.cs.length).length;
+ const covered=WGorder.filter(g=>cover[g].length);
+ let strengths=[];if(covered.length)strengths.push("Strong coverage in "+covered.join(", ")+".");if(ds[0][1])strengths.push("Strengths tilt toward "+ds[0][0].toLowerCase()+" — "+DOMdesc[ds[0][0]]+".");
+ let gapread=gaps.length?gaps.map(g=>"<b>"+g+"</b> is uncovered — "+WGgap[g]+"."):["No Working Genius gaps among those with data on file — a well-rounded spread."];
+ const weak=ds[ds.length-1];let domGap=(weak[1]===0)?"Nobody's strengths land in <b>"+weak[0]+"</b> — that lens is thin for this group.":"";
+ document.getElementById('panel').innerHTML='<div class="ph"><button class="close" onclick="closePanel()">\u2715</button><h2>Team read</h2><div class="grp">'+m.length+' people · '+m.map(x=>x.n.split(" ")[0]).join(", ")+'</div></div><div class="pbody"><div class="synth">'
+  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Working Genius coverage '+(wgKnown<m.length?'<span style="color:#9aa6a2;font-weight:500;text-transform:none;letter-spacing:0">· '+wgKnown+'/'+m.length+' have data</span>':'')+'</h4><div class="wggrid">'+WGorder.map(g=>'<div class="wgcell '+(cover[g].length?"":"gap")+'"><div class="g">'+g+' '+(cover[g].length?'<span class="covtag">covered</span>':'<span class="gaptag">gap</span>')+'</div><div class="who">'+(cover[g].length?cover[g].join(", "):WGgap[g])+'</div></div>').join('')+'</div></div>'
+  +'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Strengths balance '+(csKnown<m.length?'<span style="color:#9aa6a2;font-weight:500;text-transform:none;letter-spacing:0">· '+csKnown+'/'+m.length+' have data</span>':'')+'</h4>'+ds.map(e=>'<div class="dombar"><div class="top2"><span>'+e[0]+'</span><span>'+e[1]+'</span></div><div class="track"><div class="fill" style="width:'+Math.round(e[1]/dtot*100)+'%"></div></div></div>').join('')+'</div>'
+  +'<div class="sec nut" style="--accent:var(--ink)"><h4><span class="dot"></span>The read</h4><p>'+(strengths.join(" ")||"Limited assessment data across this group.")+'</p></div>'
+  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Gaps &amp; blind spots</h4><ul>'+gapread.map(x=>"<li>"+x+"</li>").join("")+(domGap?"<li>"+domGap+"</li>":"")+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>To round it out</h4><ul>'+(gaps.length?"<li>Add someone energised by "+gaps.map(g=>g.toLowerCase()).join(" or ")+" — or consciously assign it.</li>":"<li>Coverage is broad; focus on clarity of roles.</li>")+'<li>Name who owns the finish line if Tenacity is thin.</li><li>Watch for a shared blind spot where everyone leans the same way.</li></ul></div>'
+  +'</div><p class="disclaim">Built from partial, self-reported data — a planning aid for composing a team, not a scorecard on individuals.</p></div>';
+ document.getElementById('panel').classList.add('show');document.getElementById('scrim').classList.add('show');}
 
-const GROWTH_RULES=[
-  ["Power",0.7,"takes charge naturally","overbearing or controlling","empowering others and sharing control"],
-  ["Competing",0.6,"direct and assertive","domineering or blunt","patience, collaboration, and gentleness"],
-  ["Orderly",0.7,"structured and precise","rigid or inflexible","flexibility and openness to new ideas"],
-  ["Refining",0.7,"sharp on detail and quality","critical or perfectionistic","valuing \u201cgood enough\u201d and the big picture"],
-  ["Concrete",0.72,"grounded in facts","closed to the big picture","openness to possibility and vision"],
-  ["Affiliation",0.72,"warm and relational","reluctant to deliver hard truths","being direct and forthright"],
-  ["Avoiding",0.55,"a peace-keeper","conflict-avoidant, so issues get buried","addressing issues and setting boundaries"],
-  ["Accommodating",0.5,"accommodating","passive or a push-over","assertiveness and holding their own view"],
-  ["Spontaneous",0.72,"flexible and high-energy","short on follow-through","order and bringing things to closure"],
-  ["External",0.75,"quick to think out loud","dominating the airtime","listening and leaving space for others"],
-  ["Engaging",0.72,"driven to execute","launching before it's fully ready","refining and planning first"],
-  ["Recognition",0.72,"energized by appreciation","needing the spotlight","internal validation"],
-];
-function topGrowth(r){ const g=GROWTH_RULES.map(x=>[F(r,x[0]),x]).filter(x=>x[0]!=null&&x[0]>=x[1][1]).sort((a,b)=>b[0]-a[0])[0]; return g?g[1]:null; }
-
-const PROC_AXES=[
-  {a:"External",b:"Internal",title:"Talking vs reflecting",aLabel:"thinks out loud",bLabel:"processes privately",
-   clash:"one talks to think while the other needs quiet — send things ahead and leave room for both modes, or meetings frustrate both.",
-   align_a:"both process out loud — lively exchanges, but make sure the quieter details don't get lost.",
-   align_b:"both process privately — thoughtful, but decisions can stall unless someone voices where things stand."},
-  {a:"Intuitive",b:"Concrete",title:"Big-picture vs detail",aLabel:"big-picture",bLabel:"facts & specifics",
-   clash:"one leads with the big picture, the other wants specifics — pair the vision with the proof, or each dismisses the other.",
-   align_a:"both big-picture — strong on vision, but assign someone to nail the specifics.",
-   align_b:"both detail-first — thorough, but watch for missing the forest for the trees."},
-  {a:"Head",b:"Heart",title:"Logic vs people",aLabel:"logic-first",bLabel:"people-first",
-   clash:"one decides on logic, the other on people-impact — name both the reasoning and the human cost, or each feels unheard.",
-   align_a:"both decide on logic — efficient, but keep an eye on morale and the relational read.",
-   align_b:"both decide on people-impact — caring, but push each other to weigh the hard trade-offs too."},
-  {a:"Spontaneous",b:"Orderly",title:"Flexible vs structured",aLabel:"keeps options open",bLabel:"wants a plan",
-   clash:"one keeps options open, the other wants a plan and closure — agree up front how much structure this work needs.",
-   align_a:"both flexible — adaptable, but set enough structure to actually finish.",
-   align_b:"both structured — organised, but leave room to flex when things change."},
-];
-function processingFit(A,B){
-  const lines=PROC_AXES.map(ax=>{
-    const sa=sideOf(A,ax.a,ax.b), sb=sideOf(B,ax.a,ax.b);
-    let tag,note;
-    if(sa&&sb&&sa!=="bal"&&sb!=="bal"){ if(sa===sb){tag="aligned"; note=sa==="a"?ax.align_a:ax.align_b;} else {tag="differ"; note=ax.clash;} }
-    else { tag="mixed"; note="one sits near the middle here, so they can flex either way."; }
-    return `<p class="fitline"><span class="pill ${tag}">${tag}</span><b>${ax.title}:</b> ${note}</p>`;
-  }).join("");
-  return cmpSection("Communication & processing fit","how each takes in information and connects",lines);
-}
-
-const MOT_PAIRS=[
-  {a:"Attainment",b:"Recognition",title:"What 'success' feels like",
-   clash:"one measures success by hitting the goal, the other by being appreciated for the effort — give the first clear outcomes and the second genuine recognition.",
-   same_a:"both driven by hitting goals — results-focused, but remember to acknowledge effort too.",
-   same_b:"both driven by recognition — affirm generously; neither thrives feeling unseen."},
-  {a:"Freedom",b:"Consistency",title:"Autonomy vs stability",
-   clash:"one needs room to run, the other needs routine — a change that energises one unsettles the other, so flag changes early.",
-   same_a:"both want autonomy — give latitude, but agree on guardrails.",
-   same_b:"both want stability — dependable, but change will be hard for the pair."},
-  {a:"Power",b:"Compliance",title:"Leading vs following the standard",
-   clash:"one is driven to set direction, the other to uphold clear standards — clarify who steers so it isn't a tug-of-war.",
-   same_a:"both want to drive direction — define lanes or they'll contend for the wheel.",
-   same_b:"both prefer a clear standard to follow — orderly, but someone still needs to set direction."},
-];
-function motivationFit(A,B){
-  const lines=MOT_PAIRS.map(p=>{
-    const sa=sideOf(A,p.a,p.b), sb=sideOf(B,p.a,p.b);
-    let tag,note;
-    if(sa&&sb&&sa!=="bal"&&sb!=="bal"){ if(sa!==sb){tag="differ";note=p.clash;} else {tag="aligned";note=sa==="a"?p.same_a:p.same_b;} }
-    else {tag="mixed";note="one is fairly balanced here.";}
-    return `<p class="fitline"><span class="pill ${tag}">${tag}</span><b>${p.title}:</b> ${note}</p>`;
-  });
-  const af=(()=>{ const sa=sideOf(A,"Self-Affirmed","Other-Affirmed"), sb=sideOf(B,"Self-Affirmed","Other-Affirmed");
-    if(sa&&sb&&sa!==sb&&sa!=="bal"&&sb!=="bal"){ const other = sa==="b"?firstName(A):firstName(B), self = sa==="a"?firstName(A):firstName(B);
-      return `<p class="fitline"><span class="pill differ">differ</span><b>Affirmation:</b> ${other} needs affirmation from others while ${self} is self-anchored — ${self} can easily forget to encourage ${other}.</p>`; }
-    return ""; })();
-  return cmpSection("Motivation fit","what drives each, and how to keep both engaged",lines.join("")+af);
-}
-
-const STRESS_TENDENCY={
-  Power:"tightens control, gets critical and pushes harder (or goes cold and works alone)",
-  Promotion:"gets distractible, makes light of it, deflects or procrastinates",
-  Peace:"goes passive, withdraws and tunes out",
-  Process:"turns inward, over-analyses and rehearses the problem",
-  Balanced:"stays fairly adaptable, though still feels the strain",
-};
-function underPressureFit(A,B){
-  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
-  const shift=(r)=>{ const up=r["Personality Under Pressure"], pp=r["Primary Personality"];
-    return up&&up!==pp ? `${firstName(r)} shifts from ${pp} to <b>${up}</b> under pressure` : `${firstName(r)} holds steady as ${pp||"their style"} under pressure`; };
-  const combo=`When both are stressed, ${firstName(A)} ${STRESS_TENDENCY[ca]}, while ${firstName(B)} ${STRESS_TENDENCY[cb]}.`;
-  const set=[ca,cb]; let risk;
-  if(set.includes("Power")&&(set.includes("Peace")||set.includes("Process"))) risk="One pushes harder while the other withdraws — the gap widens fast. Name the strain early instead of chasing and retreating.";
-  else if(ca==="Power"&&cb==="Power") risk="Two who tighten control under stress — expect a clash of wills; agree a tiebreaker before you need it.";
-  else if((ca==="Peace"||ca==="Process")&&(cb==="Peace"||cb==="Process")) risk="Both tend to withdraw under stress, so issues can go quiet and unaddressed — schedule a low-pressure check-in.";
-  else if(ca==="Promotion"&&cb==="Promotion") risk="Both deflect under stress — things can get talked around rather than resolved; land the hard point explicitly.";
-  else risk="Their stress responses pull in different directions; a quick check-in keeps small strain from compounding.";
-  return cmpSection("Under pressure","how each shifts when stressed, and the pairing risk",
-    `<p class="rep-note">• ${shift(A)}.</p><p class="rep-note">• ${shift(B)}.</p><p class="rep-note">• ${combo}</p><p class="rep-note"><b>Risk:</b> ${risk}</p>`);
-}
-
-function mutualGrowth(A,B){
-  const gA=topGrowth(A), gB=topGrowth(B);
-  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
-  const diag = (ca==="Power"&&cb==="Peace")||(ca==="Peace"&&cb==="Power")||(ca==="Promotion"&&cb==="Process")||(ca==="Process"&&cb==="Promotion");
-  const line=(r,g)=> g?`<p class="rep-note">• <b>${firstName(r)}'s growth edge:</b> cultivate ${g[4]} — their gift for being ${g[2]} can overshoot into ${g[3]}.</p>`:`<p class="rep-note">• ${firstName(r)} has no single trait running to an extreme — a fairly balanced profile.</p>`;
-  let synth;
-  if(ca===cb && ca!=="Balanced") synth="Similar leans mean similar blind spots — they may reinforce the same overdone strength, so pull in an outside voice on it.";
-  else if(diag) synth="Their styles are near-opposites, so what each needs to grow, the other already models — they make natural growth partners.";
-  else synth="Their styles differ enough that each can model something the other is stretching toward — good coaching material both ways.";
-  return cmpSection("Mutual growth edges","what each can learn — often from the other",
-    `${line(A,gA)}${line(B,gB)}<div class="cmp-bridge" style="margin-top:10px"><h5>The opportunity</h5><p>${synth}</p></div>`);
-}
-
-function bottomLine(A,B){
-  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
-  const strengths=[], watch=[];
-  if(ca!==cb && ca!=="Balanced" && cb!=="Balanced") strengths.push(`bring different working styles (${ca} + ${cb}) and cover ground the other misses;`);
-  else if(ca===cb && ca!=="Balanced") watch.push(`both lean ${ca}, so they share instincts — and blind spots;`);
-  const careTop=(r)=>topKeys(r,["Creative","Adaptive","Refining","Engaging"],1)[0][0];
-  const cA=careTop(A), cB=careTop(B);
-  if(cA!==cB) strengths.push(`complement in problem-solving (${firstName(A)}: ${cA}, ${firstName(B)}: ${cB});`);
-  else strengths.push(`are both strongest in ${cA} — double strength there, thin elsewhere;`);
-  const divs=PROC_AXES.filter(ax=>{const sa=sideOf(A,ax.a,ax.b),sb=sideOf(B,ax.a,ax.b);return sa&&sb&&sa!=="bal"&&sb!=="bal"&&sa!==sb;});
-  if(divs.length>=2) watch.push(`differ on ${divs.length} of four communication axes — miscommunication is the main risk;`);
-  else if(divs.length===0) strengths.push(`communicate in similar ways, so rapport comes easily;`);
-  const dConf=(r)=>["Collaborating","Accommodating","Compromising","Avoiding","Competing"].map(s=>[s,F(r,s)??0]).sort((x,y)=>y[1]-x[1])[0][0];
-  const key=[dConf(A),dConf(B)].sort().join("+");
-  if(["Avoiding+Competing","Competing+Competing","Accommodating+Competing","Avoiding+Avoiding","Accommodating+Avoiding"].includes(key))
-    watch.push(`have a tricky conflict-style combo (${dConf(A)} / ${dConf(B)});`);
-  if(sideOf(A,"Attainment","Recognition")!==sideOf(B,"Attainment","Recognition"))
-    watch.push(`are motivated differently (results vs recognition), so motivate each on their own terms;`);
-  const action = BRIDGE[bridgeKey(ca,cb)] || "Talk openly about how each prefers to communicate and decide, before the first real disagreement.";
-  return cmpSection("Bottom line","the pair at a glance",
-    `${strengths.length?`<p class="rep-note"><b>Together they</b> ${strengths.slice(0,3).join(" ")}</p>`:""}
-     ${watch.length?`<p class="rep-note"><b>Watch that they</b> ${watch.slice(0,3).join(" ")}</p>`:""}
-     <div class="cmp-bridge" style="margin-top:10px"><h5>To work well together</h5><p>${action}</p></div>`);
-}
-
-function compareFlags(A,B){
-  const f=[];
-  [A,B].forEach(r=>{
-    const acc=r.Accuracy;
-    if(acc!=null && acc<0.75) f.push(`<span class="pill mixed">accuracy</span> ${firstName(r)}'s accuracy is ${Math.round(acc*100)}% — read their portrait as a lighter guide.`);
-    const v=["Significance","Control","Security"].map(k=>F(r,k)).filter(x=>x!=null);
-    if(v.length===3&&v.every(x=>x>0)&&(Math.max(...v)-Math.min(...v))<0.15) f.push(`<span class="pill differ">stress</span> ${firstName(r)} shows the elevated-stress pattern — the dynamic may be strained right now.`);
-  });
-  return f.length?`<div class="flags">${f.map(x=>`<p class="flagline">${x}</p>`).join("")}</div>`:"";
-}
-
-/* ---------- Compare two ---------- */
-function cornerChip(c){ return `<span class="corner ${c}">${c}</span>`; }
-function renderCompare(){
-  const A = VIEW.find(r=>r.id===$("cmpA").value), B = VIEW.find(r=>r.id===$("cmpB").value);
-  const out = $("cmpResult");
-  if(!A||!B){ out.innerHTML=`<p class="team-help">Pick two people to see how they're likely to work together.</p>`; return; }
-  if(A.id===B.id){ out.innerHTML=`<p class="team-help">Pick two different people.</p>`; return; }
-  const ca=styleCorner(A).corner, cb=styleCorner(B).corner;
-  const dir=(from,to,X,Y)=>{ const d=(CLASH[from]&&CLASH[from][to]); if(!d) return "";
-    return `<div class="cmp-col"><h5>${firstName(X)} (${from}) working with ${firstName(Y)}</h5><ul>${d.b.map(x=>`<li>${x}</li>`).join("")}</ul><p class="cmp-msg">Underlying message: "${d.m}"</p></div>`; };
-  const bridge = BRIDGE[bridgeKey(ca,cb)] || "";
-  out.innerHTML = `
-    ${compareFlags(A,B)}
-    <div class="cmp-head">
-      <div class="cmp-person"><div class="nm">${A["Full Name"]}</div><div class="mt">${A.Country||""} · ${A["Primary Personality"]||""}</div><div class="cn">Style lean: ${cornerChip(ca)} <span class="team-help" style="font-size:12px">${CORNER_TAG[ca]}</span></div></div>
-      <div class="cmp-person"><div class="nm">${B["Full Name"]}</div><div class="mt">${B.Country||""} · ${B["Primary Personality"]||""}</div><div class="cn">Style lean: ${cornerChip(cb)} <span class="team-help" style="font-size:12px">${CORNER_TAG[cb]}</span></div></div>
-    </div>
-    ${processingFit(A,B)}
-    ${motivationFit(A,B)}
-    ${(ca!=="Balanced"&&cb!=="Balanced")?`<div class="rep-sec"><h3>Style clash points</h3><p class="rsub">what each may feel about the other, from the manual</p><div class="cmp-dir">${dir(ca,cb,A,B)}${dir(cb,ca,B,A)}</div></div>`
-      :`<p class="rep-note">One of these profiles sits near the centre of the grid (a flexible, balanced style), so it doesn't lock into a single corner's clash pattern.</p>`}
-    ${conflictCompare(A,B)}
-    ${underPressureFit(A,B)}
-    ${mutualGrowth(A,B)}
-    ${bottomLine(A,B)}
-    <p class="gnote" style="margin-top:14px">Style lean is derived from the trait profile using the manual's four-corner model, not the named personality type. Use all of this as a conversation starter, not a verdict.</p>`;
-}
-
-/* ---------- Team ---------- */
-const ROLES = [
-  { name:"Driver / decision-maker", sub:"pushes for calls and results", keys:["Power","Competing","Attainment","Task Completion"] },
-  { name:"Visionary / idea source", sub:"generates direction and possibilities", keys:["Creative","Intuitive","Ideas"] },
-  { name:"Strategist / adapter", sub:"turns ideas into a workable plan", keys:["Adaptive","Intuitive","Direction"] },
-  { name:"Implementer / finisher", sub:"drives work to completion", keys:["Engaging","Task Completion","Activity"] },
-  { name:"Quality / detail guardian", sub:"catches flaws, holds standards", keys:["Refining","Concrete","Orderly"] },
-  { name:"Relational glue / morale", sub:"keeps the team connected", keys:["Affiliation","Engaging","Heart","Collaborating"] },
-  { name:"Peacemaker / mediator", sub:"defuses tension, finds common ground", keys:["Collaborating","Accommodating","Compromising"] },
-];
-let TEAM = new Set();
-let teamStatus = "Active";
-function teamRows(){ return VIEW.filter(r=>TEAM.has(r.id)); }
-function renderTeamPicker(){
-  const q=($("teamSearch").value||"").toLowerCase();
-  const rows=VIEW.filter(r=>
-      (teamStatus==="All" || statusOf(r)===teamStatus) &&
-      (!q||(r["Full Name"]||"").toLowerCase().includes(q)))
-    .sort((a,b)=>(a["Full Name"]||"").localeCompare(b["Full Name"]||""));
-  const full=TEAM.size>=10;
-  const head=`<div class="team-pick-count">${rows.length} ${rows.length===1?"person":"people"}${q?" matching":" in view"} · tap to add</div>`;
-  $("teamPicker").innerHTML = head + (rows.map(r=>{
-    const on=TEAM.has(r.id); const dis=full&&!on;
-    return `<span class="team-chip ${on?'on':''}" data-id="${r.id}" ${dis?'aria-disabled="true"':''}>
-      ${r["Full Name"]} <span class="tc-c">${r["Primary Personality"]||""}</span></span>`;
-  }).join("") || `<span class="team-help">No one matches.</span>`);
-  $("teamPicker").querySelectorAll(".team-chip").forEach(ch=>ch.addEventListener("click",()=>{
-    const id=ch.dataset.id;
-    if(TEAM.has(id)) TEAM.delete(id);
-    else { if(TEAM.size>=10) return; TEAM.add(id); }
-    $("teamCount").textContent=TEAM.size;
-    $("teamAnalyze").disabled = TEAM.size<2;
-    renderTeamPicker();
-  }));
-}
-function bestFor(rows, keys, n){
-  return rows.map(r=>({r, s:mean(keys.map(k=>F(r,k)))})).sort((a,b)=>b.s-a.s).slice(0,n);
-}
-function renderTeam(){
-  const rows=teamRows();
-  const out=$("teamResult");
-  if(rows.length<2){ out.innerHTML=""; return; }
-  // corner distribution
-  const corners={Power:0,Promotion:0,Peace:0,Process:0,Balanced:0};
-  const cmap={};
-  rows.forEach(r=>{ const c=styleCorner(r).corner; corners[c]++; cmap[r.id]=c; });
-  const cornerColor={Power:"#a3442f",Promotion:"#b08a2b",Peace:"#2f6d4f",Process:"#356088",Balanced:"#8a8880"};
-  const present=Object.entries(corners).filter(([,n])=>n>0);
-  const bar=present.map(([c,n])=>`<span style="flex:${n};background:${cornerColor[c]}" title="${c}: ${n}">${n}</span>`).join("");
-
-  // balance narrative
-  const notes=[];
-  if(corners.Power===0) notes.push("No clear <b>driver</b> (Power) — decisions may stall or drift. Name who owns the call.");
-  if(corners.Process===0) notes.push("No natural <b>detail guardian</b> (Process) — quality and follow-through can slip; assign a checker.");
-  if(corners.Promotion===0 && corners.Peace===0) notes.push("Light on <b>relational</b> styles — strong on task, but watch morale and communication.");
-  if(corners.Power>=3) notes.push("Several <b>drivers</b> (Power) — expect territorial friction; define clear lanes and final-call ownership.");
-  if(corners.Peace+corners.Process>=rows.length-1 && rows.length>=3) notes.push("Heavily <b>careful/steady</b> (Peace + Process) — thorough but can be slow and risk-averse; set firm deadlines.");
-  if((corners.Promotion+corners.Power)>=rows.length-1 && rows.length>=3) notes.push("Heavily <b>fast/assertive</b> (Power + Promotion) — high energy, but details and follow-through may get dropped.");
-  if(!notes.length) notes.push("Reasonably balanced across the four styles — a good spread of drive, people, and detail.");
-
-  // CARE coverage
-  const careCov=["Creative","Adaptive","Refining","Engaging"].map(k=>{
-    const top=bestFor(rows,[k],1)[0]; return {k, ok: top && top.s>=0.55, who: top?top.r:null, s: top?top.s:0};
-  });
-  const careMiss=careCov.filter(c=>!c.ok).map(c=>c.k);
-
-  // role assignments
-  const roleHtml = ROLES.map(role=>{
-    const top=bestFor(rows, role.keys, 2);
-    const lead=top[0];
-    if(!lead || lead.s<0.42) return `<div class="role-row"><div class="rl">${role.name}<small>${role.sub}</small></div><div class="rp"><span class="role-gap">No strong fit</span> — cover it deliberately or add someone.</div></div>`;
-    const second = top[1] && top[1].s>=0.5 && (lead.s-top[1].s)<0.08 ? ` &nbsp;·&nbsp; backup: <span class="who">${firstName(top[1].r)}</span>` : "";
-    return `<div class="role-row"><div class="rl">${role.name}<small>${role.sub}</small></div><div class="rp"><span class="who">${lead.r["Full Name"]}</span> ${cornerChip(cmap[lead.r.id])}${second}</div></div>`;
-  }).join("");
-
-  // friction: most-opposed corner pair present
-  const clashRank={ "Power+Peace":3,"Power+Process":3,"Process+Promotion":3,"Peace+Promotion":2,"Power+Power":2,"Process+Process":2,"Power+Promotion":1,"Peace+Process":1,"Peace+Peace":1,"Promotion+Promotion":1 };
-  const pairsSeen={};
-  rows.forEach((a,i)=>rows.forEach((b,j)=>{ if(j<=i) return; const ca=cmap[a.id],cb=cmap[b.id]; if(ca==="Balanced"||cb==="Balanced")return;
-    const k=bridgeKey(ca,cb); const score=clashRank[k]||0;
-    if(!pairsSeen[k]||score>pairsSeen[k].score) pairsSeen[k]={score,ca,cb,a,b,k}; }));
-  const frictions=Object.values(pairsSeen).filter(p=>p.score>=3).sort((a,b)=>b.score-a.score).slice(0,2);
-  const frictionHtml = frictions.map(p=>`<div class="friction"><div class="fpair">${firstName(p.a)} (${p.ca}) ↔ ${firstName(p.b)} (${p.cb})</div>${BRIDGE[p.k]||""}</div>`).join("");
-
-  // stress watch
-  const stressed=rows.filter(r=>{ const v=["Significance","Control","Security"].map(k=>F(r,k)).filter(x=>x!=null);
-    return v.length===3 && v.every(x=>x>0) && (Math.max(...v)-Math.min(...v))<0.15; });
-
-  out.innerHTML = `
-    <div class="rep-sec">
-      <h3>Team composition</h3>
-      <p class="rsub">${rows.length} people · style mix across the four corners</p>
-      <div class="rep-bar">${bar}</div>
-      <div class="rep-bal">${present.map(([c,n])=>`${cornerChip(c)}&nbsp;${n}`).join("&nbsp;&nbsp;")}</div>
-      ${notes.map(n=>`<p class="rep-note">• ${n}</p>`).join("")}
-    </div>
-    <div class="rep-sec">
-      <h3>Who should do what</h3>
-      <p class="rsub">Best-fit role for each person's strengths — a starting point, not a box</p>
-      ${roleHtml}
-    </div>
-    <div class="rep-sec">
-      <h3>Problem-solving coverage (C.A.R.E.)</h3>
-      <p class="rsub">Every team needs idea-generation, adaptation, refining, and execution</p>
-      ${careCov.map(c=>`<p class="rep-note">• <b>${c.k}</b>: ${c.ok?`covered by <span class="who">${firstName(c.who)}</span>`:`<span class="role-gap">thin</span> — no one strong here`}</p>`).join("")}
-      ${careMiss.length?`<p class="rep-note" style="color:var(--muted)">Watch the gap${careMiss.length>1?'s':''} in ${careMiss.join(", ")}: ${careMiss.includes("Refining")?"things may ship with flaws; ":""}${careMiss.includes("Engaging")?"ideas may not get executed; ":""}${careMiss.includes("Creative")?"few fresh ideas; ":""}${careMiss.includes("Adaptive")?"trouble adjusting plans; ":""}assign or add for it.</p>`:""}
-    </div>
-    ${frictionHtml?`<div class="rep-sec"><h3>Where friction is likely</h3><p class="rsub">Opposed styles on the team — name it early and use the bridge</p>${frictionHtml}</div>`:""}
-    ${stressed.length?`<div class="rep-sec"><h3>Stress watch</h3><div class="watch">${stressed.map(r=>firstName(r)).join(", ")} show${stressed.length===1?'s':''} the balanced-needs pattern the manual links to elevated stress — worth a check-in before leaning on them harder.</div></div>`:""}
-    ${buildConversationGuide(rows, cmap, frictions, careMiss, stressed)}
-    <p class="gnote" style="margin-top:18px">Style leans are derived from trait profiles via the four-corner model. Treat this as a map for conversation and assignment, not a fixed judgement of anyone.</p>`;
-  const cg = $("cgCopy"); if (cg) cg.addEventListener("click", () => copyGuide(rows, cmap, frictions, careMiss, stressed));
-}
-
-/* ---------- Team conversation guide ----------
-   Data seeds the questions; the team answers them together. Blends team
-   leadership with serving-one-another-as-a-body (Rom 12 / 1 Cor 12) framing. */
-const CG_PLACE = {
-  Power: n => `${n}, you naturally take charge and push for results. What will you own and lead here — and how will you draw others in rather than running ahead of them?`,
-  Promotion: n => `${n}, you bring energy and connect people. How will you use that to lift the team — and what do you need so your ideas get carried through, not just enjoyed?`,
-  Peace: n => `${n}, you keep the team steady and connected. Where do you most want to serve — and how will you make sure your own voice and convictions aren't lost keeping the peace?`,
-  Process: n => `${n}, you carry a gift for quality and doing things right. What will you hold to a high standard for the team — and how will you offer that so it builds people up rather than criticizes?`,
-  Balanced: n => `${n}, you flex across styles. Where do you sense you're most needed on this team right now, and where will you plant yourself?`,
-};
-
-function cgQuestions(rows, cmap, frictions, careMiss, stressed){
-  const corners = {Power:0,Promotion:0,Peace:0,Process:0,Balanced:0};
-  rows.forEach(r => corners[cmap[r.id]]++);
-  const team = [];
-  team.push(`Before roles: where does each of you sense God has gifted you to serve this team? Different parts, one body — name the part you think you are (Rom 12, 1 Cor 12).`);
-  if (corners.Power >= 2) team.push(`You have several natural leaders here. Who carries the final call on what — and how will you submit to one another so you're not competing for the wheel?`);
-  if (corners.Power === 0) team.push(`No one here is a natural take-charge driver. Who will step up to make the call when it's needed, and how will the rest of you get behind them?`);
-  if (corners.Process === 0) team.push(`No one here naturally owns detail, follow-through and quality. Who will pick that up as an act of service, even though it isn't their instinct?`);
-  if (corners.Promotion + corners.Peace === 0) team.push(`This team leans strongly task-first. Who will pay attention to how people are actually doing, not just what's getting done?`);
-  if (corners.Peace + corners.Process >= rows.length - 1 && rows.length >= 3) team.push(`You're careful and thorough, which can also be slow. How will you help each other decide and act, and not just keep deliberating?`);
-  if (corners.Power + corners.Promotion >= rows.length - 1 && rows.length >= 3) team.push(`You bring a lot of drive and energy. How will you slow down enough to include the quieter voices and finish what you start?`);
-  if (careMiss.includes("Refining")) team.push(`No one here naturally catches flaws before things go out. How will you build in a check so quality doesn't slip?`);
-  if (careMiss.includes("Engaging")) team.push(`You're strong on ideas but light on execution. Who will make sure things actually get finished and shipped?`);
-  // conflict posture
-  const dConf = r => ["Collaborating","Accommodating","Compromising","Avoiding","Competing"].map(s=>[s,F(r,s)??0]).sort((a,b)=>b[1]-a[1])[0][0];
-  const conf = rows.map(dConf);
-  const peaceKeepers = conf.filter(c => c==="Avoiding"||c==="Accommodating").length;
-  const competers = conf.filter(c => c==="Competing").length;
-  if (peaceKeepers >= Math.ceil(rows.length/2)) team.push(`This team tends to keep the peace. How will you make sure real disagreements surface and get spoken — in love — instead of going underground?`);
-  if (competers >= 2) team.push(`There are strong wills here. How will you fight fair and stay for one another when you disagree?`);
-  team.push(`What is this team actually for in this season — and how does each person's part serve that calling?`);
-  return { team, corners };
-}
-
-function buildConversationGuide(rows, cmap, frictions, careMiss, stressed){
-  const { team } = cgQuestions(rows, cmap, frictions, careMiss, stressed);
-  const place = rows.map(r => (CG_PLACE[cmap[r.id]] || CG_PLACE.Balanced)(firstName(r)));
-  const pairs = (frictions||[]).map(p =>
-    `${firstName(p.a)} and ${firstName(p.b)} — you're wired differently (${CORNER_TAG[p.ca]} vs ${CORNER_TAG[p.cb]}). How will you handle it when those pull against each other, and what will you each assume about the other's intent?`);
-  const closing = [
-    `What can this team count on me for?`,
-    `Where do I most need to grow — and will I let you speak into that?`,
-    `How do I want to be told when I'm dropping the ball or overstepping?`,
-    `How will we cover for one another when someone is weak, stretched, or having a hard season? (Bear one another's burdens.)`,
-  ];
-  const ol = arr => `<ol class="cg-list">${arr.map(q=>`<li>${q}</li>`).join("")}</ol>`;
-  return `
-    <div class="rep-sec cg">
-      <h3>Team conversation guide</h3>
-      <p class="rsub">Discussion questions for a kickoff or offsite — the assessment surfaces tendencies; the team answers these together as you take up your places. <button class="cg-copy" id="cgCopy">Copy guide</button></p>
-      <div class="cg-block"><h5>For the whole team</h5>${ol(team)}</div>
-      <div class="cg-block"><h5>Each person's place</h5>${ol(place)}</div>
-      ${pairs.length?`<div class="cg-block"><h5>How key pairs hold their places together</h5>${ol(pairs)}</div>`:""}
-      <div class="cg-block"><h5>Closing round — each person answers aloud</h5>${ol(closing)}</div>
-    </div>`;
-}
-
-function copyGuide(rows, cmap, frictions, careMiss, stressed){
-  const { team } = cgQuestions(rows, cmap, frictions, careMiss, stressed);
-  const place = rows.map(r => (CG_PLACE[cmap[r.id]] || CG_PLACE.Balanced)(firstName(r)));
-  const pairs = (frictions||[]).map(p => `${firstName(p.a)} and ${firstName(p.b)} — wired differently (${CORNER_TAG[p.ca]} vs ${CORNER_TAG[p.cb]}). How will you handle it when those pull against each other?`);
-  const closing = ["What can this team count on me for?","Where do I most need to grow — and will I let you speak into that?","How do I want to be told when I'm dropping the ball or overstepping?","How will we cover for one another when someone is weak or stretched?"];
-  const sec = (t, arr) => `${t}\n` + arr.map((q,i)=>`  ${i+1}. ${q}`).join("\n");
-  const text = ["TEAM CONVERSATION GUIDE\n", sec("For the whole team:", team), "", sec("Each person's place:", place),
-    pairs.length?"\n"+sec("How key pairs hold their places together:", pairs):"", "", sec("Closing round — each person answers aloud:", closing)].filter(Boolean).join("\n");
-  const btn = $("cgCopy");
-  navigator.clipboard.writeText(text).then(()=>{ if(btn){ const t=btn.textContent; btn.textContent="Copied ✓"; setTimeout(()=>btn.textContent=t,1600); } })
-    .catch(()=>{ if(btn) btn.textContent="Copy failed"; });
-}
-
-/* ================= ROLE FIT =================
-   Describe the role via dials (each mapped to real LivStyle traits), build a
-   target profile, and rank people by fit. Deterministic — no API key needed. */
-const RF_DIMS = [
-  {key:"drive", label:"Drive & decisiveness", fields:["Power","Competing","Attainment"],
-   q:"How much does this role depend on someone taking charge, making the call, and pushing for results?",
-   hi:"It's the heart of the job — this person sets direction and drives outcomes.",
-   me:"They'll make some calls, but it's shared or occasional.",
-   lo:"The role carries out direction rather than setting it."},
-  {key:"people", label:"People & relational care", fields:["Heart","Affiliation","Engaging","Collaborating"],
-   q:"How central are relationships, care, and connecting with people to succeeding here?",
-   hi:"Fundamentally about people — pastoring, discipling, team care, hospitality.",
-   me:"People work matters, but alongside tasks and outcomes.",
-   lo:"Mostly heads-down or task work with a light relational load."},
-  {key:"structure", label:"Structure & consistency", fields:["Orderly","Consistency","Prefers Process"],
-   q:"Does the role need someone who brings order, routine, and dependable follow-through — or someone comfortable with fluidity?",
-   hi:"Consistency and reliable rhythms are essential — recurring systems, steady follow-through.",
-   me:"Some structure helps, but the role also flexes.",
-   lo:"Fluid and changes often; rigidity would get in the way."},
-  {key:"detail", label:"Detail & precision", fields:["Concrete","Refining"],
-   q:"How much does getting the details exactly right matter — accuracy, quality, catching errors?",
-   hi:"Precision is critical — finances, compliance, quality control, careful records.",
-   me:"Details matter, but it isn't a make-or-break precision role.",
-   lo:"Broad strokes are fine; over-focus on detail would slow it down."},
-  {key:"vision", label:"Vision & new ideas", fields:["Intuitive","Ideas","Creative"],
-   q:"Does the role need someone generating fresh ideas and seeing the big picture — or executing a known path?",
-   hi:"Invents and imagines — starting things, casting vision, solving open problems.",
-   me:"Some fresh thinking helps, but the path is fairly defined.",
-   lo:"The 'what' is already clear; the role delivers it, not reinvents it."},
-  {key:"execution", label:"Drive to execute & finish", fields:["Engaging","Task Completion","Activity"],
-   q:"How much is this role about pushing work through to completion and getting things shipped?",
-   hi:"Getting things done and closed out is the core — momentum and follow-through.",
-   me:"Completion matters, but it's balanced with other demands.",
-   lo:"More about ideas, care, or analysis than closing tasks."},
-  {key:"autonomy", label:"Autonomy / self-direction", fields:["Freedom","Self-Affirmed"],
-   q:"Will this person mostly work on their own initiative, or within close direction and support?",
-   hi:"Largely self-directed — remote, pioneering, or lightly supervised; must self-start.",
-   me:"A mix of independence and guidance.",
-   lo:"Works closely within a team and clear direction, with support around them."},
-];
-const RF_LEVEL = { low:0.25, med:0.55, high:0.82 };
-const RF_PRESETS = {
-  leader:{label:"Team leader / driver", dims:{drive:"high",execution:"high",structure:"med",people:"med",vision:"med",detail:"low",autonomy:"high"}},
-  ops:{label:"Operations / administrator / steward", dims:{structure:"high",detail:"high",execution:"med",drive:"low",people:"med",vision:"low",autonomy:"low"}},
-  care:{label:"Relational / discipleship / member care", dims:{people:"high",structure:"low",detail:"low",drive:"low",vision:"med",execution:"med",autonomy:"med"}},
-  starter:{label:"Innovator / starter / church planter", dims:{vision:"high",autonomy:"high",drive:"med",execution:"med",structure:"low",detail:"low",people:"med"}},
-  finisher:{label:"Quality / project finisher", dims:{execution:"high",detail:"high",structure:"high",drive:"med",people:"low",vision:"low",autonomy:"med"}},
-  connector:{label:"Connector / recruiter / mobiliser", dims:{people:"high",drive:"med",vision:"med",execution:"med",structure:"low",detail:"low",autonomy:"med"}},
-  custom:{label:"Custom (set your own)", dims:{}},
-};
-let RF_STATE = {}; RF_DIMS.forEach(d=>RF_STATE[d.key]="any");
-function rfPersonVal(r,dim){ return mean(dim.fields.map(k=>F(r,k))); }
-function rfScore(r){
-  const active=RF_DIMS.filter(d=>RF_STATE[d.key]!=="any");
-  if(!active.length) return null;
-  const per=active.map(d=>{
-    const lvl=RF_STATE[d.key], t=RF_LEVEL[lvl], pv=rfPersonVal(r,d);
-    let m; // asymmetric: "high" only penalises being under; "low" only over; "med" symmetric
-    if(lvl==="high") m = 1 - Math.max(0,t-pv)/t;
-    else if(lvl==="low") m = 1 - Math.max(0,pv-t)/(1-t);
-    else m = 1 - Math.abs(pv-t)/0.55;
-    return {d,lvl,pv,m:Math.max(0,Math.min(1,m))};
-  });
-  const score=mean(per.map(x=>x.m));
-  const strong=per.filter(x=>x.m>=0.82).sort((a,b)=>b.m-a.m).map(x=>x.d.label);
-  const gaps=per.filter(x=>x.m<0.55).sort((a,b)=>a.m-b.m).map(x=>x.d.label);
-  return {score,strong,gaps};
-}
-function rfTargetSummary(){
-  const active=RF_DIMS.filter(d=>RF_STATE[d.key]!=="any");
-  if(!active.length) return "";
-  const highs=active.filter(d=>RF_STATE[d.key]==="high").map(d=>d.label.split(" &")[0].toLowerCase());
-  const lows=active.filter(d=>RF_STATE[d.key]==="low").map(d=>d.label.split(" &")[0].toLowerCase());
-  const g=(k)=>{ const l=RF_STATE[k]; return l==="any"?null:RF_LEVEL[l]; };
-  const avg=(a)=>{ const v=a.filter(x=>x!=null); return v.length?v.reduce((p,q)=>p+q,0)/v.length:0.5; };
-  const fast=avg([g("drive"),g("vision"),g("execution")]) - avg([g("structure"),g("detail")]);
-  const ppl =avg([g("people")]) - avg([g("drive")]);
-  let corner="Balanced";
-  if(Math.abs(fast)>0.05||Math.abs(ppl)>0.05){
-    if(fast>=0&&ppl<0) corner="Power"; else if(fast>=0&&ppl>=0) corner="Promotion";
-    else if(fast<0&&ppl>=0) corner="Peace"; else corner="Process";
-  }
-  return `<div class="rf-target"><h5>Ideal profile for this role</h5>
-    <p>Points toward a ${cornerChip(corner)} <b>${corner}</b> lean — ${CORNER_TAG[corner]}.</p>
-    ${highs.length?`<p><b>Most important:</b> ${highs.join(", ")}.</p>`:""}
-    ${lows.length?`<p><b>Less needed:</b> ${lows.join(", ")}.</p>`:""}
-  </div>`;
-}
-function renderRolePreset(){ $("rfPreset").innerHTML = Object.entries(RF_PRESETS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join(""); }
-function renderRoleDims(){
-  $("rfDims").innerHTML = RF_DIMS.map(d=>{
-    const v=RF_STATE[d.key];
-    const opt=(val,lbl)=>`<option value="${val}" ${v===val?"selected":""}>${lbl}</option>`;
-    const optRow=(lvl,name,desc)=>`<button type="button" class="rf-opt ${v===lvl?'on':''}" data-dim="${d.key}" data-lvl="${lvl}"><b>${name}</b><span>${desc}</span></button>`;
-    return `<div class="rf-dim" data-dimwrap="${d.key}">
-      <label>${d.label}</label>
-      <select data-dim="${d.key}">${opt("any","Not important")}${opt("low","Low")}${opt("med","Medium")}${opt("high","High")}</select>
-      <details class="rf-help">
-        <summary>Help me decide</summary>
-        <p class="rf-q">${d.q}</p>
-        ${optRow("high","High",d.hi)}
-        ${optRow("med","Medium",d.me)}
-        ${optRow("low","Low",d.lo)}
-        ${optRow("any","Not important","This trait isn't really a factor for the role.")}
-      </details>
-    </div>`;
-  }).join("");
-  const setLevel=(key,lvl)=>{
-    RF_STATE[key]=lvl; $("rfPreset").value="custom";
-    const wrap=$("rfDims").querySelector(`[data-dimwrap="${key}"]`);
-    wrap.querySelector("select").value=lvl;
-    wrap.querySelectorAll(".rf-opt").forEach(b=>b.classList.toggle("on", b.dataset.lvl===lvl));
-    renderRoleResults();
-  };
-  $("rfDims").querySelectorAll("select").forEach(sel=>sel.addEventListener("change",()=>setLevel(sel.dataset.dim, sel.value)));
-  $("rfDims").querySelectorAll(".rf-opt").forEach(btn=>btn.addEventListener("click",()=>setLevel(btn.dataset.dim, btn.dataset.lvl)));
-}
-function renderRoleResults(){
-  $("rfTarget").innerHTML = rfTargetSummary();
-  const active=RF_DIMS.some(d=>RF_STATE[d.key]!=="any");
-  const out=$("rfResults");
-  if(!active){ out.innerHTML=`<p class="team-help">Set at least one dial to High, Medium or Low to rank people.</p>`; return; }
-  const scored=VIEW.map(r=>({r,...rfScore(r)})).sort((a,b)=>b.score-a.score);
-  out.innerHTML = `<div class="rf-list-head">Best matches in view · ${scored.length} scored</div>` + scored.slice(0,15).map(x=>{
-    const pctv=Math.round(x.score*100);
-    const why=[x.strong.length?`strong on ${x.strong.slice(0,2).join(", ")}`:"", x.gaps.length?`light on ${x.gaps[0]}`:""].filter(Boolean).join(" · ");
-    const c=styleCorner(x.r).corner;
-    return `<div class="rf-row" data-id="${x.r.id}">
-      <div><div class="rf-nm">${x.r["Full Name"]} <span class="corner ${c}" style="margin-left:4px">${c}</span></div>
-        <div class="rf-meta">${x.r.Country||""} · ${x.r["Primary Personality"]||""}</div>
-        ${why?`<div class="rf-why">${why}</div>`:""}</div>
-      <div class="rf-score"><b>${pctv}%</b><div class="rf-mbar"><i style="width:${pctv}%"></i></div></div>
-    </div>`;
-  }).join("");
-  out.querySelectorAll(".rf-row").forEach(row=>row.addEventListener("click",()=>openDrawer(row.dataset.id)));
-}
-function applyPreset(key){
-  const p=RF_PRESETS[key]; if(!p) return;
-  if(key!=="custom") RF_DIMS.forEach(d=>RF_STATE[d.key]=p.dims[d.key]||"any");
-  renderRoleDims(); renderRoleResults();
-}
-let rfInited=false;
-function initRoleFit(){
-  if(rfInited) return; rfInited=true;
-  renderRolePreset(); $("rfPreset").value="leader"; applyPreset("leader");
-  $("rfPreset").addEventListener("change",()=>applyPreset($("rfPreset").value));
-}
-
-/* ---------- view switching ---------- */
-function initViews(){
-  const pop=(sel,withBlank)=>{ const el=$(sel); const cur=el.value;
-    el.innerHTML=(withBlank?`<option value="">— choose —</option>`:"")+VIEW.slice().sort((a,b)=>(a["Full Name"]||"").localeCompare(b["Full Name"]||"")).map(r=>`<option value="${r.id}">${r["Full Name"]}${r.Country?` · ${r.Country}`:""}</option>`).join("");
-    if([...el.options].some(o=>o.value===cur)) el.value=cur;
-  };
-  pop("cmpA",true); pop("cmpB",true);
-  // prune team selections outside current scope
-  const ids=new Set(VIEW.map(r=>r.id)); [...TEAM].forEach(id=>{ if(!ids.has(id)) TEAM.delete(id); });
-  $("teamCount").textContent=TEAM.size; $("teamAnalyze").disabled=TEAM.size<2;
-  renderTeamPicker();
-  if($("viewCompare").style.display!=="none") renderCompare();
-  if($("viewTeam").style.display!=="none" && TEAM.size>=2) renderTeam();
-  if($("viewRole").style.display!=="none" && rfInited) renderRoleResults();
-}
-function wireViews(){
-  $("tabs").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{
-    $("tabs").querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    const v=btn.dataset.view;
-    $("viewDirectory").style.display = v==="directory"?"":"none";
-    $("viewCompare").style.display   = v==="compare"?"":"none";
-    $("viewTeam").style.display      = v==="team"?"":"none";
-    $("viewRole").style.display      = v==="role"?"":"none";
-    $("viewManage").style.display    = v==="manage"?"":"none";
-    if(v==="compare") renderCompare();
-    if(v==="team"){ renderTeamPicker(); if(TEAM.size>=2) renderTeam(); }
-    if(v==="role"){ initRoleFit(); renderRoleResults(); }
-    if(v==="manage") setManageSub(CAN_ADD ? "add" : "structure");
-  }));
-  $("manageSubtabs").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setManageSub(b.dataset.m)));
-  $("addSave").addEventListener("click", submitAdd);
-  $("cmpA").addEventListener("change",renderCompare);
-  $("cmpB").addEventListener("change",renderCompare);
-  $("teamSearch").addEventListener("input",renderTeamPicker);
-  $("teamStatusSeg").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-    teamStatus=b.dataset.s;
-    $("teamStatusSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
-    // drop any selected people no longer visible under this filter
-    [...TEAM].forEach(id=>{ const r=VIEW.find(x=>x.id===id); if(r && teamStatus!=="All" && statusOf(r)!==teamStatus) TEAM.delete(id); });
-    $("teamCount").textContent=TEAM.size; $("teamAnalyze").disabled=TEAM.size<2;
-    renderTeamPicker();
-  }));
-  $("teamAnalyze").addEventListener("click",renderTeam);
-}
-
-/* ================= DETAIL DRAWER ================= */
-function bipRow(r, left, right){
-  const lv = F(r,left), rv = F(r,right);
-  // position: share of the "right" pole (0..1). If both null, center.
-  let pos = 0.5;
-  if (lv != null && rv != null && (lv+rv) > 0) pos = rv/(lv+rv);
-  else if (rv != null) pos = rv; else if (lv != null) pos = 1-lv;
-  return `
-    <div class="bip">
-      <div class="lbls"><b>${left}</b><span>${pct(lv)} · ${pct(rv)}</span><b>${right}</b></div>
-      <div class="bipbar"><span class="mid"></span><span class="dotv" style="left:${(pos*100).toFixed(1)}%"></span></div>
-    </div>`;
-}
-function simpleRow(r,k){
-  const v = F(r,k);
-  return `<div class="trait"><div class="tl"><span>${k}</span><span class="val">${pct(v)}</span></div>
-    <div class="bar"><i style="width:${v!=null?Math.round(v*100):0}%"></i></div></div>`;
-}
-function openDrawer(id){
-  const r = VIEW.find(x => x.id === id) || ALL.find(x => x.id === id);
-  if (!r) return;
-  activeId = id;
-  renderTable();
-  const dm = r["Decision Making"];
-  const html = `
-    <div class="dhead">
-      <button class="close" id="dClose" aria-label="Close">×</button>
-      <h3>${r["Full Name"]||"—"}</h3>
-      <div class="dstatus">${statusControl(r)}${CAN_EDIT?` <button class="editbtn" id="editProfile">Edit profile</button>`:""}</div>
-      <div class="meta">${r.Country||""}${r["Assessment Date"]?" · assessed "+r["Assessment Date"]:""}${r.Accuracy!=null?" · "+pct(r.Accuracy)+" accuracy":""}</div>
-      <div class="twin">
-        <div class="t">Primary<span class="v"><span class="chip" style="background:${colorFor(r["Primary Personality"])}1f;color:${colorFor(r["Primary Personality"])}">${r["Primary Personality"]||"—"}</span></span></div>
-        <div class="t">Under pressure<span class="v"><span class="chip" style="background:${colorFor(r["Personality Under Pressure"])}1f;color:${colorFor(r["Personality Under Pressure"])}">${r["Personality Under Pressure"]||"—"}</span></span></div>
-      </div>
-    </div>
-    <div class="dbody">
-      ${guidanceBlock(r)}
-      <div class="profhead">The underlying profile</div>
-      ${dm?`<div class="dm"><div class="k">Decision making</div>${dm}</div><div style="height:20px"></div>`:""}
-      ${BIPOLAR.map(b => `<div class="grp"><h4>${b.g}</h4>${b.pairs.map(p=>bipRow(r,p[0],p[1])).join("")}</div>`).join("")}
-      <div class="grp"><h4>${WHY_PAIRS.g}</h4>${WHY_PAIRS.pairs.map(p=>bipRow(r,p[0],p[1])).join("")}</div>
-      <div class="grp"><h4>${HOW_PAIRS.g}</h4>${HOW_PAIRS.pairs.map(p=>bipRow(r,p[0],p[1])).join("")}</div>
-      ${SIMPLE.map(s => `<div class="grp"><h4>${s.g}</h4>${s.keys.map(k=>simpleRow(r,k)).join("")}</div>`).join("")}
-    </div>`;
-  const d = $("drawer"); d.innerHTML = html; d.classList.add("open"); $("scrim").classList.add("open");
-  $("dClose").addEventListener("click", closeDrawer);
-  const st = $("statToggle"); if (st) st.addEventListener("click", () => toggleStatus(id));
-  const ep = $("editProfile"); if (ep) ep.addEventListener("click", () => { closeDrawer(); gotoAddForEdit(id); });
-}
-
-function setManageSub(sub){
-  if(sub==="add" && !CAN_ADD) sub="structure";
-  if(sub==="structure" && !CAN_EDIT) sub="add";
-  $("mgAddPane").style.display = sub==="add" ? "" : "none";
-  $("mgStructurePane").style.display = sub==="structure" ? "" : "none";
-  $("manageSubtabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m===sub));
-  if(sub==="structure") renderManage();
-}
-
-function gotoAddForEdit(id){
-  const r = ALL.find(x => x.id === id); if (!r) return;
-  $("tabs").querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.view === "manage"));
-  ["viewDirectory","viewCompare","viewTeam","viewRole","viewManage"].forEach(v =>
-    document.getElementById(v).style.display = (v === "viewManage" ? "" : "none"));
-  setManageSub("add");
-  buildAddForm(r);
-  window.scrollTo(0, 0);
-}
-
-function statusControl(r){
-  const s = statusOf(r), lower = s.toLowerCase();
-  if (CAN_ADD) return `<button class="statbtn ${lower}" id="statToggle"><span class="dotp"></span>${s} <small>· tap to change</small></button>`;
-  return `<span class="statbadge ${lower}"><span class="dotp"></span>${s}</span>`;
-}
-
-async function toggleStatus(id){
-  const r = ALL.find(x => x.id === id) || VIEW.find(x => x.id === id);
-  if (!r) return;
-  const next = statusOf(r) === "Active" ? "Inactive" : "Active";
-  const btn = $("statToggle");
-  if (btn){ btn.disabled = true; btn.innerHTML = `<span class="dotp"></span>Saving…`; }
-  try {
-    const res = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ action:"status", login:AUTH.login, password:AUTH.password, id, status:next }) });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || "Couldn't update.");
-    r.Status = next;
-    applyFilter();
-    openDrawer(id);
-  } catch (err) {
-    if (btn){ btn.disabled = false; btn.innerHTML = `<span class="dotp"></span>Retry — ${err.message}`; }
-  }
-}
-function closeDrawer(){ $("drawer").classList.remove("open"); $("scrim").classList.remove("open"); activeId=null; renderTable(); }
-$("scrim").addEventListener("click", closeDrawer);
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+function openPanel(i){const p=P[i],s=synth(p),dom=domainsOf(p.cs),tp=threadParts(p.kt);
+ const hero=tp?'<div class="thread"><div class="lbl">Key Thread · the through-line across every lens</div><p>'+tp.head+'.</p>'+(tp.why?'<div class="why">'+tp.why+'</div>':'')+'</div>'
+   :'<div class="thread empty"><div class="lbl">Key Thread</div><p>Emerges once more of this person\u2019s assessments are on file.</p></div>';
+ document.getElementById('panel').innerHTML='<div class="ph"><button class="close" onclick="closePanel()">\u2715</button><h2>'+p.n+'</h2><div class="grp">'+p.g+'</div></div><div class="pbody">'
+  +hero
+  +'<div class="synth">'
+  +'<div class="sec" style="--accent:var(--p16)"><h4><span class="dot"></span>How to work with them</h4><ul>'+s.work.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Where they thrive</h4><p>'+s.thrive+'</p></div>'
+  +'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Watch-fors &amp; how to support</h4><ul>'+s.watch.map(x=>"<li>"+x+"</li>").join("")+'</ul></div></div>'
+  +'<div class="frameworks">'
+  +'<div class="fw" style="--accent:var(--liv)"><div class="t">LivStyle</div><div class="v">'+(p.lp||"—")+'<small>Under pressure: '+(p.lu||"—")+'</small></div></div>'
+  +'<div class="fw" style="--accent:var(--p16)"><div class="t">16 Personalities</div><div class="v">'+(p.t?p.t+(p.id16?"-"+p.id16:""):"—")+'</div></div>'
+  +'<div class="fw" style="--accent:var(--wg)"><div class="t">Working Genius</div><div class="v">'+(p.wg.length?p.wg.join(" · "):'<small>Not on file yet</small>')+'</div></div>'
+  +'<div class="fw" style="--accent:var(--sg)"><div class="t">Spiritual Gifts</div><div class="v">'+(p.sg.length?p.sg.join(" · "):'<small>Not on file yet</small>')+'</div></div>'
+  +'<div class="fw full" style="--accent:var(--cs)"><div class="t">CliftonStrengths — top 5</div><div class="v">'+(p.cs.length?p.cs.map((c,i)=>(i+1)+". "+c).join("&nbsp;&nbsp; "):'<small>Not on file yet</small>')+(dom.length?'<small>Leans: '+dom.map(d=>d[0]).join(", ")+'</small>':'')+'</div></div>'
+  +'</div><p class="disclaim">The Key Thread and reads below are a synthesis across self-reported assessments — a conversation-starter held up against the actual person, not a verdict.</p></div>';
+ document.getElementById('panel').classList.add('show');document.getElementById('scrim').classList.add('show');}
+function closePanel(){document.getElementById('panel').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
+function render(){V().innerHTML=mode==='people'?peopleView():mode==='compare'?compareView():teamView();}
 </script>
 </body>
 </html>

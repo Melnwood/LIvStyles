@@ -1,66 +1,104 @@
-# LivStyle Assessment Directory
+# E-Team Insight Dashboard
 
-A password-protected, country-scoped dashboard over the **LivStyle Personality Assessments** Airtable base.
-Same stack as your other apps: single-file HTML on Netlify, Airtable backend, a Netlify Function proxy holding the token, GitHub for version control.
+A password-gated dashboard for the Josiah Venture Executive Team, reading live from the
+**LivStyle Personality Assessments** Airtable base.
 
-**Airtable base:** `apppGh1toMfYP7NGK` — tables `Assessments` and `Leaders`.
+- Base: `apppGh1toMfYP7NGK`
+- Table: `Assessments` (`tblVTZNf2RDVg97r5`)
+- Shows **all staff**, with a one-tap toggle to isolate the **Leadership Set** (currently 45
+  people with full multi-framework profiles and Key Threads).
 
-## How access control works
+---
 
-Access rules live in the **Leaders** table, not in the code:
+## Files
 
-- **All Access** checked → sees every country.
-- Otherwise → sees only the countries listed in **Allowed Countries**.
+| File | What it is |
+|---|---|
+| `index.html` | The whole dashboard — password gate, roster, person panels, Compare, Build-a-team |
+| `netlify/functions/people.js` | Server-side proxy: checks the password, then reads Airtable |
+| `netlify.toml` | Netlify config + no-index / no-frame headers |
 
-The filtering happens *inside the Netlify Function*. A scoped leader's browser never receives another country's rows, so the scoping can't be bypassed from the client. Seeded so far:
+---
 
-| Login | Password | Access |
-|---|---|---|
-| `mel` | `changeme-mel` | All countries |
-| `kuba` | `changeme-kuba` | Czech Republic only |
+## Deploy
 
-Passwords are stored as plain text in the Leaders table — fine for low-sensitivity internal use, but **change the two placeholders** and set real passwords for anyone you add. (If you ever want hashed passwords instead, that's a small change to the function.)
+1. Push this folder to a new private GitHub repo (e.g. `Melnwood/eteam-insight`).
+2. Netlify → **Add new site → Import an existing project** → pick the repo.
+   No build command needed; publish directory is `.`.
+3. Netlify → **Site configuration → Environment variables** → add both:
 
-## Repo layout
+   | Key | Value |
+   |---|---|
+   | `AIRTABLE_TOKEN` | Airtable personal access token with `data.records:read` on this base |
+   | `ETEAM_PASSWORD` | the shared E-Team password you choose |
+
+4. Deploy.
+
+> If the site loads but says *"Server not configured"*, the environment variables are missing
+> or misspelled. Add them and **redeploy** — Netlify only picks up env vars on a new build.
+
+---
+
+## How it's secured
+
+The password is verified **inside the Netlify function**, never in the browser. Someone who
+opens the site without it — or views source — gets an empty shell: no names, no assessments,
+nothing. Data is returned only after the password matches. The Airtable token stays
+server-side and is never exposed.
+
+Sign-in lasts for the browser tab only (`sessionStorage`); closing the tab signs out.
+
+**Worth being clear-eyed about:** once someone has the password, they can see every staff
+member's assessment results. That's the intended design — the E-Team sees everybody — but it
+means the password is the only thing protecting the most personal data JV holds on its people.
+Choose something strong, share it verbally rather than by email, and change it if someone
+rotates off the team.
+
+---
+
+## The two views
+
+The toggle under the title switches between:
+
+- **Leadership set** — the people ticked in the `Leadership Set` field. Full profiles.
+- **Everyone** — all staff. Most currently show LivStyle only, with honest
+  "not on file yet" placeholders. This doubles as a coverage map of who still owes assessments.
+  Leadership-set people carry a gold ★ so they stay findable in the crowd.
+
+### Changing who's in the Leadership Set
+
+Tick or untick the **`Leadership Set`** checkbox on any person in Airtable. It's reflected on
+the next page load. No code change, no redeploy.
+
+---
+
+## Adding a Key Thread for someone
+
+Write it into the **`Key Thread`** field on their record, in this format:
 
 ```
-/dashboard.html            → deploy as the site's index (rename to index.html)
-/netlify/functions/livstyle.js
-/netlify.toml              → see below
+[evidence across the frameworks]. Thread: [the essence].
 ```
 
-Minimal `netlify.toml`:
+The dashboard splits on `Thread:` — the part after becomes the headline in the dark banner,
+the part before becomes the supporting evidence line beneath it. Anyone without a Key Thread
+shows a neutral placeholder rather than an invented one.
 
-```toml
-[build]
-  functions = "netlify/functions"
-  publish = "."
-```
+---
 
-## Netlify setup
+## Fields the dashboard reads
 
-1. Push the repo to GitHub (e.g. `github.com/Melnwood/livstyle`) and connect it in Netlify, or drag-and-drop the folder.
-2. In **Site settings → Environment variables**, add:
-   - `AIRTABLE_PAT` → an Airtable personal access token with `data.records:read` on this base. **This is the only place the token lives.**
-   - Optional overrides (defaults shown): `AIRTABLE_BASE_ID=apppGh1toMfYP7NGK`, `AIRTABLE_ASSESSMENTS_TABLE=Assessments`, `AIRTABLE_LEADERS_TABLE=Leaders`.
-3. Deploy. Open the site, sign in as `mel` / `changeme-mel`.
+`Full Name` · `Division` · `Country` · `Primary Personality` ·
+`Personality Under Pressure` · `16P Type` · `16P Identity` · `WG Geniuses` ·
+`CS1`–`CS5` · `SG1`–`SG3` · `Key Thread` · `Leadership Set`
 
-## Loading the assessment data
+Nothing else is touched. Compensation, notes, and every other field in the base are never read.
 
-50 records are already in the **Assessments** table. To load the remaining 473:
+---
 
-1. Open the **Assessments** table in Airtable.
-2. Top-right of the table → **+ / Import data → CSV file** → choose **`LivStyle_Assessments_import_473.csv`**.
-3. Choose **“Insert into current table”** (not new table). Columns are named to match the fields exactly, so they auto-map. Confirm the Country and personality columns map to the existing single-select fields.
+## Grouping
 
-`LivStyle_Assessments_ALL_523.csv` is a full backup of all 523 rows — only use it if the first 50 get removed (importing it on top of the existing 50 would duplicate them).
-
-## Data notes
-
-The source spreadsheet was cleaned on the way in:
-- One fully-blank row dropped (524 → 523 people).
-- Country spellings normalized (e.g. the two “Former 1st/2nd Culture Staff” typo variants).
-- Three out-of-range cells corrected against their 0–1 scale: Jirka Jedlicka (Recognition 3.25 → 0.25), Mitchell Bradford (Consistency “00%” → 0), Michal Skiba (four C.A.R.E. values “x” → blank).
-- Personality spelling “Vysionary” → “Visionary”.
-- Trait scores stored as decimals (0.70 displays as 70%); PP#/PUP# kept as two-digit text to preserve leading zeros.
-- Three people appear twice (David Drapak, Ian Landis, Sam Lunz) — legitimate re-assessments, both kept.
+People are grouped by the **`Division`** field, falling back to **`Country`** when Division is
+empty. If the E-Team would rather see the leadership tiers (Presidents / IRD / National /
+Council / Countries), add a field for that in Airtable and it's a one-line change in
+`people.js`.
