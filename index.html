@@ -85,6 +85,16 @@
   @media(max-width:620px){.wggrid{grid-template-columns:1fr}}
   .wgcell{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--paper)}
   .wgcell.gap{border-color:var(--wg);background:#fdf3f1}
+  .wgcell.thin{border-color:var(--cs);background:#fdf8ef}
+  .wgcell .thintag{font-size:10px;font-weight:700;color:var(--cs);text-transform:uppercase;letter-spacing:.06em}
+  ul.roll li,ul.shift li{padding:4px 0 4px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  ul.roll li:last-child,ul.shift li:last-child{border-bottom:none}
+  ul.roll li::before,ul.shift li::before{content:none}
+  .split{height:8px;background:var(--p16);border-radius:5px;overflow:hidden;opacity:.25}
+  .split .sa{height:100%;background:var(--p16);opacity:1;border-radius:5px}
+  .dombar .top2 .lean{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--cs)}
+  .gchips{display:flex;flex-wrap:wrap;gap:6px}
+  .gchip{font-size:12px;font-weight:600;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
   .wgcell .g{font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
   .wgcell .who{font-size:12px;color:var(--soft);margin-top:5px;line-height:1.4}
   .wgcell .gaptag{font-size:10px;font-weight:700;color:var(--wg);text-transform:uppercase;letter-spacing:.06em}
@@ -304,22 +314,124 @@ function teamView(){
  +'<div class="tray"><div class="traychips">'+(team.length?team.map(i=>'<span class="tc">'+P[i].n.split(" ")[0]+' <b onclick="toggleTeam('+i+')">\u2715</b></span>').join(''):'<span class="hint" style="padding:0">Tap people to add them — up to 10.</span>')+'</div><button class="go" '+(team.length<2?"disabled":"")+' onclick="teamPanel()">Analyse team ('+team.length+')</button></div>';}
 function teamPanel(){
  const m=team.map(i=>P[i]);
- const cover={};WGorder.forEach(g=>cover[g]=m.filter(x=>x.wg.includes(g)).map(x=>x.n.split(" ")[0]));
- const gaps=WGorder.filter(g=>cover[g].length===0);const wgKnown=m.filter(x=>x.wg.length).length;
+ const N=m.length, fn=x=>x.n.split(" ")[0];
+ const PHASES=[["Ideation",["Wonder","Invention"],"asking the right questions and generating answers"],
+               ["Activation",["Discernment","Galvanizing"],"judging ideas and rallying people around them"],
+               ["Implementation",["Enablement","Tenacity"],"supporting the work and finishing it"]];
+ const has=g=>m.filter(x=>x.wg.includes(g));
+ const frus=g=>m.filter(x=>x.wgf.includes(g));
+ const wgKnown=m.filter(x=>x.wg.length).length;
+ const csKnown=m.filter(x=>x.cs.length).length;
+ const tKnown=m.filter(x=>x.t).length;
+
+ /* ---------- 1. Key Thread roll call ---------- */
+ const roll=m.map(x=>{const tp=threadParts(x.kt);
+   return '<li><b>'+fn(x)+'</b> — '+(tp?tp.head.charAt(0).toLowerCase()+tp.head.slice(1):'<span style="color:#9aa6a2">no thread on file yet</span>')+'</li>';}).join('');
+
+ /* ---------- 2. Arc of work ---------- */
+ let arcRows=PHASES.map(function(ph){
+   const nm=ph[0],gs=ph[1],desc=ph[2];
+   const people=[...new Set([].concat(...gs.map(g=>has(g).map(fn))))];
+   const frusPeople=[...new Set([].concat(...gs.map(g=>frus(g).map(fn))))];
+   const state=people.length===0?"gap":people.length===1?"thin":"ok";
+   const tag=state==="gap"?'<span class="gaptag">gap</span>':state==="thin"?'<span class="thintag">thin</span>':'<span class="covtag">covered</span>';
+   let body=people.length?('<b>'+people.join(", ")+'</b> carry this.'):('Nobody on this team is energised by '+desc+'.');
+   if(frusPeople.length)body+=' <span style="color:var(--wg)">Drains '+frusPeople.join(", ")+'.</span>';
+   return '<div class="wgcell '+(state==="gap"?"gap":state==="thin"?"thin":"")+'"><div class="g">'+nm+' '+tag+'</div><div class="who">'+body+'</div></div>';
+ }).join('');
+
+ /* ---------- 3. Under pressure ---------- */
+ const shifters=m.filter(x=>x.lp&&x.lu&&x.lp!==x.lu);
+ const pressureCount={};
+ m.forEach(x=>{if(x.lu)pressureCount[x.lu]=(pressureCount[x.lu]||0)+1;});
+ const pressTop=Object.entries(pressureCount).sort((a,b)=>b[1]-a[1]);
+ let pressRead="";
+ if(pressTop.length){
+   const [style,cnt]=pressTop[0];
+   if(cnt>=Math.max(2,Math.ceil(N/2)))
+     pressRead="Under pressure this team converges: <b>"+cnt+" of "+N+" become "+style+"</b>. That's the room you'll actually be in when a decision is hard — expect it to behave very differently from the calm version of itself.";
+   else pressRead="Under pressure the team stays fairly mixed — no single style takes over.";
+ }
+ const shiftList=shifters.map(x=>'<li><b>'+fn(x)+'</b>: '+x.lp+' \u2192 <b>'+x.lu+'</b></li>').join('')
+   ||'<li>Nobody in this group shifts style under pressure — they show up the same way in a crisis.</li>';
+
+ /* ---------- 4. 16P composition ---------- */
+ const L=(i,a,b)=>{const c=m.filter(x=>x.t&&x.t[i]===a).length,d=m.filter(x=>x.t&&x.t[i]===b).length;return [c,d];};
+ const dims=[["Outward / Inward","E","I",0,"talks it out","thinks it through"],
+             ["Concrete / Big-picture","S","N",1,"facts first","patterns first"],
+             ["Head / Heart","T","F",2,"logic-led","people-led"],
+             ["Planned / Flexible","J","P",3,"wants it settled","keeps options open"]];
+ let dimRows=tKnown?dims.map(function(d){
+   const [a,b]=L(d[3],d[1],d[2]);const tot=a+b||1;
+   const pctA=Math.round(a/tot*100);
+   const lean=Math.abs(pctA-50)>=30?'<span class="lean">strong lean</span>':'';
+   return '<div class="dombar"><div class="top2"><span>'+d[1]+' '+d[4]+' <b>'+a+'</b></span><span>'+lean+'</span><span><b>'+b+'</b> '+d[5]+' '+d[2]+'</span></div>'
+     +'<div class="split"><div class="sa" style="width:'+pctA+'%"></div></div></div>';
+ }).join(''):'<p style="font-size:13.5px;color:#9aa6a2">No 16 Personalities data for this group yet.</p>';
+
+ /* ---------- 5. Strengths ---------- */
  const dc={Executing:0,Influencing:0,"Relationship Building":0,"Strategic Thinking":0};
- m.forEach(x=>x.cs.forEach(s=>{for(const d in DOM)if(DOM[d].includes(s))dc[d]++;}));
- const dtot=Object.values(dc).reduce((a,b)=>a+b,0)||1;const ds=Object.entries(dc).sort((a,b)=>b[1]-a[1]);const csKnown=m.filter(x=>x.cs.length).length;
- const covered=WGorder.filter(g=>cover[g].length);
- let strengths=[];if(covered.length)strengths.push("Strong coverage in "+covered.join(", ")+".");if(ds[0][1])strengths.push("Strengths tilt toward "+ds[0][0].toLowerCase()+" — "+DOMdesc[ds[0][0]]+".");
- let gapread=gaps.length?gaps.map(g=>"<b>"+g+"</b> is uncovered — "+WGgap[g]+"."):["No Working Genius gaps among those with data on file — a well-rounded spread."];
- const weak=ds[ds.length-1];let domGap=(weak[1]===0)?"Nobody's strengths land in <b>"+weak[0]+"</b> — that lens is thin for this group.":"";
- document.getElementById('panel').innerHTML='<div class="ph"><button class="close" onclick="closePanel()">\u2715</button><h2>Team read</h2><div class="grp">'+m.length+' people · '+m.map(x=>x.n.split(" ")[0]).join(", ")+'</div></div><div class="pbody"><div class="synth">'
-  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Working Genius coverage '+(wgKnown<m.length?'<span style="color:#9aa6a2;font-weight:500;text-transform:none;letter-spacing:0">· '+wgKnown+'/'+m.length+' have data</span>':'')+'</h4><div class="wggrid">'+WGorder.map(g=>'<div class="wgcell '+(cover[g].length?"":"gap")+'"><div class="g">'+g+' '+(cover[g].length?'<span class="covtag">covered</span>':'<span class="gaptag">gap</span>')+'</div><div class="who">'+(cover[g].length?cover[g].join(", "):WGgap[g])+'</div></div>').join('')+'</div></div>'
-  +'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Strengths balance '+(csKnown<m.length?'<span style="color:#9aa6a2;font-weight:500;text-transform:none;letter-spacing:0">· '+csKnown+'/'+m.length+' have data</span>':'')+'</h4>'+ds.map(e=>'<div class="dombar"><div class="top2"><span>'+e[0]+'</span><span>'+e[1]+'</span></div><div class="track"><div class="fill" style="width:'+Math.round(e[1]/dtot*100)+'%"></div></div></div>').join('')+'</div>'
-  +'<div class="sec nut" style="--accent:var(--ink)"><h4><span class="dot"></span>The read</h4><p>'+(strengths.join(" ")||"Limited assessment data across this group.")+'</p></div>'
-  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Gaps &amp; blind spots</h4><ul>'+gapread.map(x=>"<li>"+x+"</li>").join("")+(domGap?"<li>"+domGap+"</li>":"")+'</ul></div>'
-  +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>To round it out</h4><ul>'+(gaps.length?"<li>Add someone energised by "+gaps.map(g=>g.toLowerCase()).join(" or ")+" — or consciously assign it.</li>":"<li>Coverage is broad; focus on clarity of roles.</li>")+'<li>Name who owns the finish line if Tenacity is thin.</li><li>Watch for a shared blind spot where everyone leans the same way.</li></ul></div>'
-  +'</div><p class="disclaim">Built from partial, self-reported data — a planning aid for composing a team, not a scorecard on individuals.</p></div>';
+ const themeCount={};
+ m.forEach(x=>x.cs.forEach(sname=>{themeCount[sname]=(themeCount[sname]||0)+1;for(const d in DOM)if(DOM[d].includes(sname))dc[d]++;}));
+ const dtot=Object.values(dc).reduce((a,b)=>a+b,0)||1;
+ const ds=Object.entries(dc).sort((a,b)=>b[1]-a[1]);
+ const dupes=Object.entries(themeCount).filter(e=>e[1]>1).sort((a,b)=>b[1]-a[1]);
+ const emptyDoms=ds.filter(e=>e[1]===0).map(e=>e[0]);
+ let strRows=csKnown?ds.map(e=>'<div class="dombar"><div class="top2"><span>'+e[0]+'</span><span>'+e[1]+'</span></div><div class="track"><div class="fill" style="width:'+Math.round(e[1]/dtot*100)+'%"></div></div></div>').join(''):'<p style="font-size:13.5px;color:#9aa6a2">No CliftonStrengths data for this group yet.</p>';
+
+ /* ---------- 6. Spiritual gifts ---------- */
+ const gc={};m.forEach(x=>x.sg.forEach(g=>{gc[g]=(gc[g]||0)+1;}));
+ const gifts=Object.entries(gc).sort((a,b)=>b[1]-a[1]);
+ const carePresent=["Mercy","Shepherding","Encouragement"].filter(g=>gc[g]);
+ const giftChips=gifts.length?gifts.map(e=>'<span class="gchip">'+e[0]+(e[1]>1?' <b>\u00d7'+e[1]+'</b>':'')+'</span>').join(''):'<span style="font-size:13px;color:#9aa6a2">No spiritual gifts data for this group yet.</span>';
+
+ /* ---------- 7. Risks ---------- */
+ let risks=[];
+ PHASES.forEach(function(ph){
+   const people=[].concat(...ph[1].map(g=>has(g)));
+   if(wgKnown&&people.length===0)risks.push("<b>No "+ph[0].toLowerCase()+" energy.</b> Nobody here is wired for "+ph[2]+". This won't fix itself — assign it deliberately or add someone.");
+   else if(wgKnown&&people.length===1)risks.push("<b>"+ph[0]+" rests on one person</b> ("+fn(people[0])+"). If they're out, that phase stops.");
+ });
+ if(pressTop.length&&pressTop[0][1]>=Math.max(2,Math.ceil(N/2)))
+   risks.push("<b>Pressure convergence.</b> "+pressTop[0][1]+" of "+N+" default to "+pressTop[0][0]+" when it gets hard — the team's blind spot doubles down exactly when it can least afford to.");
+ if(emptyDoms.length&&csKnown>=2)
+   risks.push("<b>No strengths in "+emptyDoms.join(" or ")+".</b> That whole lens is missing from the group's instincts.");
+ if(dupes.length&&dupes[0][1]>=Math.ceil(N/2)&&csKnown>=3)
+   risks.push("<b>Echo risk:</b> "+dupes[0][1]+" people share <b>"+dupes[0][0]+"</b>. They'll agree quickly and confidently — which is not the same as being right.");
+ const fastT=m.filter(x=>["ESTJ","ENTJ","ESTP","ENTP"].includes(x.t)).length;
+ if(tKnown>=3&&fastT>=Math.ceil(tKnown*0.7))
+   risks.push("<b>Everyone decides fast.</b> "+fastT+" of "+tKnown+" are quick, outward deciders — quieter processors will get steamrolled unless you build in a deliberate pause.");
+ if(csKnown>=2&&!carePresent.length&&m.some(x=>x.sg.length))
+   risks.push("<b>No pastoral gifting in the room</b> (no Mercy, Shepherding or Encouragement). Fine for a task force; thin if this team carries people.");
+ if(!risks.length)risks.push("Nothing jumps out as a structural risk in the data — which is itself worth testing against what you know of them.");
+
+ /* ---------- 8. How to run it ---------- */
+ let how=[];
+ const tenacity=has("Tenacity");
+ how.push(tenacity.length?("<b>Finish line:</b> "+tenacity.map(fn).join(" and ")+" "+(tenacity.length>1?"are":"is")+" wired to close things out — give them the last mile explicitly."):"<b>Finish line:</b> nobody here is a natural finisher. Name who owns 'done' before you start, or this team will generate and stall.");
+ const galv=has("Galvanizing");
+ how.push(galv.length?("<b>Buy-in:</b> "+galv.map(fn).join(" and ")+" can carry this to the wider org."):"<b>Buy-in:</b> no natural galvaniser — decisions made here may land flat elsewhere. Plan how they get sold.");
+ const wonder=has("Wonder");
+ if(!wonder.length)how.push("<b>Watch the premise:</b> nobody instinctively asks whether you're solving the right problem. Start meetings by stating the question, not the task.");
+ if(shifters.length>=Math.ceil(N/2))how.push("<b>Under load:</b> over half this group changes style when pressed — the team you plan with is not the team you'll get in a crisis. Talk about that before you're in one.");
+ const quiet=m.filter(x=>x.t&&x.t[0]==="I");
+ if(quiet.length&&fastT)how.push("<b>Airtime:</b> "+quiet.map(fn).join(", ")+" process internally. Ask them directly, or you'll only hear half the team.");
+
+ const dataNote=(wgKnown<N||csKnown<N||tKnown<N)?'<p class="disclaim" style="margin:0 0 14px">Data on file: Working Genius '+wgKnown+'/'+N+' · Strengths '+csKnown+'/'+N+' · 16 Types '+tKnown+'/'+N+'. Gaps below may reflect missing assessments rather than missing people.</p>':'';
+
+ document.getElementById('panel').innerHTML='<div class="ph"><button class="close" onclick="closePanel()">\u2715</button><h2>Team read</h2><div class="grp">'+N+' people · '+m.map(fn).join(", ")+'</div></div><div class="pbody">'
+  +dataNote
+  +'<div class="synth">'
+  +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Who\u2019s in the room</h4><ul class="roll">'+roll+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>The arc of work \u2014 where this team is strong and where it stalls</h4><div class="wggrid">'+arcRows+'</div></div>'
+  +'<div class="sec" style="--accent:var(--liv)"><h4><span class="dot"></span>What happens under pressure</h4>'+(pressRead?'<p style="margin-bottom:9px">'+pressRead+'</p>':'')+'<ul class="shift">'+shiftList+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--p16)"><h4><span class="dot"></span>How the room will feel</h4>'+dimRows+'</div>'
+  +'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Strengths balance</h4>'+strRows
+    +(dupes.length?'<p style="font-size:13px;color:var(--soft);margin-top:8px">Shared themes: '+dupes.map(e=>'<b>'+e[0]+'</b> \u00d7'+e[1]).join(", ")+'</p>':'')+'</div>'
+  +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>Gifting in the room</h4><div class="gchips">'+giftChips+'</div></div>'
+  +'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>Risks worth naming</h4><ul>'+risks.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
+  +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>How to run this team</h4><ul>'+how.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
+  +'</div><p class="disclaim">Built from partial, self-reported assessments. This is a planning aid for composing and running a team \u2014 a set of questions to take into the room, not a scorecard on the people in it.</p></div>';
  document.getElementById('panel').classList.add('show');document.getElementById('scrim').classList.add('show');}
 
 function openPanel(i){const p=P[i],s=synth(p),dom=domainsOf(p.cs),tp=threadParts(p.kt);
