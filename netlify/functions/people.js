@@ -9,7 +9,7 @@ const ASSESSMENTS = "tblVTZNf2RDVg97r5";
 const LEADERS = "tbl0q8SlBoLBqL5dB";
 
 const FIELDS = [
-  "Full Name", "Division", "Country",
+  "Full Name", "Division", "Country", "Status",
   "Primary Personality", "Personality Under Pressure",
   "16P Type", "16P Identity",
   "WG Geniuses",
@@ -92,6 +92,7 @@ exports.handler = async (event) => {
           id: r.id,
           n: name,
           g: x["Division"] || x["Country"] || "Unassigned",
+          st: x["Status"] || "",
           lead: x["Leadership Set"] === true,
           lp: x["Primary Personality"] || "",
           lu: x["Personality Under Pressure"] || "",

@@ -55,6 +55,7 @@
   .person h3{font-family:"Newsreader",serif;font-size:20px;font-weight:500}
   .person .grp{font-size:12px;color:var(--soft);margin-bottom:10px}
   .person h3 .star{color:var(--cs);font-size:13px;vertical-align:middle;margin-left:5px}
+  .person .inact{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a968f;background:#eef1ee;border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle}
   .person .ktline{font-size:12.5px;color:var(--ink);font-style:italic;margin:0 0 11px;line-height:1.4;opacity:.82}
   .badges{display:flex;flex-wrap:wrap;gap:6px}
   .b{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#fff}
@@ -153,7 +154,7 @@
     </div>
     <button class="signout" onclick="signOut()">Sign out <span id="whoami" style="opacity:.65"></span></button>
    </div>
-   <div class="note">Each person opens with their <b>Key Thread</b> — the through-line that recurs across every assessment. A starting point for placement and development conversations, held up against the real person, not a verdict. Switch between the <b>leadership set</b> (full profiles) and <b>everyone</b> at any time. <span id="stamp" style="opacity:.7"></span></div>
+   <div class="note">Each person opens with their <b>Key Thread</b> — the through-line that recurs across every assessment. A starting point for placement and development conversations, held up against the real person, not a verdict. Switch between the <b>leadership set</b>, <b>active staff</b>, and <b>inactive</b> at any time. <span id="stamp" style="opacity:.7"></span></div>
    <div class="scope" id="scopebar"></div>
    <div class="modes">
     <button class="mode active" data-m="people" onclick="setMode('people')">People</button>
@@ -239,14 +240,18 @@ function synth(p){const out={};const dom=domainsOf(p.cs);
 
 let mode="people",scope="lead",filter={type:null,grp:null,q:""},cmpA=0,cmpB=1,team=[];
 const V=()=>document.getElementById('view');
-const inScope=p=>scope==='all'||p.lead;
+// "Active" = Status is Active, or blank (the base currently leaves current staff blank).
+const isActive=p=>p.st!=='Inactive';
+const inScope=p=>scope==='lead'?p.lead:scope==='active'?isActive(p):!isActive(p);
 const SC=()=>P.filter(inScope);
 const groups=()=>[...new Set(SC().map(p=>p.g))].sort();
-function setScope(s){if(scope===s)return;scope=s;filter={type:null,grp:null,q:""};team=[];const L=SC();cmpA=0;cmpB=L.length>1?P.indexOf(L[1]):0;if(L.length)cmpA=P.indexOf(L[0]);renderScope();render();}
-function renderScope(){const nL=P.filter(p=>p.lead).length,nA=P.length;
- document.getElementById('scopebar').innerHTML=
-  '<button class="'+(scope==='lead'?'on':'')+'" onclick="setScope(\'lead\')">Leadership set <span class="ct">'+nL+'</span></button>'
- +'<button class="'+(scope==='all'?'on':'')+'" onclick="setScope(\'all\')">Everyone <span class="ct">'+nA+'</span></button>';}
+const SCOPES=[["lead","Leadership set"],["active","Active staff"],["inactive","Inactive"]];
+function setScope(s){if(scope===s)return;scope=s;filter={type:null,grp:null,q:""};team=[];const L=SC();cmpA=L.length?P.indexOf(L[0]):0;cmpB=L.length>1?P.indexOf(L[1]):cmpA;renderScope();render();}
+function scopeCount(s){return P.filter(p=>s==='lead'?p.lead:s==='active'?isActive(p):!isActive(p)).length;}
+function renderScope(){
+ document.getElementById('scopebar').innerHTML=SCOPES.map(function(x){
+  return '<button class="'+(scope===x[0]?'on':'')+'" onclick="setScope(\''+x[0]+'\')">'+x[1]+' <span class="ct">'+scopeCount(x[0])+'</span></button>';
+ }).join('');}
 function setMode(m){mode=m;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.m===m));document.body.classList.toggle('pick',m==='team');render();}
 
 const tileDefs=[{k:"all",l:"In view",a:"var(--ink)",c:()=>SC().length},{k:"kt",l:"With Key Thread",a:"var(--ink)",c:()=>SC().filter(p=>p.kt).length},{k:"wg",l:"With Wk. Genius",a:"var(--wg)",c:()=>SC().filter(p=>p.wg.length).length},{k:"cs",l:"With Strengths",a:"var(--cs)",c:()=>SC().filter(p=>p.cs.length).length},{k:"sg",l:"With Sp. Gifts",a:"var(--sg)",c:()=>SC().filter(p=>p.sg.length).length}];
@@ -256,7 +261,7 @@ function peopleView(){
  +'<div class="bar">'+groups().map(g=>'<button class="chip '+(filter.grp===g?"active":"")+'" onclick="setGrp(\''+g.replace(/'/g,"\\'")+'\')">'+g+'</button>').join('')+'<input class="search" placeholder="Search a name…" oninput="setQ(this.value)" value="'+filter.q+'"></div>'
  +'<div class="grid">'+cardList(P.filter(pmatch),false)+'</div>';}
 function cardList(list,pick){return list.map(p=>{const i=P.indexOf(p);const tp=threadParts(p.kt);
- return '<div class="person '+(team.includes(i)?"sel":"")+'" onclick="'+(pick?"toggleTeam("+i+")":"openPanel("+i+")")+'"><span class="tick">\u2713</span><h3>'+p.n+(scope==='all'&&p.lead?'<span class="star" title="Leadership set">\u2605</span>':'')+'</h3><div class="grp">'+p.g+'</div>'
+ return '<div class="person '+(team.includes(i)?"sel":"")+'" onclick="'+(pick?"toggleTeam("+i+")":"openPanel("+i+")")+'"><span class="tick">\u2713</span><h3>'+p.n+(scope!=='lead'&&p.lead?'<span class="star" title="Leadership set">\u2605</span>':'')+(scope==='inactive'?'<span class="inact">inactive</span>':'')+'</h3><div class="grp">'+p.g+'</div>'
  +(tp?'<div class="ktline">'+tp.head+'.</div>':'')
  +'<div class="badges">'+(p.lp?'<span class="b liv">'+p.lp+'</span>':'<span class="b empty">LivStyle</span>')+(p.t?'<span class="b p16">'+p.t+(p.id16?"-"+p.id16:"")+'</span>':'<span class="b empty">16 Types</span>')+(p.wg.length?'<span class="b wg">'+p.wg.join(" · ")+'</span>':'<span class="b empty">Wk. Genius</span>')+(p.sg.length?'<span class="b sg">'+p.sg[0]+'…</span>':'<span class="b empty">Sp. Gifts</span>')+'</div></div>';}).join('')||'<div class="hint">No one matches those filters.</div>';}
 function setType(k){filter.type=(k==='all')?null:(filter.type===k?null:k);render();}
