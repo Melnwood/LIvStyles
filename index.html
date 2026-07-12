@@ -133,6 +133,8 @@
     <div class="eyebrow">Josiah Venture · People &amp; Culture</div>
     <h1>E-Team Insight Dashboard</h1>
     <p>Confidential. For Executive Team use.</p>
+    <input type="text" id="lg" placeholder="Your name" autocomplete="username"
+           onkeydown="if(event.key==='Enter')document.getElementById('pw').focus()">
     <input type="password" id="pw" placeholder="Password" autocomplete="current-password"
            onkeydown="if(event.key==='Enter')signIn()">
     <button id="signin" onclick="signIn()">Open dashboard</button>
@@ -149,7 +151,7 @@
      <div class="eyebrow">Josiah Venture · People &amp; Culture</div>
      <h1>E-Team Insight Dashboard</h1>
     </div>
-    <button class="signout" onclick="signOut()">Sign out</button>
+    <button class="signout" onclick="signOut()">Sign out <span id="whoami" style="opacity:.65"></span></button>
    </div>
    <div class="note">Each person opens with their <b>Key Thread</b> — the through-line that recurs across every assessment. A starting point for placement and development conversations, held up against the real person, not a verdict. Switch between the <b>leadership set</b> (full profiles) and <b>everyone</b> at any time. <span id="stamp" style="opacity:.7"></span></div>
    <div class="scope" id="scopebar"></div>
@@ -179,20 +181,20 @@ function domainsOf(cs){const c={Executing:0,Influencing:0,"Relationship Building
 function threadParts(kt){if(!kt)return null;const i=kt.indexOf('Thread:');if(i<0)return {head:kt,why:''};let head=kt.slice(i+7).trim().replace(/\.$/,'');head=head.charAt(0).toUpperCase()+head.slice(1);return {head:head,why:kt.slice(0,i).trim()};}
 
 /* ---------- auth ---------- */
-async function load(pw){
-  const res=await fetch('/.netlify/functions/people',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
-  if(res.status===401) throw new Error('Incorrect password.');
+async function load(login,pw){
+  const res=await fetch('/.netlify/functions/people',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({login:login,password:pw})});
   if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||'Could not reach the data.');}
   return res.json();
 }
 async function signIn(){
-  const pw=document.getElementById('pw').value.trim();
+  const lg=document.getElementById('lg').value.trim();
+  const pw=document.getElementById('pw').value;
   const btn=document.getElementById('signin'),err=document.getElementById('err');
-  if(!pw){err.textContent='Enter the password.';return;}
+  if(!lg||!pw){err.textContent='Enter your name and password.';return;}
   btn.disabled=true;btn.textContent='Opening…';err.textContent='';
   try{
-    const data=await load(pw);
-    sessionStorage.setItem('etk',pw);
+    const data=await load(lg,pw);
+    sessionStorage.setItem('etk',JSON.stringify({l:lg,p:pw}));
     boot(data);
   }catch(e){
     err.textContent=e.message;btn.disabled=false;btn.textContent='Open dashboard';
@@ -205,6 +207,7 @@ function boot(data){
   document.getElementById('app').style.display='block';
   const d=new Date(data.fetched);
   document.getElementById('stamp').textContent='· Live from Airtable, '+d.toLocaleString();
+  if(data.who&&data.who.name)document.getElementById('whoami').textContent=data.who.name.split(' ')[0];
   const L=SC();if(L.length){cmpA=P.indexOf(L[0]);cmpB=P.indexOf(L[Math.min(1,L.length-1)]);}
   renderScope();
   render();
@@ -212,7 +215,7 @@ function boot(data){
 (async function(){
   const saved=sessionStorage.getItem('etk');
   if(!saved)return;
-  try{boot(await load(saved));}catch(e){sessionStorage.removeItem('etk');}
+  try{const c=JSON.parse(saved);boot(await load(c.l,c.p));}catch(e){sessionStorage.removeItem('etk');}
 })();
 
 /* ---------- synthesis ---------- */
