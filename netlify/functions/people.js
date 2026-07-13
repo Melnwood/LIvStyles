@@ -15,7 +15,7 @@ const FIELDS = [
   "WG Geniuses", "WG Competencies", "WG Frustrations",
   "CS 1", "CS 2", "CS 3", "CS 4", "CS 5",
   "SG 1", "SG 2", "SG 3",
-  "Key Thread", "Motion From", "Motion To",
+  "Key Thread",
   "Leadership Set",
   // LivStyle traits — used by Role Fit scoring
   "Processing Blueprint: Intuitive", "Processing Blueprint: Concrete",
@@ -143,8 +143,6 @@ exports.handler = async (event) => {
           cs: ["CS 1", "CS 2", "CS 3", "CS 4", "CS 5"].map((k) => x[k]).filter(Boolean),
           sg: ["SG 1", "SG 2", "SG 3"].map((k) => x[k]).filter(Boolean),
           kt: x["Key Thread"] || "",
-          mf: x["Motion From"] || "",
-          mt: x["Motion To"] || "",
           tr: Object.fromEntries(Object.entries(TRAITS).map(([k, f]) => [k, pct(x[f])]).filter(e => e[1] !== null)),
         });
       });

@@ -204,6 +204,16 @@
   .match.top{border-color:var(--sg);box-shadow:0 0 0 1px var(--sg)}
   .fitbar{height:6px;background:#eef1ee;border-radius:4px;overflow:hidden;margin-top:6px}
   .fitbar div{height:100%;background:var(--sg);border-radius:4px}
+  .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:760px){.tgrid{grid-template-columns:1fr}}
+  .tstack{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:860px){.tstack{grid-template-columns:1fr}}
+  .tcard{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:16px 18px}
+  .tcard.click{cursor:pointer;background:var(--card);transition:.12s}
+  .tcard.click:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+  .tcard .tn{font-family:"Newsreader",serif;font-size:19px;margin-bottom:7px}
+  .tcard p{font-size:14px;line-height:1.6;color:var(--ink)}
+  .tcard .tlead{font-weight:700;color:var(--liv);display:inline-block;margin-top:4px}
   .fl{display:block;font-size:12px;font-weight:600;color:var(--soft);margin:10px 0 5px}
   .fi{width:100%;font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
   textarea.fi{resize:vertical;line-height:1.5}
@@ -262,12 +272,6 @@ const WGdesc={Wonder:"asking the big questions and spotting needs",Invention:"ge
 const WGgap={Wonder:"no one instinctively steps back to ask whether you're solving the right problem",Invention:"few original solutions in the room — the team may keep recycling old ones",Discernment:"ideas go unfiltered; weak gut-check on what's actually good",Galvanizing:"no natural rallier — initiatives may lack momentum and buy-in",Enablement:"people don't instinctively jump in to help; support gaps appear",Tenacity:"things get started but stall before the finish line"};
 const DOM={Executing:["Achiever","Arranger","Belief","Consistency","Deliberative","Discipline","Focus","Responsibility","Restorative"],Influencing:["Activator","Command","Communication","Competition","Maximizer","Self-Assurance","Significance","Woo"],"Relationship Building":["Adaptability","Connectedness","Developer","Empathy","Harmony","Includer","Individualization","Positivity","Relator"],"Strategic Thinking":["Analytical","Context","Futuristic","Ideation","Input","Intellection","Learner","Strategic"]};
 const DOMdesc={Executing:"making things happen and following through",Influencing:"speaking up, selling ideas and moving others","Relationship Building":"building trust and holding teams together","Strategic Thinking":"taking in information and thinking ahead"};
-const SPARKS=["Conviction","Curiosity","Insight","Vision","Ideas","People","Order","Service"];
-const LANDINGS=["Ownership","Completion","Understanding","Momentum","Growth in People","Direction","Improvement","Care","Possibility"];
-const SPARKDESC={Conviction:"what they believe is right",Curiosity:"an open question",Insight:"what they perceive",Vision:"what could be",Ideas:"something new they generate",People:"the person in front of them",Order:"structure and system",Service:"a need they notice"};
-const LANDDESC={Ownership:"someone personally carrying it",Completion:"the thing finished",Understanding:"clarity others can use",Momentum:"people moving",'Growth in People':"a person grown",Direction:"a clear course",Improvement:"something made better",Care:"someone sustained",Possibility:"a door opened"};
-const motion=p=>(p.mf&&p.mt)?p.mf+" \u2192 "+p.mt:"";
-const hasMotion=p=>!!(p.mf&&p.mt);
 const wgStage=g=>["Wonder","Invention"].includes(g)?"early":["Discernment","Galvanizing"].includes(g)?"mid":"late";
 function domainsOf(cs){const c={Executing:0,Influencing:0,"Relationship Building":0,"Strategic Thinking":0};cs.forEach(s=>{for(const d in DOM)if(DOM[d].includes(s))c[d]++;});return Object.entries(c).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);}
 function threadParts(kt){if(!kt)return null;const i=kt.indexOf('Thread:');if(i<0)return {head:kt,why:''};let head=kt.slice(i+7).trim().replace(/\.$/,'');head=head.charAt(0).toUpperCase()+head.slice(1);return {head:head,why:kt.slice(0,i).trim()};}
@@ -315,43 +319,6 @@ function boot(data){
 })();
 
 /* ---------- synthesis ---------- */
-function motionRead(list){
- const M=list.filter(hasMotion), N=M.length;
- const sp={},ld={};
- M.forEach(p=>{sp[p.mf]=(sp[p.mf]||0)+1;ld[p.mt]=(ld[p.mt]||0)+1;});
- const spSorted=SPARKS.map(k=>[k,sp[k]||0]).sort((a,b)=>b[1]-a[1]);
- const ldSorted=LANDINGS.map(k=>[k,ld[k]||0]).sort((a,b)=>b[1]-a[1]);
- const missingSpark=SPARKS.filter(k=>!sp[k]);
- const missingLand=LANDINGS.filter(k=>!ld[k]);
- const rareSpark=spSorted.filter(e=>e[1]>0&&e[1]/N<=0.08).map(e=>e[0]);
- const rareLand=ldSorted.filter(e=>e[1]>0&&e[1]/N<=0.08).map(e=>e[0]);
- // echoes: identical motion, different people
- const byMotion={};
- M.forEach(p=>{const k=motion(p);(byMotion[k]=byMotion[k]||[]).push(p);});
- const echoes=Object.entries(byMotion).filter(e=>e[1].length>1).sort((a,b)=>b[1].length-a[1].length);
- // chains: A's landing is B's spark
- const chains=[];
- M.forEach(a=>M.forEach(b=>{if(a!==b&&a.mt===b.mf)chains.push([a,b]);}));
- return {M,N,sp,ld,spSorted,ldSorted,missingSpark,missingLand,rareSpark,rareLand,echoes,chains};
-}
-function collectiveSentence(r){
- if(!r.N)return null;
- const s1=r.spSorted[0],s2=r.spSorted[1],l1=r.ldSorted[0],l2=r.ldSorted[1];
- const sparkPart=(s2&&s2[1]&&s2[1]>=s1[1]*0.6)?(s1[0].toLowerCase()+" and "+s2[0].toLowerCase()):s1[0].toLowerCase();
- const landPart=(l2&&l2[1]&&l2[1]>=l1[1]*0.6)?(l1[0].toLowerCase()+" and "+l2[0].toLowerCase()):l1[0].toLowerCase();
- return "This group turns <b>"+sparkPart+"</b> into <b>"+landPart+"</b>.";
-}
-function motionFlow(r){
- const mx=Math.max(1,...r.spSorted.map(e=>e[1]),...r.ldSorted.map(e=>e[1]));
- const col=(items,accent)=>items.map(function(e){
-   const w=Math.round(e[1]/mx*100);
-   return '<div class="frow '+(e[1]?'':'none')+'" style="--accent:'+accent+'"><span class="lb">'+e[0]+'</span>'
-     +(e[1]?'<span class="bar" style="width:'+Math.max(6,w*0.55)+'px"></span><span class="ct2">'+e[1]+'</span>':'<span class="ct2">none</span>')+'</div>';
- }).join('');
- return '<div class="flow"><div class="flowcol"><h5>Where energy starts</h5>'+col(r.spSorted,'var(--liv)')+'</div>'
-  +'<div class="arrowmid">\u2192</div>'
-  +'<div class="flowcol"><h5>Where it lands</h5>'+col(r.ldSorted,'var(--sg)')+'</div></div>';
-}
 function synth(p){const out={};const dom=domainsOf(p.cs);
  let work=[];const dn=dom.map(d=>d[0]);
  if(p.t&&T16[p.t])work.push(T16[p.t][1].charAt(0).toUpperCase()+T16[p.t][1].slice(1)+".");
@@ -420,7 +387,7 @@ function peopleView(){
  +'<div class="grid">'+cardList(P.filter(pmatch),false)+'</div>';}
 function cardList(list,pick){return list.map(p=>{const i=P.indexOf(p);const tp=threadParts(p.kt);
  return '<div class="person '+(team.includes(i)?"sel":"")+'" onclick="'+(pick?"toggleTeam("+i+")":"openPerson("+i+")")+'"><span class="tick">\u2713</span><h3>'+p.n+(scope!=='lead'&&p.lead?'<span class="star" title="Leadership set">\u2605</span>':'')+(scope==='inactive'?'<span class="inact">inactive</span>':'')+'</h3><div class="grp">'+p.g+'</div>'
- +(tp?'<div class="ktline">'+tp.head+'.</div>':'')+(hasMotion(p)?'<div style="margin:-4px 0 10px"><span class="mchip" style="font-size:11px;padding:3px 9px">'+p.mf+' <span class="ar">\u2192</span> '+p.mt+'</span></div>':'')
+ +(tp?'<div class="ktline">'+tp.head+'.</div>':'')
  +'<div class="badges">'+(p.lp?'<span class="b liv">'+p.lp+'</span>':'<span class="b empty">LivStyle</span>')+(p.t?'<span class="b p16">'+p.t+(p.id16?"-"+p.id16:"")+'</span>':'<span class="b empty">16 Types</span>')+(p.wg.length?'<span class="b wg">'+p.wg.join(" · ")+'</span>':'<span class="b empty">Wk. Genius</span>')+(p.sg.length?'<span class="b sg">'+p.sg[0]+'…</span>':'<span class="b empty">Sp. Gifts</span>')+'</div></div>';}).join('')||'<div class="hint">No one matches those filters.</div>';}
 function setType(k){filter.type=(k==='all')?null:(filter.type===k?null:k);render();}
 function setGrp(g){filter.grp=filter.grp===g?null:g;render();}
@@ -449,33 +416,15 @@ function cmpSynth(a,b){
  if(a.t&&b.t&&((fast(a.t)&&refl(b.t))||(fast(b.t)&&refl(a.t))))fr.push("One decides fast out loud, the other processes internally — pace and airtime are the thing to watch. Build in a beat for the reflective one.");
  if(wgA.length&&wgB.length&&[...aS,...bS].every(s=>s!=="late"))fr.push("Neither is wired to finish — together they'll generate and evaluate well, but someone needs to own the finish line.");
  if(!fr.length)fr.push("No obvious friction in the data — the usual: name expectations and how each likes to communicate.");
- // ---- thread motion read ----
+ // ---- the two threads, in full ----
  let mo='';
- if(hasMotion(a)&&hasMotion(b)){
+ if(a.kt||b.kt){
    const A=a.n.split(" ")[0],B=b.n.split(" ")[0];
-   let verdict='',detail='';
-   if(a.mf===b.mf&&a.mt===b.mt){
-     verdict="Same motion.";
-     detail="Both run <b>"+a.mf.toLowerCase()+" \u2192 "+a.mt.toLowerCase()+"</b>. Whatever their assessments say, these two <b>do the same thing</b> — they reinforce each other and share the same blind spot. Pairing them doubles the force, not the range.";
-   } else if(a.mt===b.mf){
-     verdict="They chain.";
-     detail="<b>"+A+"</b> lands in <b>"+a.mt.toLowerCase()+"</b> — exactly where <b>"+B+"</b> starts. Hand work from "+A+" to "+B+" and it keeps moving. This is a sequence, not just a pairing.";
-   } else if(b.mt===a.mf){
-     verdict="They chain.";
-     detail="<b>"+B+"</b> lands in <b>"+b.mt.toLowerCase()+"</b> — exactly where <b>"+A+"</b> starts. Hand work from "+B+" to "+A+" and it keeps moving. A natural sequence.";
-   } else if(a.mt===b.mt){
-     verdict="Different starts, same landing.";
-     detail="They reach <b>"+a.mt.toLowerCase()+"</b> from different places ("+a.mf.toLowerCase()+" vs "+b.mf.toLowerCase()+"). They'll agree on <i>where</i> to land and argue about <i>why</i> — usually a productive argument.";
-   } else if(a.mf===b.mf){
-     verdict="Same spark, different landing.";
-     detail="Both fire from <b>"+a.mf.toLowerCase()+"</b> but carry it somewhere different ("+a.mt.toLowerCase()+" vs "+b.mt.toLowerCase()+"). They'll recognise each other instantly, then pull apart — that tension is the value.";
-   } else {
-     verdict="Fully distinct motions.";
-     detail="<b>"+A+"</b> runs "+a.mf.toLowerCase()+" → "+a.mt.toLowerCase()+"; <b>"+B+"</b> runs "+b.mf.toLowerCase()+" → "+b.mt.toLowerCase()+". Real range between them — but nothing hands off automatically. Someone has to build the bridge.";
-   }
-   mo='<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Thread motion — what the assessments can\u2019t show</h4>'
-     +'<p style="margin-bottom:12px"><span class="mchip">'+a.mf+' <span class="ar">\u2192</span> '+a.mt+'</span> <span style="color:#9aa6a2;font-size:12px">'+A+'</span><br><span class="mchip" style="margin-top:8px">'+b.mf+' <span class="ar">\u2192</span> '+b.mt+'</span> <span style="color:#9aa6a2;font-size:12px">'+B+'</span></p>'
-     +'<p><b>'+verdict+'</b> '+detail+'</p></div>';
+   const cell=(p,nm)=>'<div class="tcard"><div class="tn">'+nm+'</div>'
+     +(p.kt?'<p>'+p.kt.replace(/Thread:/,'<br><span class="tlead">Thread:</span>')+'</p>':'<p style="color:#9aa6a2">No thread on file yet.</p>')+'</div>';
+   mo='<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>The two threads</h4>'
+     +'<div class="tgrid">'+cell(a,A)+cell(b,B)+'</div>'
+     +'<p style="font-size:12.5px;color:var(--soft);margin-top:12px">Read them against each other. The frameworks below tell you what each of them <i>is</i>; these tell you what each of them <i>does</i> \u2014 and whether those two motions need each other, repeat each other, or have nothing to say to each other.</p></div>';
  }
  return '<div class="synth">'+mo+'<div class="sec nut" style="--accent:var(--ink)"><h4><span class="dot"></span>Working together</h4><p>'+a.n.split(" ")[0]+' and '+b.n.split(" ")[0]+': '+comp[0]+'</p></div>'
   +'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>Where they complement</h4><ul>'+comp.map(x=>"<li>"+x+"</li>").join("")+'</ul></div>'
@@ -513,20 +462,19 @@ const RF_DIMS=[
   hi:"Often isolated — they must self-start and self-affirm.",me:"Some independence, with regular contact.",lo:"Close team, frequent feedback and support."}];
 const RF_LEVEL={low:25,med:55,high:82};
 const RF_PRESETS={
- leader:{label:"Team leader / driver",d:{drive:"high",execution:"high",structure:"med",people:"med",vision:"med",detail:"low",autonomy:"high"},wg:["Galvanizing","Tenacity"],land:"Direction"},
- ops:{label:"Operations / administrator / steward",d:{structure:"high",detail:"high",execution:"med",drive:"low",people:"med",vision:"low",autonomy:"low"},wg:["Enablement","Tenacity"],land:"Completion"},
- disciple:{label:"Relational / discipleship",d:{people:"high",autonomy:"med",drive:"low",structure:"low",detail:"low",vision:"med",execution:"med"},wg:["Enablement","Discernment"],land:"Growth in People"},
- planter:{label:"Innovator / church planter",d:{vision:"high",autonomy:"high",drive:"high",people:"med",execution:"med",structure:"low",detail:"low"},wg:["Wonder","Invention"],land:"Possibility"},
- finisher:{label:"Quality / finisher",d:{detail:"high",execution:"high",structure:"high",drive:"med",people:"low",vision:"low",autonomy:"med"},wg:["Tenacity","Discernment"],land:"Completion"},
- connector:{label:"Connector / recruiter",d:{people:"high",drive:"med",vision:"med",execution:"med",autonomy:"med",structure:"low",detail:"low"},wg:["Galvanizing","Invention"],land:"Momentum"},
- custom:{label:"Custom — set the dials yourself",d:{},wg:[],land:""}};
-let RF={preset:"leader",d:Object.assign({},RF_PRESETS.leader.d),wg:RF_PRESETS.leader.wg.slice(),land:RF_PRESETS.leader.land,open:null};
+ leader:{label:"Team leader / driver",d:{drive:"high",execution:"high",structure:"med",people:"med",vision:"med",detail:"low",autonomy:"high"},wg:["Galvanizing","Tenacity"]},
+ ops:{label:"Operations / administrator / steward",d:{structure:"high",detail:"high",execution:"med",drive:"low",people:"med",vision:"low",autonomy:"low"},wg:["Enablement","Tenacity"]},
+ disciple:{label:"Relational / discipleship",d:{people:"high",autonomy:"med",drive:"low",structure:"low",detail:"low",vision:"med",execution:"med"},wg:["Enablement","Discernment"]},
+ planter:{label:"Innovator / church planter",d:{vision:"high",autonomy:"high",drive:"high",people:"med",execution:"med",structure:"low",detail:"low"},wg:["Wonder","Invention"]},
+ finisher:{label:"Quality / finisher",d:{detail:"high",execution:"high",structure:"high",drive:"med",people:"low",vision:"low",autonomy:"med"},wg:["Tenacity","Discernment"]},
+ connector:{label:"Connector / recruiter",d:{people:"high",drive:"med",vision:"med",execution:"med",autonomy:"med",structure:"low",detail:"low"},wg:["Galvanizing","Invention"]},
+ custom:{label:"Custom — set the dials yourself",d:{},wg:[]}};
+let RF={preset:"leader",d:Object.assign({},RF_PRESETS.leader.d),wg:RF_PRESETS.leader.wg.slice(),open:null};
 
-function rfSetPreset(k){RF.preset=k;const p=RF_PRESETS[k];RF.d=Object.assign({},p.d);RF.wg=p.wg.slice();RF.land=p.land;render();}
+function rfSetPreset(k){RF.preset=k;const p=RF_PRESETS[k];RF.d=Object.assign({},p.d);RF.wg=p.wg.slice();render();}
 function rfSet(dim,lv){RF.d[dim]=RF.d[dim]===lv?undefined:lv;RF.preset="custom";render();}
 function rfHelp(dim){RF.open=RF.open===dim?null:dim;render();}
 function rfWG(g){const i=RF.wg.indexOf(g);if(i>-1)RF.wg.splice(i,1);else RF.wg.push(g);RF.preset="custom";render();}
-function rfLand(v){RF.land=RF.land===v?"":v;RF.preset="custom";render();}
 
 function rfScore(p){
  let parts=[],hits=[],misses=[],warn=[];
@@ -557,11 +505,6 @@ function rfScore(p){
    });
    parts.push([g/RF.wg.length,2]);
  }
- // 3. Thread landing
- if(RF.land&&p.mt){
-   if(p.mt===RF.land){parts.push([100,1.5]);hits.push("their thread lands in "+RF.land.toLowerCase());}
-   else parts.push([45,1.5]);
- }
  if(!parts.length)return null;
  const tot=parts.reduce((a,b)=>a+b[1],0);
  const score=Math.round(parts.reduce((a,b)=>a+b[0]*b[1],0)/tot);
@@ -581,18 +524,17 @@ function roleView(){
     +'<div class="helpq"><b>High:</b> '+D.hi+'<br><b>Medium:</b> '+D.me+'<br><b>Low:</b> '+D.lo+'</div></div>';
  }).join('');
  const wgChips=WGorder.map(g=>'<button class="chip '+(RF.wg.includes(g)?"active":"")+'" onclick="rfWG(\''+g+'\')">'+g+'</button>').join('');
- const landChips=LANDINGS.map(l=>'<button class="chip '+(RF.land===l?"active":"")+'" onclick="rfLand(\''+l+'\')">'+l+'</button>').join('');
 
  const set=RF_DIMS.filter(D=>RF.d[D.k]);
  const wants=set.filter(D=>RF.d[D.k]==="high").map(D=>D.label.toLowerCase());
  const notNeeded=set.filter(D=>RF.d[D.k]==="low").map(D=>D.label.toLowerCase());
  let ideal='<div class="collective"><div class="lbl">The profile this role is asking for</div>'
   +'<p>'+(wants.length?'Someone whose energy runs to <b>'+wants.join("</b>, <b>")+'</b>':'Set the dials to describe the role.')
-  +(RF.land?', whose instinct lands in <b>'+RF.land.toLowerCase()+'</b>':'')+'.</p>'
+  +'.</p>'
   +'<div class="sub">'
   +(RF.wg.length?'<b>Working Genius wanted:</b> '+RF.wg.join(", ")+'. ':'')
   +(notNeeded.length?'<b>Not what the role needs:</b> '+notNeeded.join(", ")+'. ':'')
-  +'Scored across LivStyle traits, Working Genius, and thread motion \u2014 not one lens.</div></div>';
+  +'Scored across LivStyle traits and Working Genius \u2014 not one lens.</div></div>';
 
  const scored=SC().map(function(x){const r=rfScore(x);return r?Object.assign({p:x},r):null;})
    .filter(Boolean).sort((a,b)=>b.score-a.score);
@@ -621,26 +563,54 @@ function roleView(){
 }
 
 function threadsView(){
- const list=SC(), R=motionRead(list);
- if(!R.N)return '<div class="hint">No Key Thread motions on file for this group yet.</div>';
- const sent=collectiveSentence(R);
+ const list=SC().filter(p=>p.kt);
  const scopeName=scope==='lead'?'the leadership set':scope==='active'?'active staff':'inactive staff';
- let flags=[];
- if(R.missingSpark.length)flags.push('<li><b>Nobody starts from '+R.missingSpark.join(", ").toLowerCase()+'.</b> Those are doors this group never opens on its own.</li>');
- if(R.rareSpark.length)flags.push('<li><b>Almost nobody starts from '+R.rareSpark.join(", ").toLowerCase()+'</b> \u2014 present, but so thin it won\u2019t shape a decision.</li>');
- if(R.missingLand.length)flags.push('<li><b>Nothing lands in '+R.missingLand.join(", ").toLowerCase()+'.</b> Work here doesn\u2019t naturally end there.</li>');
- if(R.rareLand.length)flags.push('<li><b>Almost nothing lands in '+R.rareLand.join(", ").toLowerCase()+'</b> \u2014 one or two people carry it for everyone.</li>');
- const top=R.echoes.slice(0,6).map(e=>'<li><b>'+e[0]+'</b> \u2014 '+e[1].map(x=>x.n.split(" ")[0]).join(", ")+' <span style="color:#9aa6a2">('+e[1].length+' people, same instinct)</span></li>').join('');
- return '<div class="detail">'
-  +'<div class="collective"><div class="lbl">The collective thread \u00b7 '+scopeName+' \u00b7 '+R.N+' people</div><p>'+sent+'</p>'
-  +'<div class="sub">This is the synthesis the individual assessments cannot produce. Each person\u2019s thread is a <i>motion</i> \u2014 where their energy starts and where it lands. Read together, the motions show what this group, as a body, is built to do \u2014 and what it structurally cannot.</div></div>'
-  +'<div class="synth">'
-  +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>The motion map</h4>'+motionFlow(R)+'</div>'
-  +(flags.length?'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>What is missing \u2014 and would never show up on an assessment</h4><ul>'+flags.join("")+'</ul></div>':'')
-  +(top?'<div class="sec" style="--accent:var(--cs)"><h4><span class="dot"></span>Shared motions \u2014 people who do the same thing differently</h4><ul>'+top+'</ul><p style="font-size:12.5px;color:var(--soft);margin-top:10px">These people may have different types, geniuses and strengths \u2014 and still make the same essential move. On paper they look complementary. In a room they echo.</p></div>':'')
-  +'</div>'
-  +'<p class="disclaim">The motion is my synthesis of each person\u2019s Key Thread \u2014 one interpretive step beyond the raw assessments. It is a claim to test in the room, not a measurement. Stored on each record as Motion From / Motion To, so you can disagree with any of it in Airtable.</p></div>';
+ if(!list.length)return '<div class="hint">No Key Threads on file for this group yet.</div>';
+
+ // The synthesis below is written, not computed. It is a reading of the leadership set.
+ const SYNTH = (scope==='lead') ? {
+  head:"A body of converters.",
+  body:[
+   "Read the threads in one sitting and the same grammar keeps appearing: <i>carried</i> into, <i>converted</i> to, <i>turned</i> into, <i>becomes</i>, <i>lands as</i>, <i>backed by</i>. Almost nobody\u2019s thread ends in a state. They end in a delivery. This is a leadership of people who take something inward \u2014 a conviction, a perception, an idea \u2014 and will not leave it there.",
+  ],
+  sections:[
+   {h:"Conviction is the engine",p:"For a large bloc \u2014 Kevin, Peter, Flaviu, David Roney, John Stevens, Josh Patty, Noah, Andrej, Tsvetan \u2014 the thread starts with <b>what is right</b> and moves from there. Not strategy. Not opportunity. Rightness. That is a particular kind of organisation, and it explains a great deal about how JV decides."},
+   {h:"There is a quiet spine",p:"Chris \u201casks for no spotlight.\u201d Amy \u201cquietly improves.\u201d Eric is \u201cunassuming.\u201d Mark, Elyse, John, Lindsay, Pavlina. Eight or so whose threads contain their own invisibility. This is an asset and a risk at once: <b>the people whose thread is <i>asks for no spotlight</i> are the people most likely to be missed at placement time.</b> Their contribution is structurally hard to see. Worth asking who here has been overlooked."},
+   {h:"Reproduction is in the DNA",p:"Pavel \u2014 \u201cunderstanding, made transferable.\u201d Tyler \u2014 a <i>teachable</i> answer. Karel \u2014 \u201cgrowth delivered person by person.\u201d Kristin, Kristy, Andrej. A striking number of these threads don\u2019t end at the result; they end at the <b>handoff</b>. For a movement whose whole theory is multiplication, that is not an accident."}
+  ],
+  absent:[
+   {h:"Nobody\u2019s thread holds a question open",p:"Tyler starts in curiosity \u2014 and drives it to a finished answer. Landen starts in curiosity \u2014 and gathers people with it. Shelby alone points at an open horizon, and even she is generating rather than questioning. No thread here reads <i>sits in the ambiguity</i>, <i>disrupts the consensus</i>, or <i>says the unwelcome thing</i>."},
+   {h:"No dissenter",p:"In forty-three threads, not one is an irritant. Kevin and John carry prophetic gifting on paper \u2014 but their threads still resolve into responsibility and quiet refinement."},
+   {h:"Nothing ends in rest",p:"Every thread is generative: building, finishing, improving, mobilising. Brooke sustains people; Chris supports. Beyond that, nothing in this body is wired toward stopping, healing, grieving, or letting something die. For a ministry across sixteen countries with real burnout exposure, that absence is worth a conversation."}
+  ],
+  qs:["Who tells this leadership it is wrong? The threads suggest nobody\u2019s instinct is to.",
+      "Who is allowed to not finish? Almost every thread here converts to completion.",
+      "Which of the quiet ones has been under-placed because their thread doesn\u2019t advertise itself?"]
+ } : null;
+
+ const synthHTML = SYNTH ? (
+   '<div class="collective"><div class="lbl">The threads, read as a body \u00b7 '+scopeName+' \u00b7 '+list.length+' people</div>'
+   +'<p>'+SYNTH.head+'</p>'
+   +'<div class="sub">'+SYNTH.body.join("<br><br>")+'</div></div>'
+   +'<div class="synth">'
+   +SYNTH.sections.map(x=>'<div class="sec" style="--accent:var(--sg)"><h4><span class="dot"></span>'+x.h+'</h4><p>'+x.p+'</p></div>').join('')
+   +SYNTH.absent.map(x=>'<div class="sec" style="--accent:var(--wg)"><h4><span class="dot"></span>'+x.h+'</h4><p>'+x.p+'</p></div>').join('')
+   +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>What I\u2019d take into the room</h4><ul>'+SYNTH.qs.map(q=>'<li>'+q+'</li>').join('')+'</ul></div>'
+   +'</div>'
+   +'<div class="note" style="margin-bottom:22px"><b>How much to trust this.</b> The threads are my sentences about your people, so this is a reading of my own prose \u2014 one step from the assessments, two from the person. It is not a measurement. The test is simple: <b>read the threads below and try to find a dissenter.</b> If you find three, I am wrong \u2014 and you should say so.</div>'
+ ) : '<div class="note" style="margin-bottom:22px">The written synthesis covers the leadership set. Below are the threads on file for '+scopeName+'.</div>';
+
+ const cards = list.map(function(p){
+   const i=P.indexOf(p);
+   return '<div class="tcard click" onclick="openPerson('+i+')"><div class="tn">'+p.n+' <span style="color:#9aa6a2;font-weight:400;font-size:12px">'+p.g+'</span></div>'
+     +'<p>'+p.kt.replace(/Thread:/,'<br><span class="tlead">Thread:</span>')+'</p></div>';
+ }).join('');
+
+ return '<div class="detail">'+synthHTML
+  +'<h3 style="font-family:Newsreader,serif;font-size:23px;font-weight:500;margin:6px 0 14px">All '+list.length+' threads</h3>'
+  +'<div class="tstack">'+cards+'</div></div>';
 }
+
 
 /* ================= MANAGE PROFILES (Data Admin only) ================= */
 const CS_ALL=[].concat(DOM.Executing,DOM.Influencing,DOM["Relationship Building"],DOM["Strategic Thinking"]).sort();
@@ -676,8 +646,6 @@ async function saveProfile(){
     "SG 1":ED.sg[0]||"","SG 2":ED.sg[1]||"","SG 3":ED.sg[2]||"",
     "SG Test":ED.sgt||"",
     "Key Thread":ED.kt||"",
-    "Motion From":ED.mf||"",
-    "Motion To":ED.mt||"",
     "Leadership Set":!!ED.lead
   };
   if(ED.email!==undefined)fields["Email"]=ED.email||"";
@@ -746,8 +714,6 @@ function manageView(){
      +'<div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>Key Thread</h4>'
        +'<label class="fl">The thread — write it as: evidence. Thread: the essence.</label>'
        +'<textarea class="fi" rows="5" oninput="edSet(\'kt\',this.value)" placeholder="Wonder + Tenacity bracket a mind that gathers everything… Thread: curiosity carried all the way to a finished, teachable answer.">'+(ED.kt||'')+'</textarea>'
-       +sel('Motion — where their energy starts','mf',SPARKS,ED.mf)
-       +sel('Motion — where it lands','mt',LANDINGS,ED.mt)
        +'<p style="font-size:12px;color:var(--soft);margin-top:8px">Leave the thread blank if you\u2019re not sure. An empty thread is better than a guessed one.</p>'
      +'</div>'
      +'</div></div></div>'
@@ -884,26 +850,16 @@ function teamHTML(){
 
  const dataNote=(wgKnown<N||csKnown<N||tKnown<N)?'<p class="disclaim" style="margin:0 0 14px">Data on file: Working Genius '+wgKnown+'/'+N+' · Strengths '+csKnown+'/'+N+' · 16 Types '+tKnown+'/'+N+'. Gaps below may reflect missing assessments rather than missing people.</p>':'';
 
- // ---- collective thread ----
- const R=motionRead(m);
+ // ---- the threads, read together ----
+ const withThread=m.filter(x=>x.kt);
  let coll='';
- if(R.N>=2){
-   const sent=collectiveSentence(R);
-   let subs=[];
-   if(R.echoes.length){
-     const e=R.echoes[0];
-     subs.push("<b>Hidden echo:</b> "+e[1].map(fn).join(" and ")+" run the identical motion ("+e[0].toLowerCase()+"). Their assessments differ; their instinct doesn\u2019t.");
-   }
-   if(R.chains.length){
-     const c=R.chains[0];
-     subs.push("<b>Natural handoff:</b> "+fn(c[0])+" lands where "+fn(c[1])+" starts ("+c[0].mt.toLowerCase()+"). Sequence them.");
-   }
-   if(R.missingLand.length)subs.push("<b>Nothing here lands in "+R.missingLand.slice(0,3).join(", ").toLowerCase()+".</b> Whatever this team produces, it won\u2019t naturally end there.");
-   if(R.missingSpark.length)subs.push("<b>Nobody starts from "+R.missingSpark.slice(0,3).join(", ").toLowerCase()+".</b> That door doesn\u2019t get opened unless someone opens it on purpose.");
-   coll='<div class="collective"><div class="lbl">The collective thread \u00b7 what these people do together</div><p>'+sent+'</p>'
-     +(subs.length?'<div class="sub">'+subs.join("<br>")+'</div>':'')+'</div>'
-     +'<div class="synth"><div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>The motion map</h4>'+motionFlow(R)
-     +'<p style="font-size:12.5px;color:var(--soft);margin-top:12px">Read left to right: the sparks this group fires from, and where those motions land. A blank on either side is a motion nobody here makes.</p></div></div>';
+ if(withThread.length>=2){
+   coll='<div class="synth"><div class="sec" style="--accent:var(--ink)"><h4><span class="dot"></span>The threads, read together</h4>'
+    +'<div class="tstack">'+withThread.map(function(x){
+       return '<div class="tcard"><div class="tn">'+x.n+'</div><p>'+x.kt.replace(/Thread:/,'<br><span class="tlead">Thread:</span>')+'</p></div>';
+     }).join('')+'</div>'
+    +(withThread.length<N?'<p style="font-size:12.5px;color:#9aa6a2;margin-top:10px">'+(N-withThread.length)+' of these '+N+' have no thread on file yet.</p>':'')
+    +'<p style="font-size:13px;color:var(--soft);margin-top:12px">Read them in one pass. What repeats? What is nobody here doing? The frameworks below will tell you whether the team is <i>covered</i>; only these will tell you whether it can <i>disagree with itself</i>.</p></div></div>';
  }
  return '<div class="detail"><button class="back" onclick="backToList()">\u2190 Back to team builder</button>'
   +'<div class="dhead"><h2>Team read</h2><div class="grp">'+N+' people \u00b7 '+m.map(fn).join(", ")+'</div></div>'

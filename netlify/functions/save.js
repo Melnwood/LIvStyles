@@ -17,7 +17,7 @@ const WRITABLE = new Set([
   "WG Geniuses", "WG Competencies", "WG Frustrations",
   "CS 1", "CS 2", "CS 3", "CS 4", "CS 5",
   "SG 1", "SG 2", "SG 3", "SG Test",
-  "Key Thread", "Motion From", "Motion To",
+  "Key Thread",
   "Leadership Set",
 ]);
 
